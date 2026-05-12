@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USUARIO
+// ============================================
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relaciones
+  baseCVs       BaseCV[]
+  applications  Application[]
+  coverLetters  CoverLetter[]
+  
+  @@map("users")
+}
+
+// ============================================
+// CV BASE (Tu CV principal)
+// ============================================
+model BaseCV {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String   // "Software Engineer CV", "Full Stack CV"
+  isDefault Boolean  @default(false)
+  
+  // Información personal
+  personalInfo Json   // { name, email, phone, location, linkedin, github, website }
+  
+  // Secciones estructuradas
+  summary      String?  @db.Text
+  experience   Json     // Array de { company, title, dates, bullets[] }
+  education    Json     // Array de { institution, degree, dates, details }
+  skills       Json     // { technical: [], soft: [], languages: [] }
+  projects     Json?    // Array de proyectos opcionales
+  certifications Json?  // Array de certificaciones
+  
+  // Metadata
+  rawText      String?  @db.Text  // Texto original del CV parseado
+  fileUrl      String?  // URL del archivo original subido
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relaciones
+  applications Application[]
+  
+  @@index([userId])
+  @@map("base_cvs")
+}
+
+// ============================================
+// OFERTA DE TRABAJO
+// ============================================
+model JobListing {
+  id          String   @id @default(cuid())
+  
+  // Información básica
+  title       String
+  company     String
+  location    String?
+  workMode    String?  // "remote", "hybrid", "onsite"
+  salary      String?
+  
+  // Descripción y requisitos
+  description String   @db.Text
+  requirements Json    // Array de requisitos parseados
+  
+  // Keywords extraídos (para matching)
+  keywords    Json    // { technical: [], soft: [], tools: [] }
+  
+  // Metadata
+  url         String?
+  source      String? // "LinkedIn", "Indeed", "Manual"
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relaciones
+  applications Application[]
+  
+  @@index([company])
+  @@map("job_listings")
+}
+
+// ============================================
+// APLICACIÓN (CV generado para un trabajo)
+// ============================================
+model Application {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  baseCVId     String
+  baseCV       BaseCV   @relation(fields: [baseCVId], references: [id])
+  
+  jobListingId String
+  jobListing   JobListing @relation(fields: [jobListingId], references: [id])
+  
+  // CV personalizado generado
+  customCV     Json     // Estructura similar a BaseCV pero tailored
+  
+  // ATS Analysis
+  atsScore     Float?   // 0-100
+  atsAnalysis  Json?    // { strengths: [], weaknesses: [], suggestions: [] }
+  matchScore   Float?   // % de match con el job
+  
+  // Status tracking
+  status       ApplicationStatus @default(DRAFT)
+  appliedAt    DateTime?
+  
+  // PDFs generados
+  cvPdfUrl     String?
+  coverLetterId String?  @unique
+  coverLetter   CoverLetter? @relation(fields: [coverLetterId], references: [id])
+  
+  // Notas del usuario
+  notes        String?  @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@map("applications")
+}
+
+enum ApplicationStatus {
+  DRAFT
+  READY
+  APPLIED
+  INTERVIEWING
+  OFFERED
+  REJECTED
+  ACCEPTED
+  WITHDRAWN
+}
+
+// ============================================
+// COVER LETTER
+// ============================================
+model CoverLetter {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Contenido
+  content       String   @db.Text
+  htmlContent   String?  @db.Text
+  pdfUrl        String?
+  
+  // Metadata
+  tone          String?  // "professional", "creative", "formal"
+  template      String?  // Nombre del template usado
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  application   Application?
+  
+  @@index([userId])
+  @@map("cover_letters")
+}
+
+// ============================================
+// TEMPLATES (opcional, para templates custom)
+// ============================================
+model CVTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  htmlContent String   @db.Text
+  thumbnail   String?
+  isPublic    Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("cv_templates")
+}

@@ -1,0 +1,21 @@
+# Example: Add test data files here
+
+This directory should contain:
+- Sample CV files (PDF, DOCX)
+- Mock API responses
+- Test user data
+- Sample job descriptions
+- Any other test fixtures
+
+Example structure:
+```
+fixtures/
+├── cvs/
+│   ├── sample-cv.pdf
+│   └── sample-cv.docx
+├── jobs/
+│   └── sample-job-description.json
+└── mocks/
+    ├── api-responses.json
+    └── user-data.json
+```

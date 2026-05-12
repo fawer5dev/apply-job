@@ -1,0 +1,174 @@
+{
+  "HomePage": {
+    "title": "Automate your Job Applications",
+    "subtitle": "Generate personalized CVs optimized for ATS. Create professional Cover Letters. All powered by AI.",
+    "startButton": "Get Started",
+    "featuresButton": "View Features",
+    "featuresTitle": "Features",
+    "featuresSubtitle": "Everything you need to improve your job search process",
+    "features": {
+      "customCV": {
+        "title": "Custom CVs",
+        "description": "Generate CVs tailored to each job offer using AI"
+      },
+      "atsOptimization": {
+        "title": "ATS Optimization",
+        "description": "Scoring and suggestions to pass tracking systems"
+      },
+      "coverLetters": {
+        "title": "Cover Letters",
+        "description": "Professional cover letters generated automatically"
+      },
+      "jobAnalysis": {
+        "title": "Job Analysis",
+        "description": "Extract key requirements and keywords from job descriptions"
+      },
+      "tracking": {
+        "title": "Tracking",
+        "description": "Manage all your applications in one place"
+      },
+      "fastEasy": {
+        "title": "Fast & Easy",
+        "description": "Intuitive interface and simplified process"
+      }
+    },
+    "footer": "Built with Next.js, OpenAI, and ❤️"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome",
+    "subtitle": "Manage your CVs and applications",
+    "nav": {
+      "myCVs": "My CVs",
+      "applications": "Applications"
+    },
+    "cards": {
+      "createCV": {
+        "title": "Create Base CV",
+        "description": "Upload your main CV to get started"
+      },
+      "newApplication": {
+        "title": "New Application",
+        "description": "Generate a personalized CV for a job offer"
+      },
+      "viewApplications": {
+        "title": "My Applications",
+        "description": "View all your applications and their status"
+      }
+    },
+    "stats": {
+      "baseCVs": "Base CVs",
+      "applications": "Applications",
+      "inProgress": "In Progress",
+      "responseRate": "Response Rate"
+    }
+  },
+  "NewCV": {
+    "title": "Upload Base CV",
+    "subtitle": "Upload your main CV and we'll analyze it automatically with AI",
+    "backToDashboard": "Back to Dashboard",
+    "form": {
+      "title": "CV Title",
+      "titlePlaceholder": "Ex: Software Engineer CV 2024",
+      "file": "CV File",
+      "uploadPrompt": "Click to upload or drag the file",
+      "uploadHint": "PDF, DOCX or TXT (max. 10MB)",
+      "uploading": "Processing...",
+      "submit": "Upload and Analyze",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "missingFields": "Please complete all fields",
+      "uploadFailed": "Error uploading CV"
+    },
+    "success": {
+      "title": "CV Uploaded Successfully!",
+      "message": "Redirecting to dashboard..."
+    },
+    "info": {
+      "title": "What will we do with your CV?",
+      "point1": "Extract your personal info, experience, education and skills",
+      "point2": "Analyze your professional profile with AI",
+      "point3": "Use it as a base to generate personalized CVs",
+      "point4": "Your data is secure and will never be shared"
+    }
+  },
+  "NewApplication": {
+    "title": "New Application",
+    "subtitle": "Create a personalized CV and cover letter for a specific job offer",
+    "backToDashboard": "Back to Dashboard",
+    "steps": {
+      "jobInfo": "Job Info",
+      "selectCV": "Select CV"
+    },
+    "jobForm": {
+      "title": "Job Offer Information",
+      "jobTitle": "Job Title",
+      "company": "Company",
+      "description": "Job Description",
+      "descriptionPlaceholder": "Paste the complete job description here...",
+      "location": "Location",
+      "workMode": "Work Mode",
+      "salary": "Salary",
+      "url": "Job URL"
+    },
+    "selectCVForm": {
+      "title": "Select Your Base CV",
+      "noCV": "You don't have base CVs. Upload one first.",
+      "uploadCV": "Upload Base CV"
+    },
+    "analyzing": "Analyzing with AI...",
+    "generating": "Generating CV and Cover Letter...",
+    "analyzeJob": "Analyze Job",
+    "generateApplication": "Generate Application",
+    "back": "Back",
+    "errors": {
+      "missingJobFields": "Complete title, company and description",
+      "analysisFailed": "Error analyzing job offer",
+      "selectCV": "Select a base CV",
+      "generationFailed": "Error generating application"
+    }
+  },
+  "ManageCV": {
+    "title": "Manage CVs",
+    "subtitle": "View, edit, and organize your base CVs",
+    "section": "My CVs",
+    "backToDashboard": "Back to Dashboard",
+    "uploadNew": "Upload New CV",
+    "uploadFirst": "Upload Your First CV",
+    "loading": "Loading CVs...",
+    "default": "Default",
+    "view": "View",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this CV? This action cannot be undone.",
+    "noCVs": {
+      "title": "No CVs Yet",
+      "message": "Upload your first CV to get started with personalized applications"
+    }
+  },
+  "ViewCV": {
+    "title": "View CV",
+    "backToCVs": "Back to CVs",
+    "loading": "Loading CV...",
+    "notFound": "CV not found",
+    "default": "Default",
+    "created": "Created",
+    "updated": "Updated",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "confirmDelete": "Are you sure you want to delete this CV? This action cannot be undone.",
+    "createApplication": "Create Application",
+    "present": "Present",
+    "viewProject": "View",
+    "verify": "Verify",
+    "sections": {
+      "personalInfo": "Personal Information",
+      "summary": "Professional Summary",
+      "experience": "Work Experience",
+      "education": "Education",
+      "skills": "Skills",
+      "projects": "Projects",
+      "certifications": "Certifications"
+    }
+  }
+}

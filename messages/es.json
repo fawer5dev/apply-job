@@ -1,0 +1,174 @@
+{
+  "HomePage": {
+    "title": "Automatiza tus Aplicaciones de Trabajo",
+    "subtitle": "Genera CVs personalizados y optimizados para ATS. Crea Cover Letters profesionales. Todo impulsado por IA.",
+    "startButton": "Comenzar",
+    "featuresButton": "Ver Características",
+    "featuresTitle": "Características",
+    "featuresSubtitle": "Todo lo que necesitas para mejorar tu proceso de búsqueda de empleo",
+    "features": {
+      "customCV": {
+        "title": "CVs Personalizados",
+        "description": "Genera CVs adaptados a cada oferta de trabajo usando IA"
+      },
+      "atsOptimization": {
+        "title": "Optimización ATS",
+        "description": "Scoring y sugerencias para pasar sistemas de tracking"
+      },
+      "coverLetters": {
+        "title": "Cover Letters",
+        "description": "Cartas de presentación profesionales generadas automáticamente"
+      },
+      "jobAnalysis": {
+        "title": "Análisis de Ofertas",
+        "description": "Extrae requisitos y keywords clave de las job descriptions"
+      },
+      "tracking": {
+        "title": "Tracking",
+        "description": "Gestiona todas tus aplicaciones en un solo lugar"
+      },
+      "fastEasy": {
+        "title": "Rápido y Fácil",
+        "description": "Interfaz intuitiva y proceso simplificado"
+      }
+    },
+    "footer": "Built with Next.js, OpenAI, and ❤️"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bienvenido",
+    "subtitle": "Gestiona tus CVs y aplicaciones",
+    "nav": {
+      "myCVs": "Mis CVs",
+      "applications": "Aplicaciones"
+    },
+    "cards": {
+      "createCV": {
+        "title": "Crear CV Base",
+        "description": "Sube tu CV principal para comenzar"
+      },
+      "newApplication": {
+        "title": "Nueva Aplicación",
+        "description": "Genera un CV personalizado para una oferta"
+      },
+      "viewApplications": {
+        "title": "Mis Aplicaciones",
+        "description": "Ver todas tus aplicaciones y su estado"
+      }
+    },
+    "stats": {
+      "baseCVs": "CVs Base",
+      "applications": "Aplicaciones",
+      "inProgress": "En Proceso",
+      "responseRate": "Tasa de Respuesta"
+    }
+  },
+  "NewCV": {
+    "title": "Subir CV Base",
+    "subtitle": "Sube tu CV principal y lo analizaremos automáticamente con IA",
+    "backToDashboard": "Volver al Dashboard",
+    "form": {
+      "title": "Título del CV",
+      "titlePlaceholder": "Ej: CV Software Engineer 2024",
+      "file": "Archivo del CV",
+      "uploadPrompt": "Haz clic para subir o arrastra el archivo",
+      "uploadHint": "PDF, DOCX o TXT (máx. 10MB)",
+      "uploading": "Procesando...",
+      "submit": "Subir y Analizar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "missingFields": "Por favor completa todos los campos",
+      "uploadFailed": "Error al subir el CV"
+    },
+    "success": {
+      "title": "¡CV Subido Exitosamente!",
+      "message": "Redirigiendo al dashboard..."
+    },
+    "info": {
+      "title": "¿Qué haremos con tu CV?",
+      "point1": "Extraeremos tu información personal, experiencia, educación y habilidades",
+      "point2": "Analizaremos tu perfil profesional con IA",
+      "point3": "Lo usaremos como base para generar CVs personalizados",
+      "point4": "Tus datos están seguros y nunca se compartirán"
+    }
+  },
+  "NewApplication": {
+    "title": "Nueva Aplicación",
+    "subtitle": "Crea un CV personalizado y cover letter para una oferta específica",
+    "backToDashboard": "Volver al Dashboard",
+    "steps": {
+      "jobInfo": "Info del Trabajo",
+      "selectCV": "Seleccionar CV"
+    },
+    "jobForm": {
+      "title": "Información de la Oferta",
+      "jobTitle": "Título del Puesto",
+      "company": "Empresa",
+      "description": "Descripción del Trabajo",
+      "descriptionPlaceholder": "Pega aquí la descripción completa de la oferta...",
+      "location": "Ubicación",
+      "workMode": "Modalidad",
+      "salary": "Salario",
+      "url": "URL de la Oferta"
+    },
+    "selectCVForm": {
+      "title": "Selecciona tu CV Base",
+      "noCV": "No tienes CVs base. Sube uno primero.",
+      "uploadCV": "Subir CV Base"
+    },
+    "analyzing": "Analizando con IA...",
+    "generating": "Generando CV y Cover Letter...",
+    "analyzeJob": "Analizar Oferta",
+    "generateApplication": "Generar Aplicación",
+    "back": "Atrás",
+    "errors": {
+      "missingJobFields": "Completa título, empresa y descripción",
+      "analysisFailed": "Error al analizar la oferta",
+      "selectCV": "Selecciona un CV base",
+      "generationFailed": "Error al generar la aplicación"
+    }
+  },
+  "ManageCV": {
+    "title": "Gestionar CVs",
+    "subtitle": "Ver, editar y organizar tus CVs base",
+    "section": "Mis CVs",
+    "backToDashboard": "Volver al Dashboard",
+    "uploadNew": "Subir Nuevo CV",
+    "uploadFirst": "Sube tu Primer CV",
+    "loading": "Cargando CVs...",
+    "default": "Predeterminado",
+    "view": "Ver",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este CV? Esta acción no se puede deshacer.",
+    "noCVs": {
+      "title": "Aún No Hay CVs",
+      "message": "Sube tu primer CV para comenzar con aplicaciones personalizadas"
+    }
+  },
+  "ViewCV": {
+    "title": "Ver CV",
+    "backToCVs": "Volver a CVs",
+    "loading": "Cargando CV...",
+    "notFound": "CV no encontrado",
+    "default": "Predeterminado",
+    "created": "Creado",
+    "updated": "Actualizado",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este CV? Esta acción no se puede deshacer.",
+    "createApplication": "Crear Aplicación",
+    "present": "Presente",
+    "viewProject": "Ver",
+    "verify": "Verificar",
+    "sections": {
+      "personalInfo": "Información Personal",
+      "summary": "Resumen Profesional",
+      "experience": "Experiencia Laboral",
+      "education": "Educación",
+      "skills": "Habilidades",
+      "projects": "Proyectos",
+      "certifications": "Certificaciones"
+    }
+  }
+}
