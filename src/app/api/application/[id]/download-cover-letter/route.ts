@@ -50,8 +50,8 @@ export async function GET(
     );
 
     // Generate filename
-    const userName = application.user.name || 'Applicant';
-    const filename = `${userName.replace(/\s+/g, '_')}_CoverLetter_${application.jobListing.company.replace(/\s+/g, '_')}.pdf`;
+    const companyName = application.jobListing.company.replace(/\s+/g, '_');
+    const filename = `Fawer_Vargas_CL_${companyName}.pdf`;
 
     // Return PDF as Uint8Array
     return new NextResponse(new Uint8Array(pdfBuffer), {

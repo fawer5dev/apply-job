@@ -477,7 +477,7 @@ export default function ViewCVPage() {
                         </h3>
                       )}
                       <div className="flex flex-wrap gap-2">
-                        {skillGroup.items.map((skill, i) => (
+                        {skillGroup.items?.map((skill, i) => (
                           <span
                             key={i}
                             className="border border-foreground/20 bg-muted/50 px-3 py-1 font-body text-xs"

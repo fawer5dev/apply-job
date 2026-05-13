@@ -261,7 +261,11 @@ Return/Upload file
 - `PUT /api/application/[id]` - Update application status
 - `DELETE /api/application/[id]` - Delete application
 - `GET /api/application/[id]/download-cv` - Download CV as PDF
+  - Filename format: `User_Name_CV_[CompanyName].pdf`
+  - Example: `John_Doe_CV_Google.pdf`
 - `GET /api/application/[id]/download-cover-letter` - Download cover letter as PDF
+  - Filename format: `User_Name_CL_[CompanyName].pdf`
+  - Example: `John_Doe_CL_Meta_Platforms.pdf`
 
 ### Cover Letter
 
@@ -315,9 +319,28 @@ Return/Upload file
 
 #### 4. Cover Letter Generator
 
-**Prompt**: Generates personalized cover letter
-**Input**: CV + JobListing + tone
+**Prompt**: Generates personalized cover letter  
+**Input**: CV + JobListing + tone  
 **Output**: Cover letter text + HTML
+
+**Format Details:**
+- **Greeting**: "Hi {companyName} team," (dynamically inserted from job listing)
+- **Signature**: "Best regards,\nFawer Vargas" (fixed for all cover letters)
+- **Tone Options**: professional, creative, formal, friendly
+- **Length**: 200-300 words (3 paragraphs)
+- **Structure**:
+  - Paragraph 1: Introduction and reason for applying
+  - Paragraph 2: Relevant experience matching job requirements
+  - Paragraph 3: Company-specific interest and enthusiasm
+  - Closing: "I look forward to discussing how I can contribute to {company}'s success."
+
+**PDF Styling:**
+- Font: Libre Baskerville 12pt (Google Fonts with fallbacks)
+- Text alignment: Justified
+- Line height: 1.7
+- Color: #1a1a1a (deep black)
+- Paragraph spacing: 18px
+- Download filename: `User_Name_CL_[CompanyName].pdf`
 
 ---
 

@@ -8,7 +8,12 @@ Web app to automate the job application process by generating personalized CVs a
 - **Job Description Analysis**: Analyze job postings and extract key requirements
 - **Personalized CV Generation**: Generate CVs tailored to each job posting using AI
 - **ATS Optimization**: Scoring and suggestions to pass tracking systems
-- **Cover Letters**: Generate personalized cover letters
+- **Cover Letters**: Generate personalized cover letters with:
+  - Dynamic company-specific greeting ("Hi [Company] team,")
+  - Professional formatting with Libre Baskerville font
+  - Justified text alignment for formal appearance
+  - Multiple tone options (professional, creative, formal, friendly)
+  - Automatic PDF generation with elegant styling
 - **Application Tracking**: Manage all your applications in one place
 - **Multi-language Support**: Full English and Spanish interface
 

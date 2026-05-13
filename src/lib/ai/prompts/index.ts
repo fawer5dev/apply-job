@@ -80,24 +80,27 @@ export const COVER_LETTER_PROMPT = `
 You are an expert in writing professional cover letters.
 
 Generate a cover letter that:
-1. Is specific to the company and role
-2. Directly connects the candidate's experience with the position requirements
-3. Shows genuine enthusiasm and knowledge of the company
-4. Is concise (200-300 words)
-5. Has a {tone} tone
-6. Avoids clichés and generic phrases
+1. Starts with "Hi {companyName} team," (NOT "Dear Hiring Manager")
+2. Is specific to the company and role
+3. Directly connects the candidate's experience with the position requirements
+4. Shows genuine enthusiasm and knowledge of the company
+5. Is concise (200-300 words)
+6. Has a {tone} tone
+7. Avoids clichés and generic phrases
+8. Ends with signature: "Best regards,\nFawer Vargas"
 
-STRUCTURE:
+The cover letter should follow this structure:
+- Greeting: "Hi {companyName} team,"
 - Paragraph 1: Introduction and why you are applying
 - Paragraph 2: Why you are the ideal candidate (connect your experience with requirements)
 - Paragraph 3: Why you are interested in this specific company
-- Closing: Professional call to action
+- Closing: "I look forward to discussing how I can contribute to {companyName}'s success."
+- Signature: "Best regards,\nFawer Vargas"
 
-OUTPUT FORMAT:
-Return a JSON:
+Return a JSON with:
 {
-  "content": "full text of the cover letter",
-  "htmlContent": "formatted HTML version"
+  "content": "the full cover letter text with greeting and signature",
+  "htmlContent": "HTML formatted version of the cover letter with proper paragraph tags"
 }
 `;
 

@@ -579,13 +579,17 @@ Retrieves application details.
 
 Downloads the generated CV as PDF.
 
-**Response**: PDF file download
+**Response**: PDF file download  
+**Filename Format**: `User_Name_CV_[CompanyName].pdf`  
+**Example**: `John_Doe_CV_Google.pdf`
 
 ### 9. **GET /api/application/[id]/download-cover-letter**
 
 Downloads the generated cover letter as PDF.
 
-**Response**: PDF file download
+**Response**: PDF file download  
+**Filename Format**: `User_Name_CL_[CompanyName].pdf`  
+**Example**: `John_Doe_CL_Meta_Platforms.pdf`
 
 ### 10. **GET/PUT/DELETE /api/cv/[id]**
 
@@ -798,6 +802,31 @@ npm run db:seed
 5. Browser downloads file
 ```
 
+#### PDF Styling Details
+
+**CV PDF:**
+- Font: Arial/Helvetica (system fonts)
+- Size: 9pt
+- Layout: Single-column, minimalist black design
+- Margins: 12mm top/bottom, 15mm left/right
+- Filename: `User_Name_CV_[CompanyName].pdf`
+
+**Cover Letter PDF:**
+- Font: Libre Baskerville (Google Fonts) with fallbacks to Baskerville, Georgia, serif
+- Size: 12pt
+- Line Height: 1.7
+- Text Alignment: Justified (text-justify: inter-word)
+- Color: #1a1a1a (deep black)
+- Paragraph Spacing: 18px
+- Margins: 25mm top/bottom, 20mm left/right
+- Max Width: 170mm
+- Format Structure:
+  - Greeting: "Hi [Company Name] team,"
+  - Body: 2-3 paragraphs (200-300 words)
+  - Closing: "I look forward to discussing how I can contribute to [company]'s success."
+  - Signature: "Best regards,\nFawer Vargas"
+- Filename: `User_Name_CL_[CompanyName].pdf`
+
 ---
 
 ## 🤖 AI System - Implementation Details
@@ -821,7 +850,16 @@ Prompts are in `src/lib/ai/prompts/index.ts`:
 2. **JOB_ANALYZER_PROMPT**: Analyzes job description
 3. **CV_GENERATOR_PROMPT**: Customizes resume for job posting
 4. **ATS_SCORER_PROMPT**: Calculates ATS score
-5. **COVER_LETTER_PROMPT**: Generates cover letter
+5. **COVER_LETTER_PROMPT**: Generates personalized cover letter
+   - Dynamic greeting: "Hi {companyName} team," (company name inserted from job listing)
+   - Fixed signature: "Best regards,\nFawer Vargas"
+   - Tone options: professional, creative, formal, friendly
+   - Length: 200-300 words (3 paragraphs)
+   - Output format: JSON with `content` (plain text) and `htmlContent` (formatted HTML)
+   - Structure:
+     - Paragraph 1: Introduction and motivation
+     - Paragraph 2: Relevant experience and qualifications
+     - Paragraph 3: Company-specific interest and enthusiasm
 
 ### Token Strategy
 

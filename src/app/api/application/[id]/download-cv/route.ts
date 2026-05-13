@@ -43,7 +43,8 @@ export async function GET(
     const pdfBuffer = await generateCVPDF(cv);
 
     // Generate filename
-    const filename = `${cv.personalInfo.name.replace(/\s+/g, '_')}_CV_${application.jobListing.company.replace(/\s+/g, '_')}.pdf`;
+    const companyName = application.jobListing.company.replace(/\s+/g, '_');
+    const filename = `Fawer_Vargas_CV_${companyName}.pdf`;
 
     // Return PDF as Uint8Array
     return new NextResponse(new Uint8Array(pdfBuffer), {

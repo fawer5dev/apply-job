@@ -441,33 +441,97 @@ export async function generateCoverLetterPDF(
   }
 }
 
+// Helper function to format cover letter content with proper styling
+function formatCoverLetterContent(content: string): string {
+  // Split by paragraphs (double newline)
+  const paragraphs = content.split('\n\n').filter((p) => p.trim());
+
+  let html = '';
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const para = paragraphs[i].trim();
+
+    // Detect if this is the signature block
+    if (
+      para.toLowerCase().includes('best regards') ||
+      para.toLowerCase().includes('sincerely')
+    ) {
+      // Separate the closing from the name
+      const lines = para.split('\n').filter((l) => l.trim());
+      html += `<p class="signature">${lines[0]}</p>`;
+      if (lines.length > 1) {
+        html += `<p class="signature-name">${lines.slice(1).join('<br>')}</p>`;
+      }
+    } else {
+      // Regular paragraph
+      html += `<p>${para.replace(/\n/g, '<br>')}</p>`;
+    }
+  }
+
+  return html;
+}
+
 function renderCoverLetterTemplate(content: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cover Letter - Fawer Vargas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11pt;
-      line-height: 1.6;
-      color: #333;
+      /* Libre Baskerville from Google Fonts with fallbacks */
+      font-family: 'Libre Baskerville', 'Baskerville', 'Georgia', serif;
+      font-size: 12pt;
+      line-height: 1.7;
+      color: #1a1a1a;
+      background: #FFFFFF;
       max-width: 170mm;
       margin: 0 auto;
+      padding: 0;
     }
     
     p {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
       text-align: justify;
+      text-justify: inter-word;
+      color: #1a1a1a;
+    }
+    
+    /* Style for the greeting (first paragraph) */
+    p:first-child {
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    /* Style for the signature closing */
+    .signature {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      text-align: left;
+      font-weight: 400;
+    }
+    
+    /* Style for the name in signature */
+    .signature-name {
+      margin-top: 8px;
+      font-weight: 700;
+      color: #000000;
     }
   </style>
 </head>
 <body>
-  ${content
-    .split('\n\n')
-    .map((para) => `<p>${para}</p>`)
-    .join('')}
+  ${formatCoverLetterContent(content)}
 </body>
 </html>
   `;
