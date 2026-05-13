@@ -17,16 +17,20 @@ This directory contains all project documentation files.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture and design decisions
   - Technology stack details
   - Data model and relationships
+  - Internationalization architecture
   - API architecture
+  - AI services (Google Gemini, OpenAI)
   - System workflows
   - Performance considerations
 
 ### 🔧 Troubleshooting
 
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
-  - Application errors
+  - Google AI and OpenAI issues
   - Database issues
-  - API problems
+  - Application errors
+  - Internationalization problems
+  - File upload issues
   - Testing procedures
   - Debugging tips
 
@@ -52,6 +56,14 @@ This directory contains all project documentation files.
   - Writing tests
   - Running tests
   - Best practices
+
+## Documentation Meta
+
+- **[DOCUMENTATION-ORGANIZATION.md](DOCUMENTATION-ORGANIZATION.md)** - Documentation organization guide
+  - Current documentation structure
+  - File organization rationale
+  - Standards for future documentation
+  - Navigation guides for different audiences
 
 ## Documentation Standards
 

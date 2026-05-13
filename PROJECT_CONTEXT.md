@@ -1,6 +1,6 @@
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: May 12, 2026
+> **Last updated**: May 13, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -16,6 +16,7 @@
 - Calculate ATS (Applicant Tracking System) scoring
 - Generate personalized cover letters
 - Manage applications and track progress
+- Multi-language support (English and Spanish)
 
 ---
 
@@ -36,6 +37,7 @@
   - class-variance-authority
   - tailwind-merge
   - tailwindcss-animate
+- **Internationalization**: next-intl 4.11.0 (English, Spanish)
 
 ### Backend
 
@@ -43,8 +45,8 @@
 - **API**: Next.js API Routes (Route Handlers)
 - **Database**: PostgreSQL 15+ with Prisma ORM 5.19.0
 - **AI/ML**:
-  - OpenAI GPT-4o (API v4.56.0)
-  - Google Generative AI (Gemini 2.0 Flash)
+  - Google Generative AI (Gemini 2.0 Flash) - Primary, cost-effective
+  - OpenAI GPT-4o (API v4.56.0) - Optional, higher quality
   - ai SDK (Vercel AI SDK v3.3.0)
 - **PDF Processing**:
   - Puppeteer 23.1.1 (PDF generation)
@@ -62,6 +64,51 @@
 - **Date Manipulation**: date-fns 3.6.0
 - **Markdown**: react-markdown 9.0.1
 - **Class Names**: clsx 2.1.1
+
+---
+
+## 🌍 Internationalization
+
+### Implementation
+
+- **Library**: next-intl 4.11.0
+- **Supported Languages**: 
+  - English (en) - Default
+  - Spanish (es)
+- **Translation Files**: `messages/en.json`, `messages/es.json`
+- **Routing**: All user-facing pages under `[locale]` dynamic segment
+- **Middleware**: Automatic locale detection and routing (`src/middleware.ts`)
+- **Language Switcher**: `LanguageSwitcher` component for user selection
+
+### Architecture
+
+```
+User Request
+    ↓
+Middleware detects/validates locale
+    ↓
+Routes to /[locale]/... (e.g., /en/dashboard or /es/dashboard)
+    ↓
+Pages load translations from messages/{locale}.json
+    ↓
+Render localized content
+```
+
+### File Structure
+
+```
+messages/
+├── en.json    # English translations
+└── es.json    # Spanish translations
+
+src/
+├── i18n/
+│   ├── routing.ts    # Locale configuration
+│   └── request.ts    # Server-side i18n
+├── middleware.ts     # Locale detection
+└── app/
+    └── [locale]/     # Localized routes
+```
 
 ---
 
@@ -239,47 +286,83 @@ apply-job/
 │
 ├── public/                     # Static assets
 │
+├── messages/                   # 🌍 Translation files
+│   ├── en.json                # English translations
+│   └── es.json                # Spanish translations
+│
+├── files/                      # User uploaded files (CVs)
+│
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── globals.css        # Global styles
 │   │   ├── layout.tsx         # Root layout
-│   │   ├── page.tsx           # Main page (/)
 │   │   │
-│   │   ├── api/               # API Routes
-│   │   │   ├── cover-letter/
-│   │   │   │   └── generate/
-│   │   │   │       └── route.ts   # POST /api/cover-letter/generate
-│   │   │   ├── cv/
-│   │   │   │   └── generate/
-│   │   │   │       └── route.ts   # POST /api/cv/generate
-│   │   │   ├── job/
-│   │   │   │   └── analyze/
-│   │   │   │       └── route.ts   # POST /api/job/analyze
-│   │   │   └── pdf/
-│   │   │       └── generate/
-│   │   │           └── route.ts   # POST /api/pdf/generate
+│   │   ├── [locale]/          # 🌍 Internationalized routes
+│   │   │   ├── page.tsx       # Home page
+│   │   │   ├── dashboard/
+│   │   │   │   ├── page.tsx           # Dashboard home
+│   │   │   │   ├── cv/
+│   │   │   │   │   ├── page.tsx       # CV list
+│   │   │   │   │   ├── new/page.tsx   # Upload CV
+│   │   │   │   │   └── [id]/page.tsx  # Edit CV
+│   │   │   │   └── applications/
+│   │   │   │       ├── page.tsx       # Applications list
+│   │   │   │       ├── new/page.tsx   # New application
+│   │   │   │       └── [id]/page.tsx  # View application
+│   │   │   └── test-upload/
+│   │   │       └── page.tsx   # Test upload page
 │   │   │
-│   │   └── dashboard/
-│   │       └── page.tsx       # Main dashboard
+│   │   └── api/               # API Routes (no locale prefix)
+│   │       ├── application/
+│   │       │   ├── create/
+│   │       │   │   └── route.ts       # POST /api/application/create
+│   │       │   └── [id]/
+│   │       │       ├── route.ts       # GET/PUT/DELETE /api/application/[id]
+│   │       │       ├── download-cv/
+│   │       │       │   └── route.ts   # GET /api/application/[id]/download-cv
+│   │       │       └── download-cover-letter/
+│   │       │           └── route.ts   # GET /api/application/[id]/download-cover-letter
+│   │       ├── cover-letter/
+│   │       │   └── generate/
+│   │       │       └── route.ts       # POST /api/cover-letter/generate
+│   │       ├── cv/
+│   │       │   ├── upload/
+│   │       │   │   └── route.ts       # POST /api/cv/upload
+│   │       │   ├── generate/
+│   │       │   │   └── route.ts       # POST /api/cv/generate
+│   │       │   └── [id]/
+│   │       │       └── route.ts       # GET/PUT/DELETE /api/cv/[id]
+│   │       ├── job/
+│   │       │   └── analyze/
+│   │       │       └── route.ts       # POST /api/job/analyze
+│   │       └── pdf/
+│   │           └── generate/
+│   │               └── route.ts       # POST /api/pdf/generate
 │   │
 │   ├── components/
-│   │   └── ui/                # shadcn/ui components
-│   │       ├── button.tsx
-│   │       └── card.tsx
+│   │   ├── ui/                # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   └── card.tsx
+│   │   └── LanguageSwitcher.tsx  # 🌍 Language selector
 │   │
 │   ├── config/
 │   │   ├── constants.ts       # Application constants
 │   │   └── site.ts            # Site configuration
 │   │
+│   ├── i18n/                  # 🌍 Internationalization config
+│   │   ├── routing.ts         # Locale routing configuration
+│   │   └── request.ts         # Server-side i18n
+│   │
 │   ├── lib/
 │   │   ├── ai/                # AI services
-│   │   │   ├── openai.ts           # Configured OpenAI client
-│   │   │   ├── job-analyzer.ts     # Analyzes job descriptions
-│   │   │   ├── cv-generator.ts     # Generates custom resumes
+│   │   │   ├── google-ai.ts         # Google Gemini client
+│   │   │   ├── openai.ts            # OpenAI client (optional)
+│   │   │   ├── job-analyzer.ts      # Analyzes job descriptions
+│   │   │   ├── cv-generator.ts      # Generates custom resumes
 │   │   │   ├── cover-letter-generator.ts  # Generates cover letters
-│   │   │   ├── ats-scorer.ts       # Calculates ATS score
+│   │   │   ├── ats-scorer.ts        # Calculates ATS score
 │   │   │   └── prompts/
-│   │   │       └── index.ts        # AI prompts
+│   │   │       └── index.ts         # AI prompts
 │   │   │
 │   │   ├── cv/
 │   │   │   └── parser.ts      # Parses resumes (PDF, DOCX, TXT)
@@ -294,15 +377,26 @@ apply-job/
 │   │       ├── formatting.ts  # Format helpers
 │   │       └── validation.ts  # Validations with Zod
 │   │
-│   └── types/
-│       ├── index.ts           # General types + re-exports
-│       ├── application.ts     # Application types
-│       ├── cv.ts              # CV types
-│       └── job.ts             # Job types
+│   ├── types/
+│   │   ├── index.ts           # General types + re-exports
+│   │   ├── application.ts     # Application types
+│   │   ├── cv.ts              # CV types
+│   │   └── job.ts             # Job types
+│   │
+│   └── middleware.ts          # 🌍 Locale detection middleware
 │
 ├── templates/
 │   └── cv/
 │       └── modern.html        # HTML template for resume PDF
+│
+├── tests/                     # Test files and documentation
+│
+├── docs/                      # 📚 Project documentation
+│   ├── README.md              # Documentation index
+│   ├── ARCHITECTURE.md        # Technical architecture
+│   ├── SETUP.md               # Installation guide
+│   ├── TROUBLESHOOTING.md     # Common issues
+│   └── DOCUMENTATION-ORGANIZATION.md  # Documentation structure
 │
 ├── .env.local                 # Environment variables (NOT in git)
 ├── .gitignore
@@ -313,14 +407,7 @@ apply-job/
 ├── package.json
 │
 ├── README.md                  # General documentation
-├── PROJECT_CONTEXT.md         # This file
-│
-├── docs/                      # Project documentation
-│   ├── ARCHITECTURE.md        # Technical architecture
-│   ├── SETUP.md              # Installation guide
-│   └── TROUBLESHOOTING.md    # Common issues
-│
-└── tests/                     # Test files and documentation
+└── PROJECT_CONTEXT.md         # This file
 ```
 
 ---
@@ -435,6 +522,75 @@ Content-Type: application/pdf
 Binary PDF data
 ```
 
+### 5. **POST /api/cv/upload**
+
+Uploads and parses a CV file (PDF, DOCX, TXT).
+
+**Request**: `multipart/form-data` with file
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "string",
+    "personalInfo": { /* ... */ },
+    "experience": [ /* ... */ ],
+    "education": [ /* ... */ ],
+    "skills": { /* ... */ }
+  }
+}
+```
+
+### 6. **POST /api/application/create**
+
+Creates a new job application with customized CV.
+
+**Request**:
+
+```json
+{
+  "baseCVId": "string",
+  "jobListingId": "string",
+  "userId": "string"
+}
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "string",
+    "customCV": { /* ... */ },
+    "atsScore": 85,
+    "atsAnalysis": { /* ... */ }
+  }
+}
+```
+
+### 7. **GET /api/application/[id]**
+
+Retrieves application details.
+
+### 8. **GET /api/application/[id]/download-cv**
+
+Downloads the generated CV as PDF.
+
+**Response**: PDF file download
+
+### 9. **GET /api/application/[id]/download-cover-letter**
+
+Downloads the generated cover letter as PDF.
+
+**Response**: PDF file download
+
+### 10. **GET/PUT/DELETE /api/cv/[id]**
+
+Manage individual base CVs (get, update, delete).
+
 ---
 
 ## 🔑 Environment Variables
@@ -450,10 +606,17 @@ Binary PDF data
 DATABASE_URL="postgresql://..."
 
 # ============================================
-# OPENAI
+# GOOGLE AI (Recommended - Cost-effective)
+# ============================================
+# Get your API key at: https://aistudio.google.com/apikey
+GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
+
+# ============================================
+# OPENAI (Optional - Higher quality)
 # ============================================
 # Get your API key at: https://platform.openai.com/api-keys
-OPENAI_API_KEY="sk-..."
+# Note: At least one AI provider (Google AI or OpenAI) is required
+# OPENAI_API_KEY="sk-..."
 
 # ============================================
 # APPLICATION
@@ -743,13 +906,18 @@ margin: {
 - [x] Tailwind CSS + shadcn/ui configuration
 - [x] Prisma + PostgreSQL setup
 - [x] Complete database models
-- [x] OpenAI GPT-4o integration
-- [x] Google Generative AI (Gemini 2.0 Flash) integration
+- [x] Google Generative AI (Gemini 2.0 Flash) integration - Primary AI provider
+- [x] OpenAI GPT-4o integration - Optional alternative
+- [x] Multi-language support (English/Spanish) with next-intl
+- [x] Internationalization middleware and routing
+- [x] Language switcher component
 - [x] Resume parser (PDF, DOCX, TXT)
+- [x] API: CV upload and parsing
 - [x] API: Job description analysis
 - [x] API: Custom resume generation
 - [x] API: Cover letter generation
-- [x] API: PDF generation
+- [x] API: PDF generation and download
+- [x] API: Application creation and management
 - [x] ATS scoring system
 - [x] Minimalist single-column PDF template (black text, 1-page)
 - [x] Dynamic subtitle generation from experience
@@ -1133,7 +1301,7 @@ When resuming the project, verify:
 - [ ] `.env.local` configured correctly
 - [ ] Database accessible (`npm run db:studio`)
 - [ ] Prisma client generated (`npm run db:generate`)
-- [ ] Valid OpenAI API key (test request)
+- [ ] Valid AI API key (Google AI or OpenAI) configured
 - [ ] `npm run dev` works at http://localhost:3000
 - [ ] No TypeScript errors (`npm run type-check`)
 - [ ] Review this document for complete context
@@ -1146,9 +1314,11 @@ This project is in a solid technical foundation phase. The architecture is scala
 
 **What works**:
 
+- ✅ Dual AI provider support (Google Gemini + OpenAI)
+- ✅ Multi-language interface (English/Spanish)
 - ✅ AI APIs (job analysis, resume generation, cover letters)
 - ✅ Robust database system
-- ✅ PDF generation
+- ✅ PDF generation and download
 - ✅ Resume parsing
 
 **What's missing**:
@@ -1162,11 +1332,24 @@ This project is in a solid technical foundation phase. The architecture is scala
 
 ---
 
-**Last updated**: May 12, 2026  
+**Last updated**: May 13, 2026  
 **Version**: 0.2.0  
 **Maintainer**: @fawer5dev
 
 ## 📝 Recent Updates (May 2026)
+
+### Internationalization (May 13, 2026)
+- Implemented next-intl for multi-language support
+- Added English (default) and Spanish translations
+- Created [locale] routing pattern for all user-facing pages
+- Added middleware for automatic locale detection
+- Language switcher component for user preference
+
+### AI Provider Enhancement (May 13, 2026)
+- Set Google Gemini 2.0 Flash as primary AI provider (cost-effective)
+- OpenAI GPT-4o available as optional alternative (higher quality)
+- Updated API endpoints with download functionality
+- Added comprehensive application management endpoints
 
 ### PDF Template Redesign
 - Implemented minimalist single-column layout (black text only)
@@ -1178,10 +1361,6 @@ This project is in a solid technical foundation phase. The architecture is scala
 ### Bug Fixes
 - Fixed Prisma transaction timeout in application creation (5s → 15s)
 - Resolved Google AI 503 errors documentation
-
-### AI Integration
-- Added Google Generative AI (Gemini 2.0 Flash) as alternative to OpenAI
-- Cost-effective generation option for high-volume usage
 
 ### UI/UX Improvements
 - Skills section repositioned in both web view and PDF output

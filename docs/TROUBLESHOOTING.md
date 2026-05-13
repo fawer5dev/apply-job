@@ -1,344 +1,466 @@
-# 🔧 Troubleshooting: New Application Errors
+# 🔧 Troubleshooting Guide
 
-## Páginas Creadas
-
-He creado las siguientes páginas que faltaban:
-
-### 1. ✅ Lista de Aplicaciones
-
-**Ruta:** `/dashboard/applications`  
-**Archivo:** `src/app/[locale]/dashboard/applications/page.tsx`
-
-**Funcionalidad:**
-
-- Muestra todas las aplicaciones del usuario
-- Filtros por estado
-- Métricas de ATS Score y Match Score
-- Link para crear nueva aplicación
-
-### 2. ✅ Detalle de Aplicación
-
-**Ruta:** `/dashboard/applications/[id]`  
-**Archivo:** `src/app/[locale]/dashboard/applications/[id]/page.tsx`
-
-**Funcionalidad:**
-
-- Muestra el CV personalizado generado
-- Muestra la Cover Letter
-- Muestra la descripción del trabajo
-- Métricas de ATS y Match
-- Botones para descargar documentos
-
-### 3. ✅ API Endpoint para Aplicación Individual
-
-**Ruta:** `/api/application/[id]`  
-**Archivo:** `src/app/api/application/[id]/route.ts`
-
-**Métodos:**
-
-- `GET` - Obtener aplicación específica
-- `PATCH` - Actualizar estado de aplicación
-- `DELETE` - Eliminar aplicación
+Common issues and solutions for the Apply Job application.
 
 ---
 
-## Cómo Probar las Páginas
+## 📋 Table of Contents
 
-### 1. Verificar que el servidor esté corriendo
-
-```bash
-npm run dev
-```
-
-Deberías ver:
-
-```
-✓ Ready in X.Xs
-○ Local:   http://localhost:3000
-```
-
-### 2. Probar las rutas
-
-#### a) Lista de aplicaciones
-
-```
-http://localhost:3000/en/dashboard/applications
-```
-
-o
-
-```
-http://localhost:3000/es/dashboard/applications
-```
-
-#### b) Nueva aplicación
-
-```
-http://localhost:3000/en/dashboard/applications/new
-```
-
-#### c) Detalle de aplicación (usando el ID del test)
-
-```
-http://localhost:3000/en/dashboard/applications/cmomjzigm0004quy4ddk0m6vm
-```
+- [Google AI API Issues](#google-ai-api-issues)
+- [OpenAI API Issues](#openai-api-issues)
+- [Database Issues](#database-issues)
+- [Application Errors](#application-errors)
+- [PDF Generation Issues](#pdf-generation-issues)
+- [Internationalization Issues](#internationalization-issues)
+- [File Upload Issues](#file-upload-issues)
+- [Testing Issues](#testing-issues)
 
 ---
 
-## Errores Comunes y Soluciones
+## 🤖 Google AI API Issues
 
-### Error 1: "Page not found" o 404
+### Error: "Google AI API key not configured"
 
-**Causa:** El servidor de Next.js necesita reiniciarse para detectar las nuevas páginas.
+**Cause:** Missing or invalid `GOOGLE_AI_API_KEY` in environment variables.
 
-**Solución:**
+**Solution:**
 
-1. Detener el servidor (Ctrl+C)
-2. Reiniciar:
-   ```bash
-   npm run dev
-   ```
-
-### Error 2: "No applications yet"
-
-**Causa:** No hay aplicaciones en la base de datos para el usuario.
-
-**Solución:**
-
-1. Ejecuta el test para crear una aplicación de prueba:
-
-   ```bash
-   npx tsx scripts/test-new-application.ts
-   ```
-
-2. O crea una manualmente desde la UI:
-   ```
-   http://localhost:3000/en/dashboard/applications/new
-   ```
-
-### Error 3: Errores al crear nueva aplicación
-
-**Posibles causas:**
-
-#### a) No hay CVs base
-
-**Error:** "You don't have base CVs. Upload one first."
-
-**Solución:**
-
-1. Ve a: `http://localhost:3000/en/test-upload`
-2. Sube tu CV
-3. Vuelve a intentar crear la aplicación
-
-#### b) Error en el análisis del job
-
-**Error:** "Error analyzing job offer"
-
-**Solución:**
-
-1. Verifica que la API key de Google AI esté configurada:
-
+1. Verify the key exists in `.env.local`:
    ```bash
    grep GOOGLE_AI_API_KEY .env.local
    ```
 
-2. Verifica que el modelo esté disponible:
+2. Get your API key at: https://aistudio.google.com/apikey
 
+3. Restart the development server:
    ```bash
-   npx tsx scripts/check-models.ts
+   npm run dev
    ```
 
-3. Revisa los logs del servidor en la terminal donde corre `npm run dev`
+### Error: "503 Service Unavailable" from Google AI
 
-#### c) Error generando la aplicación
+**Cause:** Temporary Google AI service outage or rate limiting.
 
-**Error:** "Error generating application"
+**Solution:**
 
-**Posibles causas:**
+1. **Wait and retry** - Service usually recovers within minutes
 
-- Timeout de la IA (proceso muy lento)
-- Error de parsing de JSON
-- Base de datos desconectada
-
-**Solución:**
-
-1. Revisa los logs del servidor
-2. Verifica la conexión a la base de datos:
-
-   ```bash
-   npx prisma studio
+2. **Configure OpenAI as fallback** (optional):
+   ```env
+   # Add to .env.local
+   OPENAI_API_KEY="sk-..."
    ```
 
-3. Si el error es de JSON parsing, ya está corregido con el modelo Pro
+3. **Check Google AI Studio status**: https://aistudio.google.com/
 
-### Error 4: "Failed to parse JSON response"
+### Error: "Rate limit exceeded"
 
-**Causa:** La respuesta de la IA es muy larga o tiene formato inválido.
+**Cause:** Too many requests to Google AI API.
 
-**Solución:** Ya aplicada ✅
+**Solution:**
 
-- Cambiado a Gemini 2.5 Pro
-- Aumentado maxTokens a 8000
-- Mejorado cleaning de JSON
-
-### Error 5: "Foreign key constraint violated"
-
-**Causa:** El usuario no existe en la base de datos.
-
-**Solución:** Ya aplicada ✅
-
-- El código ahora crea automáticamente el usuario si no existe
-- Ver: `src/app/api/cv/upload/route.ts`
+1. Implement request delays between operations
+2. Consider upgrading your Google AI API quota
+3. Use OpenAI as an alternative for high-volume usage
 
 ---
 
-## Verificar que Todo Funciona
+## 🔑 OpenAI API Issues
 
-### Test Rápido Completo
+### Error: "OpenAI API key not configured"
+
+**Cause:** Missing `OPENAI_API_KEY` when Google AI is not configured.
+
+**Solution:**
+
+1. At least one AI provider is required
+2. Get your OpenAI API key at: https://platform.openai.com/api-keys
+3. Add to `.env.local`:
+   ```env
+   OPENAI_API_KEY="sk-..."
+   ```
+
+### Error: "Insufficient quota" from OpenAI
+
+**Cause:** OpenAI account has no credits or exceeded usage limits.
+
+**Solution:**
+
+1. Check your OpenAI account balance
+2. Add payment method at: https://platform.openai.com/account/billing
+3. Use Google Gemini as cost-effective alternative
+
+### Error: "Rate limit reached"
+
+**Cause:** Too many requests to OpenAI API.
+
+**Solution:**
+
+1. Implement exponential backoff and retry logic
+2. Upgrade your OpenAI tier
+3. Switch to Google Gemini for high-volume operations
+
+---
+
+## 🗄️ Database Issues
+
+### Error: "Can't reach database server"
+
+**Cause:** Database connection string is incorrect or database is offline.
+
+**Solution:**
+
+1. Verify `DATABASE_URL` in `.env.local`:
+   ```bash
+   grep DATABASE_URL .env.local
+   ```
+
+2. Test connection:
+   ```bash
+   npm run db:studio
+   ```
+
+3. Check database provider status (Neon, Supabase, etc.)
+
+### Error: "Prisma Client not generated"
+
+**Cause:** Prisma client needs to be regenerated after schema changes.
+
+**Solution:**
 
 ```bash
-# 1. Crear usuario de prueba (si no existe)
-npx tsx scripts/create-test-user.ts
-
-# 2. Subir un CV de prueba
-# Ve a: http://localhost:3000/en/test-upload
-# Sube el archivo files/FawerV-CV.pdf
-
-# 3. Crear aplicación de prueba completa
-npx tsx scripts/test-new-application.ts
-
-# 4. Ver la aplicación en la UI
-# Ve a: http://localhost:3000/en/dashboard/applications
+npm run db:generate
 ```
+
+### Error: "Foreign key constraint failed"
+
+**Cause:** Attempting to create a record with invalid relationship references.
+
+**Solution:**
+
+1. Ensure referenced records exist (e.g., User, BaseCV, JobListing)
+2. Check data integrity in Prisma Studio:
+   ```bash
+   npm run db:studio
+   ```
+
+### Error: "Transaction timeout"
+
+**Cause:** Long-running operations exceed default timeout (5 seconds).
+
+**Solution:**
+
+This has been fixed in the codebase by increasing timeout to 15 seconds. If you still encounter this:
+
+1. Check database performance
+2. Optimize AI API response times
+3. Consider increasing timeout further in affected routes
 
 ---
 
-## Endpoints API Disponibles
+## 🚀 Application Errors
 
-### CVs
+### Error: "No base CVs found"
 
-- `POST /api/cv/upload` - Subir y parsear CV
-- `GET /api/cv/upload?userId=temp-user` - Listar CVs del usuario
+**Cause:** User hasn't uploaded a base CV yet.
 
-### Jobs
+**Solution:**
 
-- `POST /api/job/analyze` - Analizar oferta de trabajo
-- `GET /api/job/analyze` - Listar trabajos analizados
+1. Upload a CV first:
+   ```
+   http://localhost:3000/en/dashboard/cv/new
+   ```
 
-### Applications
+2. Or use the test upload page:
+   ```
+   http://localhost:3000/en/test-upload
+   ```
 
-- `POST /api/application/create` - Crear nueva aplicación
-- `GET /api/application/create?userId=temp-user` - Listar aplicaciones del usuario
-- `GET /api/application/[id]` - Obtener aplicación específica
-- `PATCH /api/application/[id]` - Actualizar aplicación
-- `DELETE /api/application/[id]` - Eliminar aplicación
+### Error: "Failed to parse JSON response"
+
+**Cause:** AI returned invalid or truncated JSON.
+
+**Solution:**
+
+1. Already improved with better JSON parsing in `google-ai.ts`
+2. Increased token limits to prevent truncation
+3. If still occurring, check server logs for the raw AI response
+
+### Error: "Error generating application"
+
+**Cause:** Multiple possible causes during application creation.
+
+**Solution:**
+
+1. **Check server logs** for specific error
+2. **Verify AI API keys** are configured
+3. **Test database connection**:
+   ```bash
+   npm run db:studio
+   ```
+4. **Ensure base CV and job listing exist**
+
+### Error: Page shows "404 Not Found"
+
+**Cause:** Route doesn't exist or server needs restart.
+
+**Solution:**
+
+1. Restart Next.js dev server:
+   ```bash
+   # Stop server (Ctrl+C)
+   npm run dev
+   ```
+
+2. Verify the route pattern includes `[locale]`:
+   ```
+   /en/dashboard/applications  ✅
+   /dashboard/applications     ❌
+   ```
 
 ---
 
-## Verificar Base de Datos
+## 📄 PDF Generation Issues
 
-### Usando Prisma Studio
+### Error: "PDF generation failed"
 
-```bash
-npx prisma studio
-```
+**Cause:** Puppeteer error or template rendering issue.
 
-Esto abre una UI en el navegador donde puedes ver:
+**Solution:**
 
-- Tabla `users` - Usuarios
-- Tabla `base_cvs` - CVs base
-- Tabla `job_listings` - Ofertas de trabajo
-- Tabla `applications` - Aplicaciones
-- Tabla `cover_letters` - Cover letters
+1. **Check Puppeteer installation**:
+   ```bash
+   npm install puppeteer
+   ```
 
-### Usando SQL directo
+2. **On Vercel/production**, ensure Puppeteer is supported or use alternative like `@react-pdf/renderer`
 
-```bash
-# Conéctate a tu base de datos PostgreSQL
-# Verifica que existan aplicaciones
-SELECT id, status, "atsScore", "createdAt" FROM applications LIMIT 5;
+3. **Check template syntax** in `templates/cv/modern.html`
 
-# Verifica que existan CVs
-SELECT id, title, "userId" FROM base_cvs LIMIT 5;
+### Error: PDF is blank or incomplete
 
-# Verifica que existan jobs
-SELECT id, title, company FROM job_listings LIMIT 5;
-```
+**Cause:** Missing data or template rendering issue.
+
+**Solution:**
+
+1. Verify application data exists in database
+2. Check server logs for template errors
+3. Test with a simple CV first
 
 ---
 
-## Logs Útiles
+## 🌍 Internationalization Issues
 
-### Ver logs del servidor Next.js
+### Issue: Language not switching
 
-Los logs aparecen en la terminal donde ejecutaste `npm run dev`
+**Cause:** Cookie or middleware configuration issue.
 
-Busca:
+**Solution:**
 
+1. **Clear browser cookies and cache**
+
+2. **Verify middleware is active**:
+   ```bash
+   # Check src/middleware.ts exists
+   ls -la src/middleware.ts
+   ```
+
+3. **Test URL directly**:
+   ```
+   http://localhost:3000/en/dashboard
+   http://localhost:3000/es/dashboard
+   ```
+
+### Issue: Missing translations
+
+**Cause:** Translation key not found in language files.
+
+**Solution:**
+
+1. **Check translation files**:
+   ```bash
+   cat messages/en.json | grep "key"
+   cat messages/es.json | grep "key"
+   ```
+
+2. **Add missing translations** to both `en.json` and `es.json`
+
+3. **Restart dev server** to reload translations
+
+### Issue: Wrong locale detected
+
+**Cause:** Browser settings or cookie conflict.
+
+**Solution:**
+
+1. **Manually specify locale in URL**:
+   ```
+   /en/dashboard  (English)
+   /es/dashboard  (Spanish)
+   ```
+
+2. **Check middleware configuration** in `src/i18n/routing.ts`
+
+3. **Clear locale cookie** in browser DevTools
+
+---
+
+## 📁 File Upload Issues
+
+### Error: "File upload failed"
+
+**Cause:** File size, permissions, or unsupported format.
+
+**Solution:**
+
+1. **Check supported formats**: PDF, DOCX, TXT only
+
+2. **Verify file size**: Should be under 10MB
+
+3. **Check `files/` directory permissions**:
+   ```bash
+   ls -la files/
+   mkdir -p files/
+   chmod 755 files/
+   ```
+
+### Error: "Failed to extract text from PDF"
+
+**Cause:** PDF is scanned image or encrypted.
+
+**Solution:**
+
+1. Ensure PDF contains actual text (not just images)
+2. Remove password protection from PDF
+3. Try converting PDF to DOCX first
+
+### Error: "Unsupported file type"
+
+**Cause:** File extension not supported.
+
+**Solution:**
+
+Supported formats:
+- `.pdf` - PDF documents
+- `.docx` - Microsoft Word documents
+- `.txt` - Plain text files
+
+---
+
+## 🧪 Testing Issues
+
+### Error: "Test scripts fail"
+
+**Cause:** Environment not configured or database empty.
+
+**Solution:**
+
+1. **Ensure environment is set up**:
+   ```bash
+   npm install
+   npm run db:generate
+   npm run db:push
+   ```
+
+2. **Create test user**:
+   ```bash
+   npx tsx scripts/create-test-user.ts
+   ```
+
+3. **Run tests one by one**:
+   ```bash
+   npm run test:integration:cv
+   npm run test:integration:new-app
+   ```
+
+### Error: "Port 3000 already in use"
+
+**Cause:** Another process is using port 3000.
+
+**Solution:**
+
+1. **Kill existing process**:
+   ```bash
+   # macOS/Linux
+   lsof -ti:3000 | xargs kill -9
+   
+   # Windows
+   netstat -ano | findstr :3000
+   taskkill /PID <PID> /F
+   ```
+
+2. **Or use different port**:
+   ```bash
+   PORT=3001 npm run dev
+   ```
+
+---
+
+## 🛠️ General Debugging Tips
+
+### View Server Logs
+
+Server logs appear in the terminal where you ran `npm run dev`.
+
+Look for:
 - ✅ `Analyzing job description with AI...`
 - ✅ `Parsing CV...`
 - ❌ `Error analyzing job:`
 - ❌ `Error processing CV:`
 
-### Ver logs de Prisma
+### Check Browser Console
 
-Los logs de queries de Prisma aparecen automáticamente si hay errores.
+Open DevTools (F12) and check Console tab for:
+- Network errors
+- JavaScript errors
+- API response details
 
-Para ver todas las queries:
+### Verify Database State
 
 ```bash
-# En .env.local, añade:
-DATABASE_URL="postgresql://...?connection_limit=5&pool_timeout=0"
-DEBUG="prisma:*"
+# Open Prisma Studio
+npm run db:studio
+
+# Check tables:
+# - users
+# - base_cvs
+# - job_listings
+# - applications
+# - cover_letters
+```
+
+### Test API Endpoints Directly
+
+Use tools like:
+- **Postman**
+- **Insomnia**
+- **curl**
+
+Example:
+```bash
+curl -X POST http://localhost:3000/api/job/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"description": "Senior React Developer..."}'
 ```
 
 ---
 
-## Estructura de Archivos Creados/Modificados
+## 📞 Getting More Help
 
-```
-src/
-├── app/
-│   ├── [locale]/
-│   │   └── dashboard/
-│   │       └── applications/
-│   │           ├── page.tsx           ← NUEVO: Lista de aplicaciones
-│   │           ├── [id]/
-│   │           │   └── page.tsx       ← NUEVO: Detalle de aplicación
-│   │           └── new/
-│   │               └── page.tsx       ← Ya existía
-│   └── api/
-│       ├── application/
-│       │   ├── create/route.ts        ← Ya existía
-│       │   └── [id]/route.ts          ← NUEVO: API para aplicación individual
-│       ├── cv/upload/route.ts         ← Modificado: Auto-crea usuario
-│       └── job/analyze/route.ts       ← Ya existía
-│
-└── lib/ai/
-    ├── google-ai.ts                   ← Modificado: Mejor JSON parsing, modelo Pro
-    └── cv-generator.ts                ← Modificado: Más tokens
+If you can't resolve your issue:
 
-scripts/
-├── test-new-application.ts            ← NUEVO: Test completo del flujo
-├── create-test-user.ts                ← NUEVO: Crear usuario de prueba
-└── test-complete-cv-flow.ts           ← Ya existía
-
-TEST-NEW-APPLICATION-RESULTS.md        ← NUEVO: Documentación de resultados
-MANUAL-TESTING-GUIDE.md                ← Ya existía
-```
+1. **Check the logs** - Most errors provide helpful details
+2. **Review documentation**:
+   - [Setup Guide](SETUP.md)
+   - [Architecture](ARCHITECTURE.md)
+   - [Project Context](../PROJECT_CONTEXT.md)
+3. **Search for error messages** in GitHub issues
+4. **Check official documentation**:
+   - [Next.js](https://nextjs.org/docs)
+   - [Prisma](https://www.prisma.io/docs)
+   - [Google AI](https://ai.google.dev/docs)
+   - [OpenAI](https://platform.openai.com/docs)
 
 ---
 
-## Siguiente Paso
-
-**Por favor dime:**
-
-1. ¿Qué error específico ves cuando intentas crear una nueva aplicación?
-2. ¿En qué paso falla? (¿Al analizar el job? ¿Al generar la aplicación?)
-3. ¿Puedes copiar el error completo que aparece en la consola del navegador (F12) o en los logs del servidor?
-
-Con esa información puedo ayudarte a resolver el problema específico.
-
----
-
-**Última actualización:** 1 de Mayo, 2026
+**Last updated:** May 13, 2026

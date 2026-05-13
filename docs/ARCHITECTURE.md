@@ -13,6 +13,7 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
 - **Styling**: Tailwind CSS + shadcn/ui
 - **State Management**: Zustand + React Query
 - **Forms**: React Hook Form + Zod
+- **Internationalization**: next-intl (English, Spanish)
 
 ### Backend
 
@@ -20,7 +21,7 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
 - **API**: Next.js API Routes
 - **Database**: PostgreSQL 15+
 - **ORM**: Prisma
-- **AI**: OpenAI GPT-4o
+- **AI**: Google Gemini 2.0 Flash (primary), OpenAI GPT-4o (optional)
 - **PDF**: Puppeteer
 
 ### Infrastructure
@@ -61,6 +62,79 @@ Application
 ├── BaseCV (N:1)
 ├── JobListing (N:1)
 └── CoverLetter (1:1 optional)
+```
+
+---
+
+## 🌍 Internationalization Architecture
+
+### Overview
+
+The application uses **next-intl** for comprehensive internationalization support with server-side and client-side rendering.
+
+### Supported Languages
+
+- **English (en)** - Default
+- **Spanish (es)**
+
+### Implementation
+
+#### 1. Middleware Layer
+
+```typescript
+// src/middleware.ts
+- Detects user's locale from:
+  1. URL path segment ([locale])
+  2. Cookie preference
+  3. Accept-Language header
+  4. Default fallback (en)
+- Redirects to appropriate locale route
+- Sets locale cookie for persistence
+```
+
+#### 2. Routing Pattern
+
+All user-facing pages use the `[locale]` dynamic segment:
+
+```
+/[locale]/dashboard          → /en/dashboard or /es/dashboard
+/[locale]/dashboard/cv       → /en/dashboard/cv or /es/dashboard/cv
+/[locale]/dashboard/applications → Localized route
+```
+
+**Note**: API routes (`/api/*`) are NOT localized - they remain universal.
+
+#### 3. Translation Files
+
+```
+messages/
+├── en.json    # English translations (~5.7 KB)
+└── es.json    # Spanish translations (~6.0 KB)
+```
+
+Translations organized by feature/page:
+- Common UI elements
+- Dashboard content
+- Form labels and validation messages
+- Error messages
+
+#### 4. Configuration
+
+```typescript
+// src/i18n/routing.ts
+export const locales = ['en', 'es'];
+export const defaultLocale = 'en';
+```
+
+#### 5. Language Switcher
+
+`LanguageSwitcher` component allows users to toggle between languages with instant UI update.
+
+### Data Flow
+
+```
+User Request → Middleware detects locale → Route to /[locale]/... 
+→ Load translations from messages/{locale}.json → Render localized UI
 ```
 
 ---
@@ -130,26 +204,34 @@ Return/Upload file
 ## 🧩 Layer Architecture
 
 ```
-┌─────────────────────────────────────┐
-│         Presentation Layer          │
-│  (Next.js Pages + React Components) │
-└─────────────────┬───────────────────┘
+                  User Request
+                       ↓
+┌──────────────────────────────────────┐
+│     Middleware Layer (i18n)          │
+│  Locale detection & routing          │
+└───────────────┬──────────────────────┘
+                ↓
+┌───────────────────────────────────────┐
+│         Presentation Layer            │
+│  (Next.js Pages + React Components)   │
+└─────────────────┬─────────────────────┘
                   │
-┌─────────────────▼───────────────────┐
-│          API Layer (Routes)         │
-│  /api/cv/*, /api/job/*, etc.        │
-└─────────────────┬───────────────────┘
+┌─────────────────▼─────────────────────┐
+│          API Layer (Routes)           │
+│  /api/cv/*, /api/job/*, etc.          │
+└─────────────────┬─────────────────────┘
                   │
-┌─────────────────▼───────────────────┐
-│         Service Layer (lib/)        │
-│  AI Services, CV Parser, PDF Gen    │
-└─────────────────┬───────────────────┘
+┌─────────────────▼─────────────────────┐
+│         Service Layer (lib/)          │
+│  AI Services, CV Parser, PDF Gen      │
+└─────────────────┬─────────────────────┘
                   │
       ┌───────────┴───────────┐
       ▼                       ▼
-┌─────────────┐      ┌─────────────┐
-│  Prisma ORM │      │  OpenAI API │
-└─────┬───────┘      └─────────────┘
+┌─────────────┐      ┌─────────────────┐
+│  Prisma ORM │      │ AI APIs         │
+│             │      │ (Gemini/OpenAI) │
+└─────┬───────┘      └─────────────────┘
       │
 ┌─────▼───────┐
 │ PostgreSQL  │
@@ -162,52 +244,76 @@ Return/Upload file
 
 ### CV Management
 
-- `POST /api/cv/parse` - Parse uploaded resume
-- `POST /api/cv/generate` - Generate custom resume
-- `GET /api/cv/[id]` - Get specific resume
+- `POST /api/cv/upload` - Upload and parse resume file
+- `POST /api/cv/generate` - Generate customized resume
+- `GET /api/cv/[id]` - Get specific base CV
+- `PUT /api/cv/[id]` - Update base CV
+- `DELETE /api/cv/[id]` - Delete base CV
 
 ### Job Management
 
 - `POST /api/job/analyze` - Analyze job description
-- `GET /api/job` - List analyzed jobs
 
 ### Application Management
 
-- `POST /api/application` - Create application
-- `GET /api/application` - List applications
-- `PATCH /api/application/[id]` - Update status
+- `POST /api/application/create` - Create new application with custom CV
+- `GET /api/application/[id]` - Get application details
+- `PUT /api/application/[id]` - Update application status
+- `DELETE /api/application/[id]` - Delete application
+- `GET /api/application/[id]/download-cv` - Download CV as PDF
+- `GET /api/application/[id]/download-cover-letter` - Download cover letter as PDF
 
 ### Cover Letter
 
-- `POST /api/cover-letter/generate` - Generate cover letter
+- `POST /api/cover-letter/generate` - Generate personalized cover letter
 
 ### PDF Generation
 
-- `POST /api/pdf/generate` - Generate resume PDF
+- `POST /api/pdf/generate` - Generate PDF from HTML template
 
 ---
 
 ## 🤖 AI Services
 
-### 1. CV Generator
+### Primary Provider: Google Gemini 2.0 Flash
+
+**Cost-effective solution for high-volume processing**
+
+- Model: `gemini-2.0-flash-exp`
+- Significantly lower cost compared to OpenAI
+- Fast response times
+- Suitable for all generation tasks
+
+### Optional Provider: OpenAI GPT-4o
+
+**Higher quality alternative when configured**
+
+- Model: `gpt-4o`
+- Superior output quality
+- Higher cost per request
+- Recommended for premium users
+
+### Service Functions
+
+#### 1. CV Generator
 
 **Prompt**: Adapts base resume to job description
 **Input**: BaseCV + JobListing
 **Output**: CustomCV with optimizations
 
-### 2. Job Analyzer
+#### 2. Job Analyzer
 
 **Prompt**: Extracts keywords and requirements
 **Input**: Job description text
 **Output**: Keywords, requirements, seniority level
 
-### 3. ATS Scorer
+#### 3. ATS Scorer
 
 **Prompt**: Evaluates resume according to ATS criteria
 **Input**: CV + JobListing
 **Output**: Score (0-100), strengths, weaknesses, suggestions
 
-### 4. Cover Letter Generator
+#### 4. Cover Letter Generator
 
 **Prompt**: Generates personalized cover letter
 **Input**: CV + JobListing + tone
@@ -255,13 +361,14 @@ Return/Upload file
    - Concise but effective prompts
    - Appropriate max_tokens limits
 
-2. **Result Caching**
+2. **Provider Selection**
+   - Google Gemini 2.0 Flash (primary) - Minimal cost
+   - OpenAI GPT-4o (optional) - ~$0.08-0.14 per application
+   - Users can configure preferred provider
+
+3. **Result Caching**
    - Cache similar job analyses
    - Reuse extracted keywords
-
-3. **Model Selection**
-   - GPT-4o for resume generation (critical quality)
-   - GPT-4o-mini for simple analysis (when available)
 
 ---
 

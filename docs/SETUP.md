@@ -41,8 +41,15 @@ Edit `.env.local`:
 # Database (get this URL from Neon/Supabase)
 DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
 
-# OpenAI API Key (get at https://platform.openai.com/api-keys)
-OPENAI_API_KEY="sk-..."
+# Google AI API Key (Recommended - cost-effective)
+# Get at https://aistudio.google.com/apikey
+GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
+
+# OpenAI API Key (Optional - higher quality, higher cost)
+# Get at https://platform.openai.com/api-keys
+# OPENAI_API_KEY="sk-..."
+
+# Note: At least one AI provider is required
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -88,6 +95,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 4. Click **Analyze and Generate**
 5. Review the customized resume and ATS score
 6. Download the PDF
+7. Switch language (EN/ES) using the language switcher if needed
 
 ### 3. Generate Cover Letter
 
@@ -104,20 +112,25 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 apply-job/
 ├── prisma/              # Database schema
 ├── public/              # Static files
+├── messages/            # 🌍 Translation files (en.json, es.json)
+├── files/               # User uploaded CVs
 ├── src/
-│   ├── app/            # Routes and pages (Next.js App Router)
-│   │   ├── api/        # API endpoints
-│   │   ├── dashboard/  # Dashboard pages
-│   │   └── page.tsx    # Landing page
+│   ├── app/
+│   │   ├── [locale]/   # 🌍 Internationalized routes
+│   │   │   ├── dashboard/  # Dashboard pages
+│   │   │   └── page.tsx    # Landing page
+│   │   └── api/        # API endpoints
 │   ├── components/     # Reusable React components
 │   │   └── ui/         # Base UI components
 │   ├── lib/            # Business logic
-│   │   ├── ai/         # AI services (OpenAI)
+│   │   ├── ai/         # AI services (Google Gemini, OpenAI)
 │   │   ├── cv/         # Resume parsing
 │   │   ├── pdf/        # PDF generation
 │   │   └── db/         # Prisma client
+│   ├── i18n/           # 🌍 Internationalization config
 │   ├── types/          # TypeScript types
-│   └── config/         # Configuration
+│   ├── config/         # Configuration
+│   └── middleware.ts   # 🌍 Locale detection
 └── templates/          # HTML templates for PDFs
 ```
 
@@ -128,7 +141,10 @@ apply-job/
 ### Required
 
 - `DATABASE_URL`: PostgreSQL connection URL
-- `OPENAI_API_KEY`: OpenAI API key
+- `GOOGLE_AI_API_KEY`: Google AI API key (recommended)
+- `OPENAI_API_KEY`: OpenAI API key (optional alternative)
+
+**Note**: At least one AI provider must be configured.
 
 ### Optional
 
@@ -157,16 +173,27 @@ npm run type-check       # Type checking
 
 ---
 
-## 📊 OpenAI API Usage
+## 📊 AI API Usage
 
 ### Estimated Costs
 
-With GPT-4o:
+#### Google Gemini 2.0 Flash (Recommended)
 
-- **Job Analysis**: ~500-1000 tokens → $0.01-0.02
-- **Resume Generation**: ~2000-3000 tokens → $0.03-0.05
-- **Cover Letter**: ~1000-1500 tokens → $0.02-0.03
-- **ATS Scoring**: ~1500-2000 tokens → $0.02-0.04
+- **Job Analysis**: Minimal cost (~$0.001)
+- **Resume Generation**: Minimal cost (~$0.002)
+- **Cover Letter**: Minimal cost (~$0.001)
+- **ATS Scoring**: Minimal cost (~$0.001)
+
+**Total per complete application**: ~$0.005
+
+For 100 applications per month: **<$1/month**
+
+#### OpenAI GPT-4o (Optional)
+
+- **Job Analysis**: ~$0.01-0.02
+- **Resume Generation**: ~$0.03-0.05
+- **Cover Letter**: ~$0.02-0.03
+- **ATS Scoring**: ~$0.02-0.04
 
 **Total per complete application**: ~$0.08-0.14
 
@@ -174,8 +201,9 @@ For 50 applications per month: **$4-7/month**
 
 ### Cost Optimization
 
+- Use Google Gemini for cost-effective processing
+- Enable OpenAI only when higher quality is critical
 - Use result caching when possible
-- Consider using GPT-4o-mini for simple analysis
 - Implement rate limiting
 
 ---
@@ -201,9 +229,9 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 ## 🐛 Troubleshooting
 
-### Error: "OpenAI API key not configured"
+### Error: "AI API key not configured"
 
-→ Verify that `OPENAI_API_KEY` is in `.env.local`
+→ Verify that either `GOOGLE_AI_API_KEY` or `OPENAI_API_KEY` is set in `.env.local`
 
 ### Error: Prisma client not generated
 
@@ -218,6 +246,10 @@ npm run db:generate
 ### PDF generation fails
 
 → On Vercel, ensure your plan supports Puppeteer or use an alternative like @react-pdf/renderer
+
+### Language not switching
+
+→ Clear browser cache and cookies, check middleware configuration
 
 ---
 
