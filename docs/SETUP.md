@@ -5,7 +5,7 @@
 ### 1. Install Dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 2. Configure Database
@@ -59,19 +59,19 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 ```bash
 # Generate Prisma client
-npm run db:generate
+pnpm db:generate
 
 # Create tables in database
-npm run db:push
+pnpm db:push
 
 # (Optional) Seed with sample data
-npm run db:seed
+pnpm db:seed
 ```
 
 ### 5. Run in Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -156,19 +156,19 @@ apply-job/
 
 ```bash
 # Development
-npm run dev              # Run in development
-npm run build            # Build for production
-npm run start            # Run in production
+pnpm dev              # Run in development
+pnpm build            # Build for production
+pnpm start            # Run in production
 
 # Database
-npm run db:generate      # Generate Prisma client
-npm run db:push          # Sync schema with DB (no migrations)
-npm run db:migrate       # Create migration
-npm run db:studio        # Open Prisma Studio (GUI)
+pnpm db:generate      # Generate Prisma client
+pnpm db:push          # Sync schema with DB (no migrations)
+pnpm db:migrate       # Create migration
+pnpm db:studio        # Open Prisma Studio (GUI)
 
 # Code
-npm run lint             # Linter
-npm run type-check       # Type checking
+pnpm lint             # Linter
+pnpm type-check       # Type checking
 ```
 
 ---
@@ -236,7 +236,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 ### Error: Prisma client not generated
 
 ```bash
-npm run db:generate
+pnpm db:generate
 ```
 
 ### Error: Database connection failed

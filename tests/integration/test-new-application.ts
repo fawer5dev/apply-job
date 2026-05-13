@@ -1,13 +1,13 @@
 /**
- * Test del flujo completo de New Application
- * Simula el proceso que hace la interfaz de usuario
+ * Test for complete New Application flow
+ * Simulates the process done by the user interface
  *
- * Flujo:
- * 1. Obtener los CVs del usuario
- * 2. Analizar la oferta de trabajo (crear Job Listing)
- * 3. Generar la aplicación (CV personalizado + Cover Letter)
+ * Flow:
+ * 1. Get user's CVs
+ * 2. Analyze job listing (create Job Listing)
+ * 3. Generate application (Personalized CV + Cover Letter)
  *
- * Ejecutar: npx tsx scripts/test-new-application.ts
+ * Run: pnpm tsx tests/integration/test-new-application.ts
  */
 
 import dotenv from 'dotenv';
@@ -17,7 +17,7 @@ dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 import { prisma } from '../src/lib/db/prisma';
 
-// Colores para la consola
+// Colors for console
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -48,8 +48,8 @@ function printSubSection(title: string) {
 async function testNewApplicationFlow() {
   const startTime = Date.now();
 
-  log('\n🚀 INICIANDO TEST DEL FLUJO NEW APPLICATION', 'bright');
-  log('Simulando el proceso completo que hace la UI\n', 'yellow');
+  log('\n🚀 STARTING NEW APPLICATION FLOW TEST', 'bright');
+  log('Simulating the complete process done by the UI\n', 'yellow');
 
   let baseCVId: string;
   let jobListingId: string;
@@ -58,11 +58,11 @@ async function testNewApplicationFlow() {
 
   try {
     // ====================================================
-    // PASO 1: OBTENER CVs DEL USUARIO
+    // STEP 1: GET USER'S CVs
     // ====================================================
-    printSection('PASO 1: OBTENER CVs DEL USUARIO');
+    printSection('STEP 1: GET USER CVs');
 
-    log('📋 Buscando CVs existentes del usuario...', 'blue');
+    log('📋 Looking for existing user CVs...', 'blue');
     const baseCVs = await prisma.baseCV.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -75,34 +75,34 @@ async function testNewApplicationFlow() {
     });
 
     if (baseCVs.length === 0) {
-      log('❌ No se encontraron CVs para el usuario', 'red');
+      log('❌ No CVs found for user', 'red');
       log(
-        '💡 Ejecuta primero: npx tsx scripts/test-complete-cv-flow.ts',
+        '💡 Run first: pnpm tsx tests/integration/test-complete-cv-flow.ts',
         'yellow'
       );
       log(
-        '   O sube un CV desde: http://localhost:3000/en/test-upload\n',
+        '   Or upload a CV from: http://localhost:3000/en/test-upload\n',
         'yellow'
       );
       return;
     }
 
-    log(`✅ Se encontraron ${baseCVs.length} CV(s)`, 'green');
+    log(`✅ Found ${baseCVs.length} CV(s)`, 'green');
     baseCVs.forEach((cv, index) => {
       const personalInfo = cv.personalInfo as any;
       log(
-        `   ${index + 1}. ${cv.title} - ${personalInfo.name || 'Sin nombre'}`
+        `   ${index + 1}. ${cv.title} - ${personalInfo.name || 'No name'}`
       );
     });
 
-    // Usar el primer CV encontrado
+    // Use the first CV found
     baseCVId = baseCVs[0].id;
-    log(`\n✅ Usando CV: ${baseCVs[0].title} (ID: ${baseCVId})`, 'green');
+    log(`\n✅ Using CV: ${baseCVs[0].title} (ID: ${baseCVId})`, 'green');
 
     // ====================================================
-    // PASO 2: ANALIZAR OFERTA DE TRABAJO
+    // STEP 2: ANALYZE JOB LISTING
     // ====================================================
-    printSection('PASO 2: ANALIZAR OFERTA DE TRABAJO');
+    printSection('STEP 2: ANALYZE JOB LISTING');
 
     const jobData = {
       title: 'Senior Full Stack Developer',
@@ -144,17 +144,17 @@ Benefits:
       url: 'https://example.com/jobs/senior-fullstack-developer',
     };
 
-    log('💼 Datos de la oferta:', 'blue');
-    log(`   Puesto: ${jobData.title}`);
-    log(`   Empresa: ${jobData.company}`);
-    log(`   Ubicación: ${jobData.location}`);
-    log(`   Modalidad: ${jobData.workMode}`);
-    log(`   Salario: ${jobData.salary}`);
+    log('💼 Job listing data:', 'blue');
+    log(`   Position: ${jobData.title}`);
+    log(`   Company: ${jobData.company}`);
+    log(`   Location: ${jobData.location}`);
+    log(`   Work mode: ${jobData.workMode}`);
+    log(`   Salary: ${jobData.salary}`);
 
-    log('\n🤖 Analizando oferta con IA (10-20 segundos)...', 'blue');
+    log('\n🤖 Analyzing listing with AI (10-20 seconds)...', 'blue');
     const analyzeStartTime = Date.now();
 
-    // Importar la función de análisis
+    // Import analysis function
     const { analyzeJobDescription } =
       await import('../src/lib/ai/job-analyzer');
 
@@ -165,10 +165,10 @@ Benefits:
     );
 
     const analyzeDuration = ((Date.now() - analyzeStartTime) / 1000).toFixed(2);
-    log(`✅ Análisis completado en ${analyzeDuration}s`, 'green');
+    log(`✅ Analysis completed in ${analyzeDuration}s`, 'green');
 
-    // Crear Job Listing en la base de datos
-    log('\n💾 Guardando Job Listing en la base de datos...', 'blue');
+    // Create Job Listing in database
+    log('\n💾 Saving Job Listing to database...', 'blue');
     const jobListing = await prisma.jobListing.create({
       data: {
         title: jobData.title,
@@ -185,43 +185,43 @@ Benefits:
     });
 
     jobListingId = jobListing.id;
-    log(`✅ Job Listing creado con ID: ${jobListingId}`, 'green');
+    log(`✅ Job Listing created with ID: ${jobListingId}`, 'green');
 
-    printSubSection('Análisis del Job:');
-    log(`   Keywords técnicas: ${analyzedJob.keywords.technical.length}`);
-    log(`   Keywords soft: ${analyzedJob.keywords.soft.length}`);
-    log(`   Requisitos: ${analyzedJob.requirements.length}`);
+    printSubSection('Job Analysis:');
+    log(`   Technical keywords: ${analyzedJob.keywords.technical.length}`);
+    log(`   Soft skills keywords: ${analyzedJob.keywords.soft.length}`);
+    log(`   Requirements: ${analyzedJob.requirements.length}`);
 
     if (analyzedJob.keywords.technical.length > 0) {
-      log(`\n   Top 5 keywords técnicas:`, 'cyan');
+      log(`\n   Top 5 technical keywords:`, 'cyan');
       analyzedJob.keywords.technical.slice(0, 5).forEach((kw: string) => {
         log(`     • ${kw}`, 'cyan');
       });
     }
 
     // ====================================================
-    // PASO 3: GENERAR APLICACIÓN
+    // STEP 3: GENERATE APPLICATION
     // ====================================================
-    printSection('PASO 3: GENERAR APLICACIÓN CON IA');
+    printSection('STEP 3: GENERATE APPLICATION WITH AI');
 
     log(
-      '🤖 Generando CV personalizado y Cover Letter (20-40 segundos)...',
+      '🤖 Generating personalized CV and Cover Letter (20-40 seconds)...',
       'blue'
     );
-    log('   → Obteniendo datos del CV base...', 'cyan');
+    log('   → Getting base CV data...', 'cyan');
 
-    // Obtener el CV base completo
+    // Get complete base CV
     const baseCV = await prisma.baseCV.findUnique({
       where: { id: baseCVId },
     });
 
     if (!baseCV) {
-      throw new Error('CV base no encontrado');
+      throw new Error('Base CV not found');
     }
 
-    log('   → Preparando datos para generación...', 'cyan');
+    log('   → Preparing data for generation...', 'cyan');
 
-    // Preparar datos en formato correcto
+    // Prepare data in correct format
     const cvData = {
       personalInfo: baseCV.personalInfo as any,
       summary: baseCV.summary || undefined,
@@ -247,25 +247,25 @@ Benefits:
 
     const genStartTime = Date.now();
 
-    log('   → Generando CV personalizado...', 'cyan');
-    log('   → Generando Cover Letter...', 'cyan');
+    log('   → Generating personalized CV...', 'cyan');
+    log('   → Generating Cover Letter...', 'cyan');
 
-    // Importar funciones de generación
+    // Import generation functions
     const { generateCustomCV } = await import('../src/lib/ai/cv-generator');
     const { generateCoverLetter } =
       await import('../src/lib/ai/cover-letter-generator');
 
-    // Generar ambos documentos en paralelo
+    // Generate both documents in parallel
     const [customCV, coverLetter] = await Promise.all([
       generateCustomCV(cvData, jobDataForGeneration),
       generateCoverLetter(cvData, jobDataForGeneration, 'professional'),
     ]);
 
     const genDuration = ((Date.now() - genStartTime) / 1000).toFixed(2);
-    log(`✅ Documentos generados en ${genDuration}s`, 'green');
+    log(`✅ Documents generated in ${genDuration}s`, 'green');
 
-    // Crear Cover Letter en DB
-    log('\n💾 Guardando Cover Letter...', 'blue');
+    // Create Cover Letter in DB
+    log('\n💾 Saving Cover Letter...', 'blue');
     const coverLetterRecord = await prisma.coverLetter.create({
       data: {
         userId: userId,
@@ -274,10 +274,10 @@ Benefits:
         tone: 'professional',
       },
     });
-    log(`✅ Cover Letter guardada con ID: ${coverLetterRecord.id}`, 'green');
+    log(`✅ Cover Letter saved with ID: ${coverLetterRecord.id}`, 'green');
 
-    // Crear Application
-    log('💾 Guardando Application...', 'blue');
+    // Create Application
+    log('💾 Saving Application...', 'blue');
     const application = await prisma.application.create({
       data: {
         userId: userId,
@@ -296,25 +296,25 @@ Benefits:
     });
 
     applicationId = application.id;
-    log(`✅ Application creada con ID: ${applicationId}`, 'green');
+    log(`✅ Application created with ID: ${applicationId}`, 'green');
 
     // ====================================================
-    // RESULTADOS FINALES
+    // FINAL RESULTS
     // ====================================================
-    printSection('✨ RESULTADOS DEL TEST');
+    printSection('✨ TEST RESULTS');
 
-    printSubSection('IDs Generados:');
+    printSubSection('Generated IDs:');
     log(`   Base CV ID:        ${baseCVId}`);
     log(`   Job Listing ID:    ${jobListingId}`);
     log(`   Cover Letter ID:   ${coverLetterRecord.id}`);
     log(`   Application ID:    ${applicationId}`);
 
-    printSubSection('Información del Job:');
-    log(`   Puesto:            ${jobListing.title}`);
-    log(`   Empresa:           ${jobListing.company}`);
-    log(`   Ubicación:         ${jobListing.location}`);
+    printSubSection('Job Information:');
+    log(`   Position:            ${jobListing.title}`);
+    log(`   Company:           ${jobListing.company}`);
+    log(`   Location:         ${jobListing.location}`);
 
-    printSubSection('ATS Score y Match:');
+    printSubSection('ATS Score and Match:');
     const atsColor =
       application.atsScore && application.atsScore > 80 ? 'green' : 'yellow';
     log(
@@ -327,9 +327,9 @@ Benefits:
     );
 
     if (customCV.atsOptimizations) {
-      printSubSection('Optimizaciones ATS:');
+      printSubSection('ATS Optimizations:');
       log(
-        `   Keywords añadidas:    ${customCV.atsOptimizations.keywordsAdded?.length || 0}`
+        `   Keywords added:    ${customCV.atsOptimizations.keywordsAdded?.length || 0}`
       );
       if (
         customCV.atsOptimizations.keywordsAdded &&
@@ -339,7 +339,7 @@ Benefits:
         log(`   • ${topKeywords.join(', ')}`, 'cyan');
       }
       log(
-        `   Secciones reordenadas: ${customCV.atsOptimizations.sectionsReordered?.length || 0}`
+        `   Sections reordered: ${customCV.atsOptimizations.sectionsReordered?.length || 0}`
       );
     }
 
@@ -347,29 +347,29 @@ Benefits:
     const coverPreview = coverLetter.content.substring(0, 250);
     log(`   ${coverPreview}...`, 'cyan');
 
-    printSubSection('Tiempos de Procesamiento:');
+    printSubSection('Processing Times:');
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    log(`   Análisis Job:      ${analyzeDuration}s`);
-    log(`   Generar docs:      ${genDuration}s`);
-    log(`   Tiempo total:      ${totalTime}s`);
+    log(`   Job analysis:      ${analyzeDuration}s`);
+    log(`   Generate docs:      ${genDuration}s`);
+    log(`   Total time:      ${totalTime}s`);
 
-    printSubSection('URLs para ver resultados:');
+    printSubSection('URLs to view results:');
     log(
       `   Dashboard:         http://localhost:3000/en/dashboard/applications`,
       'cyan'
     );
     log(
-      `   Esta aplicación:   http://localhost:3000/en/dashboard/applications/${applicationId}`,
+      `   This application:   http://localhost:3000/en/dashboard/applications/${applicationId}`,
       'cyan'
     );
 
-    printSection('🎉 TEST COMPLETADO EXITOSAMENTE');
-    log('El flujo de New Application funcionó correctamente\n', 'green');
+    printSection('🎉 TEST COMPLETED SUCCESSFULLY');
+    log('New Application flow worked correctly\n', 'green');
     log(
-      '💡 Los datos de prueba se mantuvieron en la base de datos para que puedas verlos en la UI',
+      '💡 Test data was kept in the database so you can view it in the UI',
       'yellow'
     );
-    log('   Para eliminarlos manualmente, ejecuta:', 'yellow');
+    log('   To delete it manually, run:', 'yellow');
     log(`   DELETE FROM applications WHERE id = '${applicationId}';`, 'yellow');
     log(
       `   DELETE FROM job_listings WHERE id = '${jobListingId}';\n`,
@@ -384,7 +384,7 @@ Benefits:
       matchScore: application.matchScore,
     };
   } catch (error) {
-    printSection('❌ ERROR EN EL TEST');
+    printSection('❌ TEST ERROR');
     log(error instanceof Error ? error.message : String(error), 'red');
     if (error instanceof Error && error.stack) {
       console.log('\nStack trace:');
@@ -393,19 +393,19 @@ Benefits:
     throw error;
   } finally {
     await prisma.$disconnect();
-    log('✓ Conexión a DB cerrada\n', 'yellow');
+    log('✓ DB connection closed\n', 'yellow');
   }
 }
 
-// Ejecutar el test
+// Run the test
 if (require.main === module) {
   testNewApplicationFlow()
     .then(() => {
-      log('✅ Test completado exitosamente!', 'green');
+      log('✅ Test completed successfully!', 'green');
       process.exit(0);
     })
     .catch((error) => {
-      log(`❌ El test falló: ${error.message}`, 'red');
+      log(`❌ Test failed: ${error.message}`, 'red');
       process.exit(1);
     });
 }

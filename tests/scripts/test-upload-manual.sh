@@ -18,7 +18,7 @@ echo ""
 # Verificar que el servidor está corriendo
 if ! curl -s http://localhost:3000 > /dev/null; then
     echo "❌ Error: El servidor Next.js no está corriendo en localhost:3000"
-    echo "   Por favor, ejecuta: npm run dev"
+    echo "   Por favor, ejecuta: pnpm dev"
     exit 1
 fi
 
@@ -55,7 +55,7 @@ else
     echo "$body" | jq '.' 2>/dev/null || echo "$body"
     echo ""
     echo "💡 Tip: Asegúrate de que el usuario 'temp-user' existe en la base de datos"
-    echo "   Ejecuta: npx tsx scripts/create-test-user.ts"
+    echo "   Ejecuta: pnpm tsx scripts/create-test-user.ts"
 fi
 
 echo ""

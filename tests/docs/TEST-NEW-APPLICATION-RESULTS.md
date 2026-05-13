@@ -1,69 +1,69 @@
-# ✅ Test del Flujo "New Application" - EXITOSO
+# ✅ "New Application" Flow Test - SUCCESSFUL
 
-## Resumen Ejecutivo
+## Executive Summary
 
-Se ha completado exitosamente una prueba completa del flujo de **New Application**, simulando el proceso que realiza la interfaz de usuario. El flujo incluye:
+A complete test of the **New Application** flow has been successfully completed, simulating the process performed by the user interface. The flow includes:
 
-1. ✅ Obtención de CVs del usuario
-2. ✅ Análisis de oferta de trabajo con IA
-3. ✅ Generación de aplicación personalizada (CV + Cover Letter)
+1. ✅ Getting user's CVs
+2. ✅ Job listing analysis with AI
+3. ✅ Personalized application generation (CV + Cover Letter)
 
 ---
 
-## Resultados del Test
+## Test Results
 
-### 📊 Tiempos de Procesamiento
+### 📊 Processing Times
 
-| Operación                | Tiempo                    |
-| ------------------------ | ------------------------- |
-| Análisis de Job          | 12.79s                    |
-| Generación de documentos | 52.56s                    |
-| **Tiempo total**         | **70.78s** (~1.2 minutos) |
+| Operation              | Time                      |
+| ---------------------- | ------------------------- |
+| Job Analysis           | 12.79s                    |
+| Document Generation    | 52.56s                    |
+| **Total Time**         | **70.78s** (~1.2 minutes) |
 
-### 🎯 Métricas de la Aplicación
+### 🎯 Application Metrics
 
-- **ATS Score:** 45.0% ⚠️ (Margen de mejora)
+- **ATS Score:** 45.0% ⚠️ (Room for improvement)
 - **Match Score:** 45.0% ⚠️
-- **Keywords añadidas:** 6
+- **Keywords added:** 6
   - Full Stack Development
   - PostgreSQL
   - Agile
   - Problem-solving
   - Communication
-  - (y 1 más)
-- **Secciones reordenadas:** 3
+  - (and 1 more)
+- **Sections reordered:** 3
 
 ---
 
-## Flujo Ejecutado
+## Flow Executed
 
-### PASO 1: Obtener CVs del Usuario ✅
+### STEP 1: Get User CVs ✅
 
 ```
-📋 Buscando CVs existentes del usuario...
-✅ Se encontraron 1 CV(s)
-   1. Mi CV Profesional - FAWER VARGAS
+📋 Looking for existing user CVs...
+✅ Found 1 CV(s)
+   1. My Professional CV - FAWER VARGAS
 
-✅ Usando CV: Mi CV Profesional (ID: cmomeanx200018e26ldwfl9rw)
+✅ Using CV: My Professional CV (ID: cmomeanx200018e26ldwfl9rw)
 ```
 
-**Resultado:** Se encontró 1 CV en la base de datos del usuario `temp-user`.
+**Result:** Found 1 CV in the database for user `temp-user`.
 
 ---
 
-### PASO 2: Analizar Oferta de Trabajo ✅
+### STEP 2: Analyze Job Listing ✅
 
-**Datos de la oferta:**
+**Job listing data:**
 
-- **Puesto:** Senior Full Stack Developer
-- **Empresa:** Tech Innovations Inc.
-- **Ubicación:** Remote
-- **Modalidad:** remote
-- **Salario:** $120,000 - $150,000
+- **Position:** Senior Full Stack Developer
+- **Company:** Tech Innovations Inc.
+- **Location:** Remote
+- **Work mode:** remote
+- **Salary:** $120,000 - $150,000
 
-**Análisis con IA (12.79 segundos):**
+**AI Analysis (12.79 seconds):**
 
-- **Keywords técnicas extraídas:** 16
+- **Technical keywords extracted:** 16
   - Full Stack Development
   - React
   - Next.js
@@ -74,34 +74,34 @@ Se ha completado exitosamente una prueba completa del flujo de **New Application
   - AWS/GCP/Azure
   - Docker
   - CI/CD
-  - (y 6 más)
+  - (and 6 more)
 
-- **Keywords soft extraídas:** 5
+- **Soft skills keywords extracted:** 5
   - Communication
   - Problem-solving
   - Team collaboration
   - Mentoring
   - Leadership
 
-- **Requisitos identificados:** 10
+- **Requirements identified:** 10
 
 **Job Listing ID:** `cmomjyc7y0000quy4rsvn4413`
 
 ---
 
-### PASO 3: Generar Aplicación con IA ✅
+### STEP 3: Generate Application with AI ✅
 
-**Tiempo de generación:** 52.56 segundos
+**Generation time:** 52.56 seconds
 
-**Documentos generados:**
+**Documents generated:**
 
-1. **CV Personalizado**
-   - Adaptado específicamente para la oferta de Senior Full Stack Developer
-   - Optimizado para ATS (Applicant Tracking Systems)
-   - Keywords relevantes integradas naturalmente
-   - Experiencia reorganizada para destacar skills relevantes
+1. **Personalized CV**
+   - Specifically adapted for the Senior Full Stack Developer position
+   - ATS (Applicant Tracking Systems) optimized
+   - Relevant keywords naturally integrated
+   - Experience reorganized to highlight relevant skills
 
-2. **Cover Letter Profesional**
+2. **Professional Cover Letter**
 
    ```
    Dear Hiring Manager,
@@ -112,114 +112,114 @@ Se ha completado exitosamente una prueba completa del flujo de **New Application
    lifecycle, from initial d...
    ```
 
-**IDs Generados:**
+**Generated IDs:**
 
 - **Cover Letter ID:** `cmomjzi0o0002quy420sa87ed`
 - **Application ID:** `cmomjzigm0004quy4ddk0m6vm`
 
 ---
 
-## Ver los Resultados en la UI
+## View Results in UI
 
-Puedes ver la aplicación generada en:
+You can view the generated application at:
 
-🔗 **Dashboard de Aplicaciones:**  
+🔗 **Applications Dashboard:**  
 `http://localhost:3000/en/dashboard/applications`
 
-🔗 **Esta Aplicación Específica:**  
+🔗 **This Specific Application:**  
 `http://localhost:3000/en/dashboard/applications/cmomjzigm0004quy4ddk0m6vm`
 
 ---
 
-## Análisis de Resultados
+## Results Analysis
 
-### ✅ Aspectos Positivos
+### ✅ Positive Aspects
 
-1. **Flujo completo funcional** - Todos los pasos se ejecutaron sin errores
-2. **Integración con IA estable** - Gemini 2.5 Pro funcionó correctamente
-3. **Generación de documentos exitosa** - CV y Cover Letter creados
-4. **Persistencia en DB correcta** - Todos los datos guardados
-5. **Tiempos aceptables** - ~70 segundos para todo el flujo
+1. **Complete functional flow** - All steps executed without errors
+2. **Stable AI integration** - Gemini 2.5 Pro worked correctly
+3. **Successful document generation** - CV and Cover Letter created
+4. **Correct DB persistence** - All data saved
+5. **Acceptable times** - ~70 seconds for entire flow
 
-### ⚠️ Áreas de Mejora
+### ⚠️ Areas for Improvement
 
-1. **ATS Score bajo (45%)**
-   - **Causa:** El CV base del usuario tiene experiencia en QA/Support, pero el job es para Senior Full Stack Developer
-   - **Solución:** El CV necesita más experiencia relevante en desarrollo full stack, o elegir trabajos más alineados con el perfil actual
+1. **Low ATS Score (45%)**
+   - **Cause:** User's base CV has experience in QA/Support, but job is for Senior Full Stack Developer
+   - **Solution:** CV needs more relevant full stack development experience, or choose jobs more aligned with current profile
 
-2. **Tiempo de generación largo (52 segundos)**
-   - **Causa:** Gemini 2.5 Pro es más lento pero más preciso
-   - **Alternativa:** Usar Gemini 2.5 Flash para velocidad o cachear prompts comunes
+2. **Long generation time (52 seconds)**
+   - **Cause:** Gemini 2.5 Pro is slower but more accurate
+   - **Alternative:** Use Gemini 2.5 Flash for speed or cache common prompts
 
-3. **Match Score bajo (45%)**
-   - **Causa:** Discrepancia entre perfil del CV y requisitos del job
-   - **Solución:** Sistema de sugerencias para indicar al usuario qué trabajos son más apropiados para su perfil
+3. **Low Match Score (45%)**
+   - **Cause:** Discrepancy between CV profile and job requirements
+   - **Solution:** Suggestion system to indicate to user which jobs are more appropriate for their profile
 
 ---
 
-## Correcciones Aplicadas Durante el Test
+## Corrections Applied During Test
 
-### 1. Modelo de IA Actualizado
+### 1. Updated AI Model
 
-**Problema anterior:**
+**Previous problem:**
 
 ```
 Error: Failed to parse JSON response: Unterminated string
 ```
 
-**Solución aplicada:**
+**Applied solution:**
 
-- Cambiado de `gemini-2.5-flash` a `gemini-2.5-pro`
-- Incrementado `maxTokens` de 4000 a 8000
-- Mejorado el cleaning de respuestas JSON
+- Changed from `gemini-2.5-flash` to `gemini-2.5-pro`
+- Increased `maxTokens` from 4000 to 8000
+- Improved JSON response cleaning
 
-**Archivo modificado:** `src/lib/ai/google-ai.ts`
+**Modified file:** `src/lib/ai/google-ai.ts`
 
-### 2. Mejor Manejo de JSON
+### 2. Better JSON Handling
 
-**Mejoras implementadas:**
+**Implemented improvements:**
 
-- Limpieza automática de markdown code blocks
-- Extracción del JSON válido (desde `{` hasta `}`)
-- Logging de errores para debugging
-- Incremento de límite de tokens para respuestas largas
+- Automatic cleanup of markdown code blocks
+- Valid JSON extraction (from `{` to `}`)
+- Error logging for debugging
+- Increased token limit for long responses
 
-**Archivos modificados:**
+**Modified files:**
 
 - `src/lib/ai/google-ai.ts`
 - `src/lib/ai/cv-generator.ts`
 
 ---
 
-## Cómo Ejecutar el Test Manualmente
+## How to Run the Test Manually
 
-### Opción 1: Script Automatizado
+### Option 1: Automated Script
 
 ```bash
-npx tsx scripts/test-new-application.ts
+pnpm tsx tests/integration/test-new-application.ts
 ```
 
-### Opción 2: UI (Interfaz de Usuario)
+### Option 2: UI (User Interface)
 
-1. Asegúrate de tener el servidor corriendo:
+1. Make sure the server is running:
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
-2. Ve a la página de New Application:
+2. Go to the New Application page:
 
    ```
    http://localhost:3000/en/dashboard/applications/new
    ```
 
-3. Completa el formulario en dos pasos:
-   - **Paso 1:** Información del trabajo
-   - **Paso 2:** Selecciona tu CV base
+3. Complete the form in two steps:
+   - **Step 1:** Job information
+   - **Step 2:** Select your base CV
 
 ---
 
-## Estructura de Datos Generada
+## Generated Data Structure
 
 ### Job Listing
 
@@ -258,74 +258,74 @@ npx tsx scripts/test-new-application.ts
 
 ---
 
-## Tecnologías Utilizadas
+## Technologies Used
 
-- **Google Gemini 2.5 Pro** - IA para análisis y generación
-- **PostgreSQL (Neon)** - Base de datos
-- **Prisma ORM** - ORM para DB
-- **TypeScript** - Lenguaje
-- **Next.js** - Framework web
+- **Google Gemini 2.5 Pro** - AI for analysis and generation
+- **PostgreSQL (Neon)** - Database
+- **Prisma ORM** - ORM for DB
+- **TypeScript** - Language
+- **Next.js** - Web framework
 
 ---
 
-## Limpieza de Datos de Prueba
+## Test Data Cleanup
 
-Los datos de prueba se han mantenido en la base de datos para que puedas verlos en la UI.
+Test data has been kept in the database so you can view it in the UI.
 
-Para eliminarlos manualmente:
+To delete it manually:
 
 ```sql
--- Eliminar aplicación
+-- Delete application
 DELETE FROM applications WHERE id = 'cmomjzigm0004quy4ddk0m6vm';
 
--- Eliminar job listing
+-- Delete job listing
 DELETE FROM job_listings WHERE id = 'cmomjyc7y0000quy4rsvn4413';
 
--- Eliminar cover letter
+-- Delete cover letter
 DELETE FROM cover_letters WHERE id = 'cmomjzi0o0002quy420sa87ed';
 ```
 
-O usa Prisma Studio:
+Or use Prisma Studio:
 
 ```bash
-npx prisma studio
+pnpm prisma studio
 ```
 
 ---
 
-## Conclusiones
+## Conclusions
 
-### ✅ Estado del Sistema
+### ✅ System Status
 
-**El flujo de "New Application" está completamente funcional y listo para producción.**
+**The "New Application" flow is fully functional and ready for production.**
 
-### 📈 Próximos Pasos Recomendados
+### 📈 Recommended Next Steps
 
-1. **Mejorar el ATS Score**
-   - Añadir más análisis de keywords
-   - Implementar mejor matching entre CV y Job
-   - Sugerir al usuario trabajos más apropiados para su perfil
+1. **Improve ATS Score**
+   - Add more keyword analysis
+   - Implement better CV-to-Job matching
+   - Suggest to user more appropriate jobs for their profile
 
-2. **Optimizar Rendimiento**
-   - Implementar caché de prompts comunes
-   - Considerar usar Gemini Flash para operaciones rápidas
-   - Implementar generación en background con workers
+2. **Optimize Performance**
+   - Implement cache for common prompts
+   - Consider using Gemini Flash for quick operations
+   - Implement background generation with workers
 
-3. **Mejorar UX**
-   - Añadir indicador de progreso en tiempo real
-   - Mostrar preview del CV generado antes de guardar
-   - Permitir edición manual del CV generado
+3. **Improve UX**
+   - Add real-time progress indicator
+   - Show preview of generated CV before saving
+   - Allow manual editing of generated CV
 
-4. **Implementar Funcionalidades Adicionales**
-   - Generación de PDF del CV personalizado
-   - Sistema de comparación entre múltiples CVs base
-   - Historial de versiones de aplicaciones
-   - Análisis de competitividad vs otros candidatos
+4. **Implement Additional Features**
+   - PDF generation of personalized CV
+   - Comparison system between multiple base CVs
+   - Application version history
+   - Competitiveness analysis vs other candidates
 
 ---
 
-**Fecha del Test:** 1 de Mayo, 2026  
-**Script:** `scripts/test-new-application.ts`  
-**Estado:** ✅ **EXITOSO**  
-**Tiempo Total:** 70.78 segundos  
-**Modelo IA:** Google Gemini 2.5 Pro
+**Test Date:** May 1, 2026  
+**Script:** `tests/integration/test-new-application.ts`  
+**Status:** ✅ **SUCCESSFUL**  
+**Total Time:** 70.78 seconds  
+**AI Model:** Google Gemini 2.5 Pro

@@ -1,19 +1,19 @@
 /**
- * Test completo del flujo: Crear Base CV → Crear Job → Generar Application
+ * Complete flow test: Create Base CV → Create Job → Generate Application
  *
- * Este script prueba el flujo completo de la aplicación:
- * 1. Cargar y parsear un CV desde el archivo PDF
- * 2. Crear un Base CV en la base de datos
- * 3. Crear una oferta de trabajo (Job Listing)
- * 4. Generar una aplicación personalizada (Application)
+ * This script tests the complete application flow:
+ * 1. Load and parse a CV from PDF file
+ * 2. Create a Base CV in the database
+ * 3. Create a job listing (Job Listing)
+ * 4. Generate a personalized application (Application)
  *
- * Ejecutar: npx tsx scripts/test-complete-cv-flow.ts
+ * Run: pnpm tsx tests/integration/test-complete-cv-flow.ts
  */
 
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Cargar variables de entorno desde .env.local
+// Load environment variables from .env.local
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 import fs from 'fs';
@@ -23,7 +23,7 @@ import { generateCustomCV } from '../src/lib/ai/cv-generator';
 import { generateCoverLetter } from '../src/lib/ai/cover-letter-generator';
 import type { CV, JobListing } from '../src/types';
 
-// Colores para la consola
+// Colors for console
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -54,9 +54,9 @@ function printSubSection(title: string) {
 async function testCompleteFlow() {
   const startTime = Date.now();
 
-  log('\n🚀 INICIANDO TEST DEL FLUJO COMPLETO DE APLICACIÓN', 'bright');
+  log('\n🚀 STARTING COMPLETE APPLICATION FLOW TEST', 'bright');
   log(
-    'Este proceso puede tomar 30-60 segundos debido a las llamadas a la IA\n',
+    'This process may take 30-60 seconds due to AI calls\n',
     'yellow'
   );
 
@@ -67,11 +67,11 @@ async function testCompleteFlow() {
 
   try {
     // ====================================================
-    // PASO 0: CREAR USUARIO DE PRUEBA
+    // STEP 0: CREATE TEST USER
     // ====================================================
-    printSection('PASO 0: CREAR USUARIO DE PRUEBA');
+    printSection('STEP 0: CREATE TEST USER');
 
-    log('👤 Creando usuario temporal para el test...', 'blue');
+    log('👤 Creating temporary user for test...', 'blue');
     const testUser = await prisma.user.create({
       data: {
         email: `test-${Date.now()}@example.com`,
@@ -79,54 +79,54 @@ async function testCompleteFlow() {
       },
     });
     testUserId = testUser.id;
-    log(`✅ Usuario de prueba creado con ID: ${testUserId}`, 'green');
+    log(`✅ Test user created with ID: ${testUserId}`, 'green');
 
     // ====================================================
-    // PASO 1: CARGAR Y PARSEAR CV
+    // STEP 1: LOAD AND PARSE CV
     // ====================================================
-    printSection('PASO 1: CARGAR Y PARSEAR CV');
+    printSection('STEP 1: LOAD AND PARSE CV');
 
     const filePath = path.join(process.cwd(), 'files', 'FawerV-CV.pdf');
 
     if (!fs.existsSync(filePath)) {
-      throw new Error('Archivo no encontrado: ' + filePath);
+      throw new Error('File not found: ' + filePath);
     }
 
-    log('📄 Leyendo archivo PDF...', 'blue');
+    log('📄 Reading PDF file...', 'blue');
     const buffer = fs.readFileSync(filePath);
     const fileSize = (buffer.length / 1024).toFixed(2);
-    log(`✅ Archivo leído: ${fileSize} KB`, 'green');
+    log(`✅ File read: ${fileSize} KB`, 'green');
 
-    log('📤 Creando objeto File...', 'blue');
+    log('📤 Creating File object...', 'blue');
     const file = new File([buffer], 'FawerV-CV.pdf', {
       type: 'application/pdf',
     });
-    log(`✅ File creado: ${file.name} (${file.type})`, 'green');
+    log(`✅ File created: ${file.name} (${file.type})`, 'green');
 
-    log('🤖 Parseando CV con IA (10-30 segundos)...', 'blue');
+    log('🤖 Parsing CV with AI (10-30 seconds)...', 'blue');
     const parseStartTime = Date.now();
     const parsedCV = await parseCV(file);
     const parseDuration = ((Date.now() - parseStartTime) / 1000).toFixed(2);
-    log(`✅ CV parseado exitosamente en ${parseDuration}s`, 'green');
+    log(`✅ CV parsed successfully in ${parseDuration}s`, 'green');
 
-    printSubSection('Información extraída del CV:');
-    log(`   Nombre: ${parsedCV.personalInfo.name}`);
+    printSubSection('Information extracted from CV:');
+    log(`   Name: ${parsedCV.personalInfo.name}`);
     log(`   Email: ${parsedCV.personalInfo.email}`);
-    log(`   Experiencias: ${parsedCV.experience.length}`);
-    log(`   Educación: ${parsedCV.education.length}`);
-    log(`   Habilidades técnicas: ${parsedCV.skills.technical.length}`);
-    log(`   Proyectos: ${parsedCV.projects?.length || 0}`);
+    log(`   Experience entries: ${parsedCV.experience.length}`);
+    log(`   Education entries: ${parsedCV.education.length}`);
+    log(`   Technical skills: ${parsedCV.skills.technical.length}`);
+    log(`   Projects: ${parsedCV.projects?.length || 0}`);
 
     // ====================================================
-    // PASO 2: CREAR BASE CV EN LA BASE DE DATOS
+    // STEP 2: CREATE BASE CV IN DATABASE
     // ====================================================
-    printSection('PASO 2: GUARDAR BASE CV EN LA BASE DE DATOS');
+    printSection('STEP 2: SAVE BASE CV TO DATABASE');
 
-    log('💾 Guardando CV en PostgreSQL...', 'blue');
+    log('💾 Saving CV to PostgreSQL...', 'blue');
     const baseCV = await prisma.baseCV.create({
       data: {
         userId: testUserId,
-        title: 'CV Profesional - Test',
+        title: 'Professional CV - Test',
         personalInfo: parsedCV.personalInfo as never,
         summary: parsedCV.summary || null,
         experience: parsedCV.experience as never,
@@ -140,14 +140,14 @@ async function testCompleteFlow() {
     });
 
     baseCVId = baseCV.id;
-    log(`✅ Base CV creado con ID: ${baseCVId}`, 'green');
+    log(`✅ Base CV created with ID: ${baseCVId}`, 'green');
 
     // ====================================================
-    // PASO 3: CREAR OFERTA DE TRABAJO
+    // STEP 3: CREATE JOB LISTING
     // ====================================================
-    printSection('PASO 3: CREAR OFERTA DE TRABAJO (JOB LISTING)');
+    printSection('STEP 3: CREATE JOB LISTING');
 
-    log('💼 Creando oferta de trabajo de ejemplo...', 'blue');
+    log('💼 Creating example job listing...', 'blue');
     const jobListing = await prisma.jobListing.create({
       data: {
         title: 'Senior Full Stack Developer',
@@ -215,26 +215,26 @@ Nice to Have:
     });
 
     jobListingId = jobListing.id;
-    log(`✅ Job Listing creado con ID: ${jobListingId}`, 'green');
+    log(`✅ Job Listing created with ID: ${jobListingId}`, 'green');
 
-    printSubSection('Detalles de la oferta:');
-    log(`   Puesto: ${jobListing.title}`);
-    log(`   Empresa: ${jobListing.company}`);
-    log(`   Ubicación: ${jobListing.location}`);
-    log(`   Modalidad: ${jobListing.workMode}`);
-    log(`   Salario: ${jobListing.salary}`);
+    printSubSection('Job details:');
+    log(`   Position: ${jobListing.title}`);
+    log(`   Company: ${jobListing.company}`);
+    log(`   Location: ${jobListing.location}`);
+    log(`   Work mode: ${jobListing.workMode}`);
+    log(`   Salary: ${jobListing.salary}`);
 
     // ====================================================
-    // PASO 4: GENERAR APLICACIÓN PERSONALIZADA
+    // STEP 4: GENERATE PERSONALIZED APPLICATION
     // ====================================================
-    printSection('PASO 4: GENERAR APLICACIÓN PERSONALIZADA CON IA');
+    printSection('STEP 4: GENERATE PERSONALIZED APPLICATION WITH AI');
 
     log(
-      '🤖 Generando CV personalizado y Cover Letter (30-60 segundos)...',
+      '🤖 Generating personalized CV and Cover Letter (30-60 seconds)...',
       'blue'
     );
 
-    // Preparar datos para generación
+    // Prepare data for generation
     const cvData: CV = {
       personalInfo: baseCV.personalInfo as never,
       summary: baseCV.summary || undefined,
@@ -260,9 +260,9 @@ Nice to Have:
 
     const genStartTime = Date.now();
 
-    // Generar CV personalizado y Cover Letter en paralelo
-    log('   → Generando CV personalizado...', 'cyan');
-    log('   → Generando Cover Letter...', 'cyan');
+    // Generate personalized CV and Cover Letter in parallel
+    log('   → Generating personalized CV...', 'cyan');
+    log('   → Generating Cover Letter...', 'cyan');
 
     const [customCV, coverLetter] = await Promise.all([
       generateCustomCV(cvData, jobData),
@@ -270,10 +270,10 @@ Nice to Have:
     ]);
 
     const genDuration = ((Date.now() - genStartTime) / 1000).toFixed(2);
-    log(`✅ Documentos generados en ${genDuration}s`, 'green');
+    log(`✅ Documents generated in ${genDuration}s`, 'green');
 
-    // Crear Cover Letter en DB
-    log('💾 Guardando Cover Letter en DB...', 'blue');
+    // Create Cover Letter in DB
+    log('💾 Saving Cover Letter to DB...', 'blue');
     const coverLetterRecord = await prisma.coverLetter.create({
       data: {
         userId: testUserId,
@@ -282,10 +282,10 @@ Nice to Have:
         tone: 'professional',
       },
     });
-    log(`✅ Cover Letter guardada con ID: ${coverLetterRecord.id}`, 'green');
+    log(`✅ Cover Letter saved with ID: ${coverLetterRecord.id}`, 'green');
 
-    // Crear Application
-    log('💾 Guardando Application en DB...', 'blue');
+    // Create Application
+    log('💾 Saving Application to DB...', 'blue');
     const application = await prisma.application.create({
       data: {
         userId: testUserId,
@@ -304,20 +304,20 @@ Nice to Have:
     });
 
     applicationId = application.id;
-    log(`✅ Application creada con ID: ${applicationId}`, 'green');
+    log(`✅ Application created with ID: ${applicationId}`, 'green');
 
     // ====================================================
-    // RESULTADOS FINALES
+    // FINAL RESULTS
     // ====================================================
-    printSection('✨ RESULTADOS DEL TEST COMPLETO');
+    printSection('✨ COMPLETE TEST RESULTS');
 
-    printSubSection('IDs Generados:');
+    printSubSection('Generated IDs:');
     log(`   Base CV ID:        ${baseCVId}`);
     log(`   Job Listing ID:    ${jobListingId}`);
     log(`   Cover Letter ID:   ${coverLetterRecord.id}`);
     log(`   Application ID:    ${applicationId}`);
 
-    printSubSection('ATS Score y Match:');
+    printSubSection('ATS Score and Match:');
     log(
       `   ATS Score:         ${application.atsScore?.toFixed(1) || 'N/A'}%`,
       application.atsScore && application.atsScore > 80 ? 'green' : 'yellow'
@@ -328,9 +328,9 @@ Nice to Have:
     );
 
     if (customCV.atsOptimizations) {
-      printSubSection('Optimizaciones ATS:');
+      printSubSection('ATS Optimizations:');
       log(
-        `   Keywords añadidas:    ${customCV.atsOptimizations.keywordsAdded?.length || 0}`
+        `   Keywords added:    ${customCV.atsOptimizations.keywordsAdded?.length || 0}`
       );
       if (
         customCV.atsOptimizations.keywordsAdded &&
@@ -342,7 +342,7 @@ Nice to Have:
         );
       }
       log(
-        `   Secciones reordenadas: ${customCV.atsOptimizations.sectionsReordered?.length || 0}`
+        `   Sections reordered: ${customCV.atsOptimizations.sectionsReordered?.length || 0}`
       );
     }
 
@@ -350,14 +350,14 @@ Nice to Have:
     const coverPreview = coverLetter.content.substring(0, 300);
     log(`   ${coverPreview}...`, 'cyan');
 
-    printSubSection('Tiempos de Procesamiento:');
+    printSubSection('Processing Times:');
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
     log(`   Parse CV:          ${parseDuration}s`);
-    log(`   Generar docs:      ${genDuration}s`);
-    log(`   Tiempo total:      ${totalTime}s`);
+    log(`   Generate docs:      ${genDuration}s`);
+    log(`   Total time:      ${totalTime}s`);
 
-    printSection('🎉 TEST COMPLETADO EXITOSAMENTE');
-    log('Todos los componentes del flujo funcionaron correctamente\n', 'green');
+    printSection('🎉 TEST COMPLETED SUCCESSFULLY');
+    log('All flow components worked correctly\n', 'green');
 
     return {
       baseCVId,
@@ -367,7 +367,7 @@ Nice to Have:
       matchScore: application.matchScore,
     };
   } catch (error) {
-    printSection('❌ ERROR EN EL TEST');
+    printSection('❌ TEST ERROR');
     log(error instanceof Error ? error.message : String(error), 'red');
     if (error instanceof Error && error.stack) {
       console.log('\nStack trace:');
@@ -375,59 +375,59 @@ Nice to Have:
     }
     throw error;
   } finally {
-    // Cleanup: Eliminar datos de prueba
-    log('\n🧹 Limpiando datos de prueba...', 'yellow');
+    // Cleanup: Delete test data
+    log('\n🧹 Cleaning up test data...', 'yellow');
 
     try {
       if (applicationId!) {
         await prisma.application.delete({ where: { id: applicationId } });
-        log('   ✓ Application eliminada', 'yellow');
+        log('   ✓ Application deleted', 'yellow');
       }
     } catch (e) {
-      // Ignorar errores de cleanup
+      // Ignore cleanup errors
     }
 
     try {
       if (baseCVId!) {
         await prisma.baseCV.delete({ where: { id: baseCVId } });
-        log('   ✓ Base CV eliminado', 'yellow');
+        log('   ✓ Base CV deleted', 'yellow');
       }
     } catch (e) {
-      // Ignorar errores de cleanup
+      // Ignore cleanup errors
     }
 
     try {
       if (jobListingId!) {
         await prisma.jobListing.delete({ where: { id: jobListingId } });
-        log('   ✓ Job Listing eliminado', 'yellow');
+        log('   ✓ Job Listing deleted', 'yellow');
       }
     } catch (e) {
-      // Ignorar errores de cleanup
+      // Ignore cleanup errors
     }
 
     try {
       if (testUserId!) {
         await prisma.user.delete({ where: { id: testUserId } });
-        log('   ✓ Usuario de prueba eliminado', 'yellow');
+        log('   ✓ Test user deleted', 'yellow');
       }
     } catch (e) {
-      // Ignorar errores de cleanup
+      // Ignore cleanup errors
     }
 
     await prisma.$disconnect();
-    log('   ✓ Conexión a DB cerrada\n', 'yellow');
+    log('   ✓ DB connection closed\n', 'yellow');
   }
 }
 
-// Ejecutar el test
+// Run the test
 if (require.main === module) {
   testCompleteFlow()
     .then(() => {
-      log('✅ Todos los tests pasaron!', 'green');
+      log('✅ All tests passed!', 'green');
       process.exit(0);
     })
     .catch((error) => {
-      log(`❌ El test falló: ${error.message}`, 'red');
+      log(`❌ Test failed: ${error.message}`, 'red');
       process.exit(1);
     });
 }

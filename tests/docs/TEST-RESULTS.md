@@ -1,95 +1,95 @@
-# Test Completo: Flujo de CV y Aplicación
+# Complete Test: CV and Application Flow
 
-## Resumen del Test Ejecutado
+## Test Summary Executed
 
-Se ha ejecutado con éxito un test completo del flujo de aplicación de trabajo, desde la carga del CV hasta la generación de una aplicación personalizada.
+A complete test of the job application flow has been successfully executed, from CV upload to personalized application generation.
 
 ---
 
-## Flujo Ejecutado
+## Flow Executed
 
-### ✅ PASO 0: Crear Usuario de Prueba
+### ✅ STEP 0: Create Test User
 
-- **Resultado:** Usuario temporal creado exitosamente
-- **Propósito:** Cumplir con las restricciones de clave foránea de la base de datos
+- **Result:** Temporary user created successfully
+- **Purpose:** Comply with database foreign key constraints
 
-### ✅ PASO 1: Cargar y Parsear CV
+### ✅ STEP 1: Upload and Parse CV
 
-- **Archivo:** `files/FawerV-CV.pdf` (142.91 KB)
-- **Tiempo de parsing:** 10.25 segundos
-- **IA utilizada:** Google Gemini 2.5 Flash
-- **Información extraída:**
-  - Nombre: FAWER VARGAS
+- **File:** `files/FawerV-CV.pdf` (142.91 KB)
+- **Parsing time:** 10.25 seconds
+- **AI used:** Google Gemini 2.5 Flash
+- **Extracted information:**
+  - Name: FAWER VARGAS
   - Email: fawer5@hotmail.com
-  - Experiencias laborales: 3
-  - Educación: 0
-  - Habilidades técnicas: 13
-  - Proyectos: 0
+  - Work experiences: 3
+  - Education: 0
+  - Technical skills: 13
+  - Projects: 0
 
-### ✅ PASO 2: Guardar Base CV en la Base de Datos
+### ✅ STEP 2: Save Base CV to Database
 
-- **Resultado:** CV guardado exitosamente en PostgreSQL
-- **Base de datos:** Neon PostgreSQL
-- **Estructura guardada:**
-  - Información personal
-  - Resumen profesional
-  - Experiencia laboral
-  - Educación
-  - Habilidades (técnicas, blandas, idiomas)
-  - Proyectos
-  - Certificaciones
-  - Texto raw extraído del PDF
+- **Result:** CV successfully saved to PostgreSQL
+- **Database:** Neon PostgreSQL
+- **Saved structure:**
+  - Personal information
+  - Professional summary
+  - Work experience
+  - Education
+  - Skills (technical, soft, languages)
+  - Projects
+  - Certifications
+  - Raw text extracted from PDF
 
-### ✅ PASO 3: Crear Oferta de Trabajo (Job Listing)
+### ✅ STEP 3: Create Job Listing
 
-- **Puesto:** Senior Full Stack Developer
-- **Empresa:** Tech Innovations Inc.
-- **Ubicación:** Remote
-- **Modalidad:** Remote
-- **Salario:** $120,000 - $150,000
-- **Keywords técnicas:** React, Next.js, TypeScript, Node.js, PostgreSQL, Prisma, AWS, Docker, REST API, GraphQL, Tailwind CSS
-- **Keywords soft skills:** Communication, Problem-solving, Team collaboration, Mentoring, Leadership
+- **Position:** Senior Full Stack Developer
+- **Company:** Tech Innovations Inc.
+- **Location:** Remote
+- **Work mode:** Remote
+- **Salary:** $120,000 - $150,000
+- **Technical keywords:** React, Next.js, TypeScript, Node.js, PostgreSQL, Prisma, AWS, Docker, REST API, GraphQL, Tailwind CSS
+- **Soft skills keywords:** Communication, Problem-solving, Team collaboration, Mentoring, Leadership
 
-### ✅ PASO 4: Generar Aplicación Personalizada con IA
+### ✅ STEP 4: Generate Personalized Application with AI
 
-- **Tiempo de generación:** 18.34 segundos
-- **Documentos generados:**
-  1. **CV Personalizado** - Adaptado a la oferta de trabajo
-  2. **Cover Letter** - Carta de presentación profesional
+- **Generation time:** 18.34 seconds
+- **Documents generated:**
+  1. **Personalized CV** - Adapted to the job listing
+  2. **Cover Letter** - Professional cover letter
 
 ---
 
-## Resultados de Optimización ATS
+## ATS Optimization Results
 
-### Métricas de Coincidencia
+### Match Metrics
 
 - **ATS Score:** 70.0% ⚠️
 - **Match Score:** 70.0% ⚠️
 
-### Optimizaciones Aplicadas
+### Applied Optimizations
 
-- **Keywords añadidas:** 9 palabras clave
+- **Keywords added:** 9 keywords
   - scalable applications
   - software development
   - application performance
   - database optimization
   - JIRA
-  - (y 4 más)
-- **Secciones reordenadas:** 3 secciones optimizadas para mejor visibilidad ATS
+  - (and 4 more)
+- **Sections reordered:** 3 sections optimized for better ATS visibility
 
 ---
 
-## Tiempos de Procesamiento
+## Processing Times
 
-| Operación             | Tiempo     |
-| --------------------- | ---------- |
-| Parse CV              | 10.25s     |
-| Generar documentos IA | 18.34s     |
-| **Tiempo total**      | **37.72s** |
+| Operation          | Time       |
+| ------------------ | ---------- |
+| Parse CV           | 10.25s     |
+| Generate AI docs   | 18.34s     |
+| **Total time**     | **37.72s** |
 
 ---
 
-## Cover Letter Generada (Preview)
+## Generated Cover Letter (Preview)
 
 ```
 Dear Hiring Manager,
@@ -102,78 +102,78 @@ foundation in IT support and QA automation, aligns...
 
 ---
 
-## IDs Generados Durante el Test
+## IDs Generated During Test
 
 - **Base CV ID:** `cmom09xta00027arl1l3tlqo6`
 - **Job Listing ID:** `cmom09yel00037arlimv68k8a`
 - **Cover Letter ID:** `cmom0adg900057arlx56o4abb`
 - **Application ID:** `cmom0aeut00077arl0mt9jq3u`
 
-> **Nota:** Estos registros fueron limpiados automáticamente al finalizar el test.
+> **Note:** These records were automatically cleaned up after the test finished.
 
 ---
 
-## Tecnologías Utilizadas
+## Technologies Used
 
 ### Backend
 
 - **Node.js** + **TypeScript**
-- **Prisma ORM** para gestión de base de datos
-- **PostgreSQL** (Neon) como base de datos
-- **pdf-parse** para extracción de texto de PDFs
+- **Prisma ORM** for database management
+- **PostgreSQL** (Neon) as database
+- **pdf-parse** for PDF text extraction
 
-### Inteligencia Artificial
+### Artificial Intelligence
 
-- **Google Gemini 2.5 Flash** para:
-  - Parsing estructurado de CVs
-  - Generación de CVs personalizados
-  - Generación de Cover Letters
-  - Análisis y optimización ATS
+- **Google Gemini 2.5 Flash** for:
+  - Structured CV parsing
+  - Personalized CV generation
+  - Cover letter generation
+  - ATS analysis and optimization
 
-### Estructura de Datos
+### Data Structure
 
-- **BaseCV:** CV base del usuario con toda su información
-- **JobListing:** Ofertas de trabajo con requisitos y keywords
-- **Application:** Aplicación generada con CV personalizado
-- **CoverLetter:** Carta de presentación generada
-
----
-
-## Validaciones del Test
-
-✅ **Lectura de archivos PDF:** Funcional  
-✅ **Extracción de texto:** Funcional  
-✅ **Parsing con IA:** Funcional (10-21 segundos)  
-✅ **Almacenamiento en DB:** Funcional  
-✅ **Generación de CV personalizado:** Funcional  
-✅ **Generación de Cover Letter:** Funcional  
-✅ **Optimización ATS:** Funcional  
-✅ **Cleanup automático:** Funcional
+- **BaseCV:** User's base CV with all their information
+- **JobListing:** Job listings with requirements and keywords
+- **Application:** Generated application with personalized CV
+- **CoverLetter:** Generated cover letter
 
 ---
 
-## Conclusiones
+## Test Validations
 
-1. **El flujo completo funciona correctamente** desde la carga del CV hasta la generación de la aplicación
-2. **Los tiempos de procesamiento son aceptables** (~38 segundos para todo el flujo)
-3. **La integración con Google Gemini 2.5 Flash funciona bien** y proporciona resultados estructurados
-4. **El ATS Score de 70% indica que hay margen de mejora** en el matching de keywords
-5. **El sistema está listo para el flujo de nueva aplicación**
-
----
-
-## Próximos Pasos Sugeridos
-
-1. ✨ Mejorar el ATS Score añadiendo más análisis de keywords
-2. 📊 Implementar gráficas para visualizar el match score
-3. 🎨 Diseñar templates para los PDFs generados
-4. 📧 Integrar sistema de notificaciones por email
-5. 🔐 Implementar autenticación de usuarios real
-6. 📱 Crear interfaz UI para el flujo completo
+✅ **PDF file reading:** Functional  
+✅ **Text extraction:** Functional  
+✅ **AI parsing:** Functional (10-21 seconds)  
+✅ **DB storage:** Functional  
+✅ **Personalized CV generation:** Functional  
+✅ **Cover letter generation:** Functional  
+✅ **ATS optimization:** Functional  
+✅ **Automatic cleanup:** Functional
 
 ---
 
-**Fecha del Test:** 1 de Mayo, 2026  
-**Archivo testeado:** `files/FawerV-CV.pdf`  
-**Script:** `scripts/test-complete-cv-flow.ts`  
-**Estado:** ✅ **EXITOSO**
+## Conclusions
+
+1. **The complete flow works correctly** from CV upload to application generation
+2. **Processing times are acceptable** (~38 seconds for entire flow)
+3. **Integration with Google Gemini 2.5 Flash works well** and provides structured results
+4. **ATS Score of 70% indicates room for improvement** in keyword matching
+5. **System is ready for new application flow**
+
+---
+
+## Suggested Next Steps
+
+1. ✨ Improve ATS Score by adding more keyword analysis
+2. 📊 Implement graphs to visualize match score
+3. 🎨 Design templates for generated PDFs
+4. 📧 Integrate email notification system
+5. 🔐 Implement real user authentication
+6. 📱 Create UI interface for complete flow
+
+---
+
+**Test Date:** May 1, 2026  
+**File tested:** `files/FawerV-CV.pdf`  
+**Script:** `tests/integration/test-complete-cv-flow.ts`  
+**Status:** ✅ **SUCCESSFUL**

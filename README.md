@@ -29,30 +29,30 @@ Web app to automate the job application process by generating personalized CVs a
 
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your credentials
 
 # 3. Set up database
-npm run db:push
+pnpm db:push
 
 # 4. Run in development
-npm run dev
+pnpm dev
 ```
 
 ## 🗄️ Database
 
 ```bash
 # Generate Prisma client
-npm run db:generate
+pnpm db:generate
 
 # Create migration
-npm run db:migrate
+pnpm db:migrate
 
 # View data in Prisma Studio
-npm run db:studio
+pnpm db:studio
 ```
 
 ## 📁 Project Structure

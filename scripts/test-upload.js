@@ -111,6 +111,6 @@ fetch('http://localhost:3000')
   })
   .catch(() => {
     console.error('❌ Server is not running on http://localhost:3000');
-    console.error('Please start the server with: npm run dev');
+    console.error('Please start the server with: pnpm dev');
     process.exit(1);
   });

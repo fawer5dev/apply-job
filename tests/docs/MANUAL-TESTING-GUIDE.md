@@ -1,206 +1,206 @@
-# 🧪 Guía de Pruebas Manuales del CV Upload
+# 🧪 CV Upload Manual Testing Guide
 
-## Problema Identificado
+## Problem Identified
 
-El error que estás experimentando ocurre porque **el usuario no existe en la base de datos**:
+The error you're experiencing occurs because **the user doesn't exist in the database**:
 
 ```
 Foreign key constraint violated: `base_cvs_userId_fkey (index)`
 ```
 
-Esto sucede porque el código intenta crear un CV para un usuario que no existe en la tabla `users`.
+This happens because the code tries to create a CV for a user that doesn't exist in the `users` table.
 
 ---
 
-## ✅ Soluciones Implementadas
+## ✅ Implemented Solutions
 
-### 1. Creación automática de usuario
+### 1. Automatic user creation
 
-Se ha actualizado el endpoint `/api/cv/upload` para **crear automáticamente el usuario** si no existe. Ahora el flujo es:
+The `/api/cv/upload` endpoint has been updated to **automatically create the user** if it doesn't exist. The flow is now:
 
-1. Se recibe el CV
-2. Se parsea el archivo
-3. **Se verifica si el usuario existe**
-4. **Si no existe, se crea automáticamente**
-5. Se guarda el CV
+1. CV is received
+2. File is parsed
+3. **System checks if user exists**
+4. **If not, user is created automatically**
+5. CV is saved
 
-### 2. Script para crear usuario de prueba
+### 2. Script to create test user
 
-Si prefieres tener el usuario creado previamente:
+If you prefer to have the user created beforehand:
 
 ```bash
-npx tsx scripts/create-test-user.ts
+pnpm tsx scripts/create-test-user.ts
 ```
 
-Este script crea un usuario con:
+This script creates a user with:
 
 - **ID:** `temp-user`
 - **Email:** `test@example.com`
-- **Nombre:** Test User
+- **Name:** Test User
 
 ---
 
-## 🚀 Métodos de Prueba Manual
+## 🚀 Manual Testing Methods
 
-### Método 1: Usando el Formulario HTML (Recomendado)
+### Method 1: Using the HTML Form (Recommended)
 
-1. **Asegúrate de que el servidor esté corriendo:**
+1. **Make sure the server is running:**
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
-2. **Abre el formulario de prueba en tu navegador:**
+2. **Open the test form in your browser:**
 
    ```
    http://localhost:3000/test-upload.html
    ```
 
-3. **Completa el formulario:**
-   - **Título:** Nombre descriptivo para tu CV
-   - **User ID:** Usa `temp-user` (se crea automáticamente si no existe)
-   - **Archivo:** Selecciona tu archivo PDF
+3. **Fill out the form:**
+   - **Title:** Descriptive name for your CV
+   - **User ID:** Use `temp-user` (automatically created if doesn't exist)
+   - **File:** Select your PDF file
 
-4. **Haz clic en "Subir y Procesar CV"**
+4. **Click "Upload and Process CV"**
 
-5. **Espera 10-30 segundos** mientras la IA procesa el CV
+5. **Wait 10-30 seconds** while AI processes the CV
 
-✅ Deberías ver un mensaje de éxito con la información extraída del CV.
+✅ You should see a success message with the extracted CV information.
 
 ---
 
-### Método 2: Usando cURL
+### Method 2: Using cURL
 
 ```bash
-# Ejecutar el script bash
-./scripts/test-upload-manual.sh
+# Run the bash script
+./tests/scripts/test-upload-manual.sh
 ```
 
-O manualmente:
+Or manually:
 
 ```bash
 curl -X POST http://localhost:3000/api/cv/upload \
   -F "file=@files/FawerV-CV.pdf" \
-  -F "title=Mi CV Profesional" \
+  -F "title=My Professional CV" \
   -F "userId=temp-user"
 ```
 
 ---
 
-### Método 3: Usando Postman o Insomnia
+### Method 3: Using Postman or Insomnia
 
-1. **Método:** POST
+1. **Method:** POST
 2. **URL:** `http://localhost:3000/api/cv/upload`
-3. **Body:** form-data con los siguientes campos:
-   - `file`: Tu archivo PDF (type: File)
-   - `title`: "Mi CV Profesional" (type: Text)
+3. **Body:** form-data with the following fields:
+   - `file`: Your PDF file (type: File)
+   - `title`: "My Professional CV" (type: Text)
    - `userId`: "temp-user" (type: Text)
 
 ---
 
-### Método 4: Usando el código del frontend (si existe)
+### Method 4: Using the frontend code (if exists)
 
-Si ya tienes una página en tu app Next.js, simplemente usa el formulario existente.
+If you already have a page in your Next.js app, simply use the existing form.
 
 ---
 
-## 🔍 Verificar que el CV se guardó
+## 🔍 Verify CV was Saved
 
-Después de subir el CV, puedes verificar que se guardó correctamente:
+After uploading the CV, you can verify it was saved correctly:
 
 ```bash
-# Listar todos los CVs del usuario
+# List all CVs for the user
 curl http://localhost:3000/api/cv/upload?userId=temp-user | jq
 ```
 
-O puedes conectarte a tu base de datos PostgreSQL y ejecutar:
+Or you can connect to your PostgreSQL database and run:
 
 ```sql
--- Ver todos los CVs
+-- View all CVs
 SELECT id, title, "createdAt" FROM base_cvs;
 
--- Ver detalles de un CV específico
+-- View details of a specific CV
 SELECT * FROM base_cvs WHERE "userId" = 'temp-user';
 ```
 
 ---
 
-## 🐛 Solución de Problemas
+## 🐛 Troubleshooting
 
 ### Error: "Foreign key constraint violated"
 
-**Causa:** El usuario no existe en la base de datos.
+**Cause:** User doesn't exist in the database.
 
-**Solución:** Con el código actualizado, esto ya no debería ocurrir porque el usuario se crea automáticamente. Si persiste:
+**Solution:** With the updated code, this should no longer occur because the user is created automatically. If it persists:
 
 ```bash
-# Crear usuario manualmente
-npx tsx scripts/create-test-user.ts
+# Create user manually
+pnpm tsx scripts/create-test-user.ts
 ```
 
 ---
 
 ### Error: "DeprecationWarning: Buffer() is deprecated"
 
-**Causa:** Advertencia de la librería `pdf-parse` que usa `Buffer()` en lugar de `Buffer.from()`.
+**Cause:** Warning from the `pdf-parse` library that uses `Buffer()` instead of `Buffer.from()`.
 
-**Solución:** Esto es solo una advertencia y no afecta la funcionalidad. Se puede ignorar. Para ocultarla:
+**Solution:** This is just a warning and doesn't affect functionality. It can be ignored. To hide it:
 
 ```bash
-# Ejecutar con la flag para ocultar deprecation warnings
-NODE_NO_WARNINGS=1 npm run dev
+# Run with flag to hide deprecation warnings
+NODE_NO_WARNINGS=1 pnpm dev
 ```
 
-O actualizar la librería `pdf-parse` cuando haya una nueva versión.
+Or update the `pdf-parse` library when a new version is available.
 
 ---
 
 ### Error: "GOOGLE_AI_API_KEY not configured"
 
-**Causa:** La API key de Google AI no está configurada en `.env.local`.
+**Cause:** Google AI API key is not configured in `.env.local`.
 
-**Solución:** Asegúrate de tener en `.env.local`:
+**Solution:** Make sure you have in `.env.local`:
 
 ```env
-GOOGLE_AI_API_KEY="tu-api-key-aqui"
+GOOGLE_AI_API_KEY="your-api-key-here"
 ```
 
 ---
 
-### El proceso toma demasiado tiempo (más de 60 segundos)
+### Process takes too long (more than 60 seconds)
 
-**Causa:** La API de Google AI puede estar lenta o hay un problema de red.
+**Cause:** Google AI API might be slow or there's a network issue.
 
-**Solución:**
+**Solution:**
 
-- Verifica tu conexión a internet
-- Verifica que la API key sea válida
-- Prueba nuevamente en unos minutos
+- Check your internet connection
+- Verify the API key is valid
+- Try again in a few minutes
 
 ---
 
-## 📊 Tiempos Esperados
+## 📊 Expected Times
 
-| Operación                      | Tiempo Esperado    |
+| Operation                      | Expected Time      |
 | ------------------------------ | ------------------ |
-| Upload del archivo             | < 1 segundo        |
-| Extracción de texto del PDF    | 1-2 segundos       |
-| Parsing con IA (Google Gemini) | 10-30 segundos     |
-| Guardado en base de datos      | < 1 segundo        |
-| **TOTAL**                      | **15-35 segundos** |
+| File upload                    | < 1 second         |
+| PDF text extraction            | 1-2 seconds        |
+| AI parsing (Google Gemini)     | 10-30 seconds      |
+| Database save                  | < 1 second         |
+| **TOTAL**                      | **15-35 seconds**  |
 
 ---
 
-## ✨ Resultado Esperado
+## ✨ Expected Result
 
-Cuando todo funcione correctamente, deberías recibir una respuesta JSON como esta:
+When everything works correctly, you should receive a JSON response like this:
 
 ```json
 {
   "success": true,
   "baseCV": {
     "id": "clxxx...",
-    "title": "Mi CV Profesional",
+    "title": "My Professional CV",
     "personalInfo": {
       "name": "FAWER VARGAS",
       "email": "fawer5@hotmail.com",
@@ -223,48 +223,48 @@ Cuando todo funcione correctamente, deberías recibir una respuesta JSON como es
 
 ---
 
-## 🎯 Siguiente Paso: Probar el Flujo Completo
+## 🎯 Next Step: Test Complete Flow
 
-Una vez que el CV se haya cargado exitosamente, puedes probar el flujo completo de generación de aplicación:
+Once the CV has been successfully uploaded, you can test the complete application generation flow:
 
 ```bash
-# Este script carga un CV, crea un job listing, y genera una aplicación
-npx tsx scripts/test-complete-cv-flow.ts
+# This script loads a CV, creates a job listing, and generates an application
+pnpm tsx tests/integration/test-complete-cv-flow.ts
 ```
 
 ---
 
-## 📝 Notas Importantes
+## 📝 Important Notes
 
-1. **Usuario temporal:** El `userId` "temp-user" es temporal. En producción, esto se reemplazará con autenticación real.
+1. **Temporary user:** The `userId` "temp-user" is temporary. In production, this will be replaced with real authentication.
 
-2. **Limpieza de datos:** Si haces muchas pruebas, puedes limpiar los CVs de prueba:
+2. **Data cleanup:** If you do many tests, you can clean up test CVs:
 
    ```sql
    DELETE FROM base_cvs WHERE "userId" = 'temp-user';
    ```
 
-3. **Archivos soportados:** El sistema acepta PDF, DOCX y TXT. Los mejores resultados se obtienen con PDF.
+3. **Supported files:** The system accepts PDF, DOCX and TXT. Best results are obtained with PDF.
 
-4. **Costo de IA:** Cada parsing consume tokens de la API de Google Gemini. Usa con moderación durante las pruebas.
-
----
-
-## 🆘 ¿Necesitas Ayuda?
-
-Si sigues teniendo problemas:
-
-1. Verifica los logs de la consola del servidor (`npm run dev`)
-2. Revisa los logs del navegador (F12 → Console)
-3. Verifica la conexión a la base de datos:
-   ```bash
-   npx prisma studio
-   ```
-4. Ejecuta el test completo para ver dónde falla:
-   ```bash
-   npx tsx scripts/test-complete-cv-flow.ts
-   ```
+4. **AI cost:** Each parsing consumes tokens from the Google Gemini API. Use moderately during testing.
 
 ---
 
-**Última actualización:** 1 de Mayo, 2026
+## 🆘 Need Help?
+
+If you continue having problems:
+
+1. Check the server console logs (`pnpm dev`)
+2. Review browser logs (F12 → Console)
+3. Verify database connection:
+   ```bash
+   pnpm prisma studio
+   ```
+4. Run the complete test to see where it fails:
+   ```bash
+   pnpm tsx tests/integration/test-complete-cv-flow.ts
+   ```
+
+---
+
+**Last updated:** May 1, 2026
