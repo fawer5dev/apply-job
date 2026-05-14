@@ -42,16 +42,22 @@ export async function GET(
       );
     }
 
+    // Extract candidate name from customCV
+    const customCV = application.customCV as any;
+    const candidateName = customCV?.personalInfo?.name || 'Candidate';
+
     // Generate PDF
     console.log('Generating cover letter PDF...');
     const pdfBuffer = await generateCoverLetterPDF(
       application.coverLetter.content,
-      application.coverLetter.htmlContent || undefined
+      application.coverLetter.htmlContent || undefined,
+      candidateName
     );
 
     // Generate filename
     const companyName = application.jobListing.company.replace(/\s+/g, '_');
-    const filename = `Fawer_Vargas_CL_${companyName}.pdf`;
+    const candidateFileName = candidateName.replace(/\s+/g, '_');
+    const filename = `${candidateFileName}_CL_${companyName}.pdf`;
 
     // Return PDF as Uint8Array
     return new NextResponse(new Uint8Array(pdfBuffer), {

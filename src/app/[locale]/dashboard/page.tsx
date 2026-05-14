@@ -1,10 +1,91 @@
+'use client';
+
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { FileText, Sparkles, BarChart3, ArrowRight } from '@/lib/icons';
+import { useEffect, useState } from 'react';
+
+interface Stats {
+  baseCVs: number;
+  applications: number;
+  inProgress: number;
+  responseRate: string;
+}
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard');
+  const [stats, setStats] = useState<Stats>({
+    baseCVs: 0,
+    applications: 0,
+    inProgress: 0,
+    responseRate: '-',
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch CVs
+        const cvResponse = await fetch('/api/cv/upload?userId=temp-user');
+        const cvData = await cvResponse.json();
+        const baseCVsCount = cvData.baseCVs?.length || 0;
+
+        // Fetch Applications
+        const appResponse = await fetch(
+          '/api/application/create?userId=temp-user'
+        );
+        const appData = await appResponse.json();
+        const applications = appData.applications || [];
+        const applicationsCount = applications.length;
+
+        // Calculate in-progress (DRAFT, READY, APPLIED, INTERVIEWING)
+        const inProgressCount = applications.filter((app: any) => {
+          const status = app.status;
+          return (
+            status === 'DRAFT' ||
+            status === 'READY' ||
+            status === 'APPLIED' ||
+            status === 'INTERVIEWING'
+          );
+        }).length;
+
+        // Calculate response rate (applications that moved past APPLIED)
+        const appliedCount = applications.filter(
+          (app: any) => app.status === 'APPLIED' || app.appliedAt
+        ).length;
+        const respondedCount = applications.filter((app: any) => {
+          const status = app.status;
+          return (
+            status === 'INTERVIEWING' ||
+            status === 'OFFERED' ||
+            status === 'REJECTED' ||
+            status === 'ACCEPTED'
+          );
+        }).length;
+
+        const responseRate =
+          appliedCount > 0
+            ? `${Math.round((respondedCount / appliedCount) * 100)}%`
+            : '-';
+
+        setStats({
+          baseCVs: baseCVsCount,
+          applications: applicationsCount,
+          inProgress: inProgressCount,
+          responseRate,
+        });
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const actions = [
     {
@@ -91,7 +172,7 @@ export default function DashboardPage() {
                   <div className="space-y-4 pl-4">
                     <div>
                       <div className="font-display text-4xl font-bold text-primary">
-                        0
+                        {loading ? '...' : stats.baseCVs}
                       </div>
                       <p className="mt-1 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {t('stats.baseCVs')}
@@ -100,7 +181,7 @@ export default function DashboardPage() {
                     <div className="h-px bg-border" />
                     <div>
                       <div className="font-display text-4xl font-bold text-primary">
-                        0
+                        {loading ? '...' : stats.applications}
                       </div>
                       <p className="mt-1 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {t('stats.applications')}
@@ -171,7 +252,9 @@ export default function DashboardPage() {
               style={{ animationDelay: '0.5s' }}
             >
               <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">0</div>
+                <div className="font-display text-3xl font-bold">
+                  {loading ? '...' : stats.baseCVs}
+                </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {t('stats.baseCVs')}
                 </p>
@@ -179,7 +262,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">0</div>
+                <div className="font-display text-3xl font-bold">
+                  {loading ? '...' : stats.applications}
+                </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {t('stats.applications')}
                 </p>
@@ -187,7 +272,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">0</div>
+                <div className="font-display text-3xl font-bold">
+                  {loading ? '...' : stats.inProgress}
+                </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {t('stats.inProgress')}
                 </p>
@@ -195,7 +282,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">-</div>
+                <div className="font-display text-3xl font-bold">
+                  {loading ? '...' : stats.responseRate}
+                </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {t('stats.responseRate')}
                 </p>

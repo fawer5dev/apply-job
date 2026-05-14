@@ -370,11 +370,48 @@ export default function ViewCVPage() {
             </section>
           )}
 
+          {/* Skills */}
+          {cv.skills && cv.skills.some((skillGroup) => skillGroup.items && skillGroup.items.length > 0) && (
+            <section
+              className="mb-8 animate-fade-in-up border-2 border-foreground/10 bg-card p-8"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="mb-6 border-b-2 border-primary pb-2">
+                <h2 className="font-display text-2xl font-bold">
+                  {t('sections.skills')}
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {cv.skills
+                  .filter((skillGroup) => skillGroup.items && skillGroup.items.length > 0)
+                  .map((skillGroup, index) => (
+                    <div key={index}>
+                      {skillGroup.category && (
+                        <h3 className="mb-2 font-body text-sm font-bold uppercase tracking-wider text-primary">
+                          {skillGroup.category}
+                        </h3>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {skillGroup.items?.map((skill, i) => (
+                          <span
+                            key={i}
+                            className="border border-foreground/20 bg-muted/50 px-3 py-1 font-body text-xs"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
           {/* Experience */}
           {cv.experience && cv.experience.length > 0 && (
             <section
               className="mb-8 animate-fade-in-up border-2 border-foreground/10 bg-card p-8"
-              style={{ animationDelay: '0.3s' }}
+              style={{ animationDelay: '0.4s' }}
             >
               <div className="mb-6 border-b-2 border-primary pb-2">
                 <h2 className="font-display text-2xl font-bold">
@@ -420,7 +457,7 @@ export default function ViewCVPage() {
           {cv.education && cv.education.length > 0 && (
             <section
               className="mb-8 animate-fade-in-up border-2 border-foreground/10 bg-card p-8"
-              style={{ animationDelay: '0.4s' }}
+              style={{ animationDelay: '0.5s' }}
             >
               <div className="mb-6 border-b-2 border-primary pb-2">
                 <h2 className="font-display text-2xl font-bold">
@@ -451,43 +488,6 @@ export default function ViewCVPage() {
                     )}
                   </div>
                 ))}
-              </div>
-            </section>
-          )}
-
-          {/* Skills */}
-          {cv.skills && cv.skills.some((skillGroup) => skillGroup.items && skillGroup.items.length > 0) && (
-            <section
-              className="mb-8 animate-fade-in-up border-2 border-foreground/10 bg-card p-8"
-              style={{ animationDelay: '0.5s' }}
-            >
-              <div className="mb-6 border-b-2 border-primary pb-2">
-                <h2 className="font-display text-2xl font-bold">
-                  {t('sections.skills')}
-                </h2>
-              </div>
-              <div className="space-y-4">
-                {cv.skills
-                  .filter((skillGroup) => skillGroup.items && skillGroup.items.length > 0)
-                  .map((skillGroup, index) => (
-                    <div key={index}>
-                      {skillGroup.category && (
-                        <h3 className="mb-2 font-body text-sm font-bold uppercase tracking-wider text-primary">
-                          {skillGroup.category}
-                        </h3>
-                      )}
-                      <div className="flex flex-wrap gap-2">
-                        {skillGroup.items?.map((skill, i) => (
-                          <span
-                            key={i}
-                            className="border border-foreground/20 bg-muted/50 px-3 py-1 font-body text-xs"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
               </div>
             </section>
           )}

@@ -348,6 +348,8 @@ function renderCVTemplate(cv: CV, template: string): string {
         <p class="degree-name">${edu.degree}</p>
         <p class="institution">${edu.institution}${edu.location ? ` | ${edu.location}` : ''}</p>
         <p class="dates">${edu.graduationDate}</p>
+        ${edu.gpa ? `<p class="gpa" style="font-size: 9pt; margin-top: 2px;">GPA: ${edu.gpa}</p>` : ''}
+        ${edu.description ? `<p class="description" style="font-size: 9pt; margin-top: 3px; line-height: 1.3;">${edu.description}</p>` : ''}
       </div>
       `
         )
@@ -411,9 +413,10 @@ function renderCVTemplate(cv: CV, template: string): string {
 
 export async function generateCoverLetterPDF(
   content: string,
-  htmlContent?: string
+  htmlContent?: string,
+  candidateName?: string
 ): Promise<Buffer> {
-  const html = htmlContent || renderCoverLetterTemplate(content);
+  const html = htmlContent || renderCoverLetterTemplate(content, candidateName);
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -471,14 +474,14 @@ function formatCoverLetterContent(content: string): string {
   return html;
 }
 
-function renderCoverLetterTemplate(content: string): string {
+function renderCoverLetterTemplate(content: string, candidateName?: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cover Letter - Fawer Vargas</title>
+  <title>Cover Letter - ${candidateName || 'Cover Letter'}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">

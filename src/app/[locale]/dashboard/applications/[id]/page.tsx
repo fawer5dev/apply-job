@@ -16,6 +16,16 @@ import {
   DollarSign,
 } from 'lucide-react';
 
+// Helper function to clean markdown formatting
+const cleanMarkdown = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/\*\*/g, '') // Remove bold markers
+    .replace(/\*/g, '') // Remove italic/list markers
+    .replace(/^[-•]\s+/gm, '') // Remove list markers at start of lines
+    .trim();
+};
+
 interface ApplicationDetail {
   id: string;
   status: string;
@@ -361,7 +371,7 @@ export default function ApplicationDetailPage() {
                     <div>
                       <h3 className="mb-2 font-semibold">Summary</h3>
                       <p className="text-sm text-muted-foreground">
-                        {application.customCV.summary}
+                        {cleanMarkdown(application.customCV.summary)}
                       </p>
                     </div>
                   )}
@@ -372,8 +382,13 @@ export default function ApplicationDetailPage() {
                       <div>
                         <h3 className="mb-3 font-semibold">Key Skills</h3>
                         <div className="space-y-4">
-                          {application.customCV.skills.map(
-                            (skillCategory: any, index: number) => (
+                          {application.customCV.skills
+                            .filter(
+                              (skillCategory: any) =>
+                                skillCategory.items &&
+                                skillCategory.items.length > 0
+                            )
+                            .map((skillCategory: any, index: number) => (
                               <div key={index}>
                                 <h4 className="mb-2 text-sm font-medium text-foreground">
                                   {skillCategory.category}
@@ -391,8 +406,7 @@ export default function ApplicationDetailPage() {
                                   )}
                                 </div>
                               </div>
-                            )
-                          )}
+                            ))}
                         </div>
                       </div>
                     )}
@@ -418,18 +432,10 @@ export default function ApplicationDetailPage() {
                                 {exp.achievements &&
                                   exp.achievements.length > 0 && (
                                     <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-muted-foreground">
-                                      {exp.achievements
-                                        .slice(0, 3)
-                                        .map(
-                                          (achievement: string, i: number) => (
-                                            <li key={i}>{achievement}</li>
-                                          )
-                                        )}
-                                      {exp.achievements.length > 3 && (
-                                        <li className="italic">
-                                          ... and {exp.achievements.length - 3}{' '}
-                                          more
-                                        </li>
+                                      {exp.achievements.map(
+                                        (achievement: string, i: number) => (
+                                          <li key={i}>{cleanMarkdown(achievement)}</li>
+                                        )
                                       )}
                                     </ul>
                                   )}

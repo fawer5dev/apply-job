@@ -13,16 +13,20 @@ export async function generateCoverLetter(
   tone: 'professional' | 'creative' | 'formal' | 'friendly' = 'professional',
   additionalInfo?: string
 ): Promise<CoverLetterResult> {
+  // Get candidate name from CV
+  const candidateName = cv.personalInfo?.name || 'Candidate';
+  
   // Replace placeholders in the prompt
   const promptWithReplacements = COVER_LETTER_PROMPT
     .replace(/{tone}/g, tone)
-    .replace(/{companyName}/g, jobListing.company);
+    .replace(/{companyName}/g, jobListing.company)
+    .replace(/{candidateName}/g, candidateName);
   
   const prompt = `
 ${promptWithReplacements}
 
 CANDIDATE INFORMATION:
-Name: Fawer Vargas
+Name: ${candidateName}
 Summary: ${cv.summary || 'Not available'}
 Recent experience: ${cv.experience[0]?.title} at ${cv.experience[0]?.company}
 Key skills: ${cv.skills
@@ -39,7 +43,7 @@ Description: ${jobListing.description.slice(0, 500)}...
 ${additionalInfo ? `ADDITIONAL CANDIDATE INFORMATION:\n${additionalInfo}` : ''}
 
 Generate a ${tone} and personalized cover letter for ${jobListing.company}.
-Remember to use "Hi ${jobListing.company} team," as greeting and sign as "Best regards,\nFawer Vargas".
+Remember to use "Hi ${jobListing.company} team," as greeting and sign as "Best regards,\n${candidateName}".
 `;
 
   const systemPrompt =

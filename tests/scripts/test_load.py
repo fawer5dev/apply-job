@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Test de carga para lectura de archivos
-Lee archivos de la carpeta 'files' múltiples veces y mide el rendimiento
+Load test for reading files
+Reads files from 'files' folder multiple times and measures performance
 """
 
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 def format_size(bytes_size):
-    """Formatea el tamaño en bytes a una representación legible"""
+    """Formats byte size to a readable representation"""
     for unit in ["B", "KB", "MB", "GB"]:
         if bytes_size < 1024.0:
             return f"{bytes_size:.2f} {unit}"
@@ -20,7 +20,7 @@ def format_size(bytes_size):
 
 
 def format_time(seconds):
-    """Formatea el tiempo en segundos a milisegundos si es pequeño"""
+    """Formats time in seconds to milliseconds if it's small"""
     if seconds < 1:
         return f"{seconds * 1000:.2f} ms"
     return f"{seconds:.2f} s"
@@ -28,37 +28,37 @@ def format_time(seconds):
 
 def read_file_test(file_path, iterations=100):
     """
-    Realiza un test de lectura del archivo
+    Performs a file reading test
 
     Args:
-        file_path: Ruta del archivo a leer
-        iterations: Número de iteraciones de lectura
+        file_path: Path of the file to read
+        iterations: Number of read iterations
     """
     print(f"\n{'=' * 60}")
-    print(f"Test de Carga - Lectura de Archivo")
+    print(f"Load Test - File Reading")
     print(f"{'=' * 60}")
-    print(f"Archivo: {file_path}")
+    print(f"File: {file_path}")
 
-    # Verificar que el archivo existe
+    # Verify that the file exists
     if not os.path.exists(file_path):
-        print(f"❌ Error: El archivo no existe")
+        print(f"❌ Error: The file does not exist")
         return
 
-    # Obtener información del archivo
+    # Get file information
     file_size = os.path.getsize(file_path)
-    print(f"Tamaño: {format_size(file_size)}")
-    print(f"Iteraciones: {iterations}")
+    print(f"Size: {format_size(file_size)}")
+    print(f"Iterations: {iterations}")
     print(f"\n{'=' * 60}")
 
-    # Almacenar tiempos de lectura
+    # Store read times
     read_times = []
 
-    print("\nIniciando test de lectura...")
+    print("\nStarting read test...")
 
     for i in range(iterations):
         start_time = time.time()
 
-        # Leer el archivo
+        # Read the file
         with open(file_path, "rb") as f:
             data = f.read()
 
@@ -66,69 +66,69 @@ def read_file_test(file_path, iterations=100):
         elapsed = end_time - start_time
         read_times.append(elapsed)
 
-        # Mostrar progreso cada 10 iteraciones
+        # Show progress every 10 iterations
         if (i + 1) % 10 == 0:
-            print(f"  Progreso: {i + 1}/{iterations} lecturas completadas")
+            print(f"  Progress: {i + 1}/{iterations} reads completed")
 
-    # Calcular estadísticas
+    # Calculate statistics
     total_time = sum(read_times)
     avg_time = total_time / len(read_times)
     min_time = min(read_times)
     max_time = max(read_times)
 
-    # Calcular throughput
+    # Calculate throughput
     total_bytes_read = file_size * iterations
     throughput_mb_s = (total_bytes_read / (1024 * 1024)) / total_time
 
-    # Mostrar resultados
+    # Show results
     print(f"\n{'=' * 60}")
-    print(f"RESULTADOS DEL TEST")
+    print(f"TEST RESULTS")
     print(f"{'=' * 60}")
-    print(f"Total de lecturas:     {iterations}")
-    print(f"Bytes totales leídos:  {format_size(total_bytes_read)}")
-    print(f"Tiempo total:          {format_time(total_time)}")
-    print(f"\nTiempos de lectura:")
-    print(f"  Promedio:            {format_time(avg_time)}")
-    print(f"  Mínimo:              {format_time(min_time)}")
-    print(f"  Máximo:              {format_time(max_time)}")
+    print(f"Total reads:           {iterations}")
+    print(f"Total bytes read:      {format_size(total_bytes_read)}")
+    print(f"Total time:            {format_time(total_time)}")
+    print(f"\nRead times:")
+    print(f"  Average:             {format_time(avg_time)}")
+    print(f"  Minimum:             {format_time(min_time)}")
+    print(f"  Maximum:             {format_time(max_time)}")
     print(f"\nThroughput:")
     print(f"  {throughput_mb_s:.2f} MB/s")
     print(f"{'=' * 60}\n")
 
 
 def main():
-    """Función principal"""
-    # Configuración
+    """Main function"""
+    # Configuration
     files_dir = "files"
     iterations = 100
 
-    # Permitir especificar número de iteraciones por parámetro
+    # Allow specifying number of iterations via parameter
     if len(sys.argv) > 1:
         try:
             iterations = int(sys.argv[1])
         except ValueError:
             print(
-                f"⚠️  Advertencia: '{sys.argv[1]}' no es un número válido. Usando {iterations} iteraciones."
+                f"⚠️  Warning: '{sys.argv[1]}' is not a valid number. Using {iterations} iterations."
             )
 
-    # Buscar archivos en la carpeta
+    # Search for files in the folder
     if not os.path.exists(files_dir):
-        print(f"❌ Error: La carpeta '{files_dir}' no existe")
+        print(f"❌ Error: The folder '{files_dir}' does not exist")
         return
 
     files = list(Path(files_dir).glob("*"))
     files = [f for f in files if f.is_file()]
 
     if not files:
-        print(f"❌ Error: No hay archivos en la carpeta '{files_dir}'")
+        print(f"❌ Error: There are no files in the folder '{files_dir}'")
         return
 
-    print(f"\nArchivos encontrados en '{files_dir}':")
+    print(f"\nFiles found in '{files_dir}':")
     for i, file in enumerate(files, 1):
         size = os.path.getsize(file)
         print(f"  {i}. {file.name} ({format_size(size)})")
 
-    # Realizar test para cada archivo
+    # Run test for each file
     for file_path in files:
         read_file_test(str(file_path), iterations)
 

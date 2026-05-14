@@ -88,7 +88,7 @@ Return a JSON with the following exact structure:
       "degree": "Degree or qualification obtained",
       "institution": "University or institution",
       "location": "Location (optional)",
-      "graduationDate": "Graduation date or period",
+      "graduationDate": "Full date range (e.g., 2018 - 2022 or Sep 2018 - Jun 2022)",
       "gpa": "GPA if mentioned (optional)",
       "description": "Additional details (optional)"
     }

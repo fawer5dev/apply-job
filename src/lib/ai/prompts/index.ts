@@ -59,7 +59,7 @@ Return a JSON with the following structure:
       "degree": "...",
       "institution": "...",
       "location": "...",
-      "graduationDate": "...",
+      "graduationDate": "Start Year - End Year (e.g., 2018 - 2022)",
       "gpa": "...",
       "description": "..."
     }
@@ -87,7 +87,7 @@ Generate a cover letter that:
 5. Is concise (200-300 words)
 6. Has a {tone} tone
 7. Avoids clichés and generic phrases
-8. Ends with signature: "Best regards,\nFawer Vargas"
+8. Ends with signature: "Best regards,\n{candidateName}"
 
 The cover letter should follow this structure:
 - Greeting: "Hi {companyName} team,"
@@ -95,7 +95,7 @@ The cover letter should follow this structure:
 - Paragraph 2: Why you are the ideal candidate (connect your experience with requirements)
 - Paragraph 3: Why you are interested in this specific company
 - Closing: "I look forward to discussing how I can contribute to {companyName}'s success."
-- Signature: "Best regards,\nFawer Vargas"
+- Signature: "Best regards,\n{candidateName}"
 
 Return a JSON with:
 {
