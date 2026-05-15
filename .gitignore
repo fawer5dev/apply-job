@@ -12,6 +12,10 @@
 *.test.js.snap
 .jest-cache
 
+# Tests and documentation (not shipped to repo)
+/tests/
+/docs/
+
 # next.js
 /.next/
 /out/
