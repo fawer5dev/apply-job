@@ -170,5 +170,38 @@
       "projects": "Projects",
       "certifications": "Certifications"
     }
+  },
+  "Applications": {
+    "status": {
+      "DRAFT": "Draft",
+      "READY": "Ready",
+      "APPLIED": "Applied",
+      "INTERVIEWING": "Interviewing",
+      "OFFERED": "Offered",
+      "REJECTED": "Rejected",
+      "ACCEPTED": "Accepted",
+      "WITHDRAWN": "Withdrawn"
+    },
+    "actions": {
+      "changeStatus": "Change status",
+      "delete": "Delete",
+      "deleteConfirm": "Delete Application",
+      "deleteWarning": "This action cannot be undone.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "confirmDeleteMessage": "Are you sure you want to delete this application?"
+    },
+    "labels": {
+      "company": "Company",
+      "position": "Position",
+      "status": "Status",
+      "currentStatus": "Current status"
+    },
+    "notifications": {
+      "statusUpdated": "Status updated successfully",
+      "statusError": "Error updating status",
+      "deleted": "Application deleted successfully",
+      "deleteError": "Error deleting application"
+    }
   }
 }

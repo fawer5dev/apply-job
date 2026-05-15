@@ -824,8 +824,8 @@ npm run db:seed
   - Greeting: "Hi [Company Name] team,"
   - Body: 2-3 paragraphs (200-300 words)
   - Closing: "I look forward to discussing how I can contribute to [company]'s success."
-  - Signature: "Best regards,\nFawer Vargas"
-- Filename: `User_Name_CL_[CompanyName].pdf`
+  - Signature: "Best regards,\n[Candidate Name]" (dynamically populated from CV)
+- Filename: `[Candidate_Name]_CL_[CompanyName].pdf` (e.g., John_Doe_CL_Google.pdf)
 
 ---
 
@@ -851,8 +851,8 @@ Prompts are in `src/lib/ai/prompts/index.ts`:
 3. **CV_GENERATOR_PROMPT**: Customizes resume for job posting
 4. **ATS_SCORER_PROMPT**: Calculates ATS score
 5. **COVER_LETTER_PROMPT**: Generates personalized cover letter
-   - Dynamic greeting: "Hi {companyName} team," (company name inserted from job listing)
-   - Fixed signature: "Best regards,\nFawer Vargas"
+   - Dynamic greeting: "Hi {companyName} team," (company name from job listing)
+   - Dynamic signature: "Best regards,\n{candidateName}" (candidate name from CV)
    - Tone options: professional, creative, formal, friendly
    - Length: 200-300 words (3 paragraphs)
    - Output format: JSON with `content` (plain text) and `htmlContent` (formatted HTML)

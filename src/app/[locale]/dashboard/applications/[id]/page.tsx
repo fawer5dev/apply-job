@@ -2,18 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Loader2,
   ArrowLeft,
-  Briefcase,
-  FileText,
   Download,
   TrendingUp,
   Calendar,
   MapPin,
   Building2,
   DollarSign,
+  Trash2,
+  X,
 } from 'lucide-react';
 
 // Helper function to clean markdown formatting
@@ -54,6 +55,8 @@ interface ApplicationDetail {
 
 export default function ApplicationDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const t = useTranslations('Applications');
   const id = params.id as string;
 
   const [application, setApplication] = useState<ApplicationDetail | null>(
@@ -64,6 +67,29 @@ export default function ApplicationDetailPage() {
   const [activeTab, setActiveTab] = useState<'cv' | 'cover-letter' | 'job'>(
     'cv'
   );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
+
+  const allStatuses = [
+    'DRAFT',
+    'READY',
+    'APPLIED',
+    'INTERVIEWING',
+    'OFFERED',
+    'REJECTED',
+    'ACCEPTED',
+    'WITHDRAWN',
+  ];
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     if (id) {
@@ -171,6 +197,57 @@ export default function ApplicationDetailPage() {
     }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (newStatus === application?.status) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await fetch(`/api/application/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      const data = await response.json();
+      setApplication(data.application);
+      showToast(t('notifications.statusUpdated'), 'success');
+    } catch (err) {
+      console.error('Error updating status:', err);
+      showToast(t('notifications.statusError'), 'error');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/application/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete application');
+      }
+
+      showToast(t('notifications.deleted'), 'success');
+      setTimeout(() => {
+        router.push('/dashboard/applications');
+      }, 1000);
+    } catch (err) {
+      console.error('Error deleting application:', err);
+      showToast(t('notifications.deleteError'), 'error');
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -206,6 +283,70 @@ export default function ApplicationDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed right-4 top-4 z-50 animate-in slide-in-from-top-5">
+          <div
+            className={`rounded-lg border px-4 py-3 shadow-lg ${
+              toast.type === 'success'
+                ? 'border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200'
+                : 'border-red-500 bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200'
+            }`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">
+                {t('actions.deleteConfirm')}
+              </h3>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
+                disabled={isDeleting}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mb-2 text-sm text-muted-foreground">
+              {t('actions.confirmDeleteMessage')}
+            </p>
+            <p className="mb-6 text-sm font-medium text-muted-foreground">
+              {t('actions.deleteWarning')}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+              >
+                {t('actions.cancel')}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:pointer-events-none disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('actions.deleting')}
+                  </>
+                ) : (
+                  t('actions.delete')
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
         <div className="container flex h-14 items-center justify-between">
           <Link
@@ -230,6 +371,13 @@ export default function ApplicationDetailPage() {
               <Download className="h-4 w-4" />
               Download Cover Letter
             </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-red-500 bg-background px-4 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <Trash2 className="h-4 w-4" />
+              {t('actions.delete')}
+            </button>
           </div>
         </div>
       </header>
@@ -246,7 +394,7 @@ export default function ApplicationDetailPage() {
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(application.status)}`}
                 >
-                  {application.status}
+                  {t(`status.${application.status}`)}
                 </span>
               </div>
               <div className="flex items-center gap-4 text-muted-foreground">
@@ -267,6 +415,25 @@ export default function ApplicationDetailPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Status Dropdown */}
+            <div className="min-w-[200px]">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                {t('labels.currentStatus')}
+              </label>
+              <select
+                value={application.status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                disabled={isUpdatingStatus}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {allStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {t(`status.${status}`)}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

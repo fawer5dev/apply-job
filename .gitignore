@@ -14,7 +14,9 @@
 
 # Tests and documentation (not shipped to repo)
 /tests/
-/docs/
+/docs/README.md
+/docs/TROUBLESHOOTING.md
+
 
 # next.js
 /.next/

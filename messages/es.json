@@ -170,5 +170,38 @@
       "projects": "Proyectos",
       "certifications": "Certificaciones"
     }
+  },
+  "Applications": {
+    "status": {
+      "DRAFT": "Borrador",
+      "READY": "Lista",
+      "APPLIED": "Aplicada",
+      "INTERVIEWING": "Entrevistando",
+      "OFFERED": "Oferta",
+      "REJECTED": "Rechazada",
+      "ACCEPTED": "Aceptada",
+      "WITHDRAWN": "Retirada"
+    },
+    "actions": {
+      "changeStatus": "Cambiar estado",
+      "delete": "Eliminar",
+      "deleteConfirm": "Eliminar Aplicación",
+      "deleteWarning": "Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "confirmDeleteMessage": "¿Estás seguro de que deseas eliminar esta aplicación?"
+    },
+    "labels": {
+      "company": "Empresa",
+      "position": "Puesto",
+      "status": "Estado",
+      "currentStatus": "Estado actual"
+    },
+    "notifications": {
+      "statusUpdated": "Estado actualizado correctamente",
+      "statusError": "Error al actualizar el estado",
+      "deleted": "Aplicación eliminada correctamente",
+      "deleteError": "Error al eliminar la aplicación"
+    }
   }
 }
