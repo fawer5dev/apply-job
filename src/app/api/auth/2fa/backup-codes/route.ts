@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     if (!passwordValid) {
       await createAuditLog({
         userId,
-        action: 'backup_codes_regeneration_failure',
+        action: 'backup_codes_regenerated',
         details: { reason: 'invalid_password' },
         ipAddress: ip,
         userAgent,

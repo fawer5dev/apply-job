@@ -51,7 +51,7 @@ export async function validateSessionEdge(
 
     // Check if session should be refreshed (more than 24 hours since last activity)
     const shouldRefresh =
-      Date.now() - session.lastActivityAt.getTime() > 24 * 60 * 60 * 1000;
+      Date.now() - session.lastActive.getTime() > 24 * 60 * 60 * 1000;
 
     return {
       valid: true,

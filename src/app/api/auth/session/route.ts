@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
       session: {
         id: session.id,
         userId: session.userId,
-        expiresAt: session.expiresAt,
-        lastActivityAt: session.lastActivityAt,
+        expires: session.expires,
+        lastActive: session.lastActive,
         ipAddress: session.ipAddress,
         userAgent: session.userAgent,
         deviceId: session.deviceId,

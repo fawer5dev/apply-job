@@ -166,6 +166,11 @@ export async function revokeAllUserSessions(
 }
 
 /**
+ * Alias for backward compatibility
+ */
+export { revokeAllUserSessions as revokeAllSessions };
+
+/**
  * Revoke all sessions except current one
  */
 export async function revokeOtherSessions(

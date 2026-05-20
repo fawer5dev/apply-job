@@ -119,8 +119,8 @@ export async function getSessionToken(): Promise<string | null> {
 /**
  * Set session cookie (use in API routes)
  */
-export function setSessionCookie(token: string, expiresAt: Date): string {
-  const maxAge = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+export function setSessionCookie(token: string, expires: Date): string {
+  const maxAge = Math.floor((expires.getTime() - Date.now()) / 1000);
 
   return `session-token=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }

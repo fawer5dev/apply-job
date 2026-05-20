@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Verify temporary session exists (created during login)
     const tempSession = await prisma.session.findUnique({
-      where: { token: tempToken },
+      where: { sessionToken: tempToken },
       include: {
         user: {
           select: {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!tempSession || tempSession.expiresAt < new Date()) {
+    if (!tempSession || tempSession.expires < new Date()) {
       return NextResponse.json(
         {
           success: false,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     if (useBackupCode) {
       // Verify backup code
-      const backupCodes = user.backupCodes || [];
+      const backupCodes = (user.backupCodes as string[]) || [];
       const codeIndex = backupCodes.indexOf(code);
 
       if (codeIndex !== -1) {
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       await createAuditLog({
         userId: user.id,
-        action: '2fa_verification_failure',
+        action: '2fa_verified',
         details: { useBackupCode },
         ipAddress: ip,
         userAgent,
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       expiresAt,
       ...(usedBackupCode && {
         warning: `Backup code used. You have ${
-          (user.backupCodes?.length || 0) - 1
+          ((user.backupCodes as string[])?.length || 0) - 1
         } backup codes remaining.`,
       }),
     });
