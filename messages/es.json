@@ -203,5 +203,20 @@
       "deleted": "Aplicación eliminada correctamente",
       "deleteError": "Error al eliminar la aplicación"
     }
+  },
+  "UserMenu": {
+    "activeSessions": "Sesiones Activas",
+    "loadingSessions": "Cargando sesiones...",
+    "noSessions": "No hay sesiones activas",
+    "sessionCount": "{count, plural, =1 {1 sesión activa} other {# sesiones activas}}",
+    "currentDevice": "Actual",
+    "logout": "Cerrar sesión",
+    "logoutAll": "Cerrar sesión en todos los dispositivos",
+    "timeAgo": {
+      "justNow": "Justo ahora",
+      "minutesAgo": "{count, plural, =1 {hace 1 minuto} other {hace # minutos}}",
+      "hoursAgo": "{count, plural, =1 {hace 1 hora} other {hace # horas}}",
+      "daysAgo": "{count, plural, =1 {hace 1 día} other {hace # días}}"
+    }
   }
 }

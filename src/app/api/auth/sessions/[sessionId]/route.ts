@@ -1,0 +1,85 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db/prisma';
+import { revokeSession } from '@/lib/auth/session';
+import { createAuditLog } from '@/lib/auth/audit-log';
+
+// DELETE /api/auth/sessions/[sessionId] - Revoke a specific session
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { sessionId: string } }
+) {
+  try {
+    // Get user ID from middleware headers
+    const userId = request.headers.get('x-user-id');
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get request metadata
+    const ip =
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    const userAgent = request.headers.get('user-agent') || undefined;
+
+    const sessionId = params.sessionId;
+
+    // Verify session belongs to user
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      select: {
+        userId: true,
+        token: true,
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
+    if (session.userId !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'You do not have permission to revoke this session',
+        },
+        { status: 403 }
+      );
+    }
+
+    // Revoke session
+    await revokeSession(session.token);
+
+    // Create audit log
+    await createAuditLog({
+      userId,
+      action: 'session_revoked',
+      details: { sessionId },
+      ipAddress: ip,
+      userAgent,
+      success: true,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Session revoked successfully',
+    });
+  } catch (error) {
+    console.error('Revoke session error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'An error occurred while revoking session',
+      },
+      { status: 500 }
+    );
+  }
+}

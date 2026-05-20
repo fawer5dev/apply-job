@@ -1,6 +1,6 @@
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: May 13, 2026
+> **Last updated**: May 20, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -8,15 +8,17 @@
 
 ## 🎯 Project Description
 
-**Apply Job** is a full-stack web application that automates the job application process using artificial intelligence. It allows:
+**Apply Job** is a full-stack web application that automates the job application process using artificial intelligence. It features:
 
-- Upload and parse base resumes
+- **Complete authentication system** with 2FA, session management, and security features
+- Upload and parse base resumes (PDF, DOCX, TXT)
 - Analyze job descriptions and extract requirements
 - Generate customized resumes optimized for each job posting
 - Calculate ATS (Applicant Tracking System) scoring
-- Generate personalized cover letters
+- Generate personalized cover letters with multiple tone options
 - Manage applications and track progress
 - Multi-language support (English and Spanish)
+- Professional PDF generation with custom templates
 
 ---
 
@@ -42,10 +44,18 @@
 ### Backend
 
 - **Runtime**: Node.js 20+
-- **API**: Next.js API Routes (Route Handlers)
+- **API**: Next.js API Routes (Route Handlers) - 27 endpoints total
 - **Database**: PostgreSQL 15+ with Prisma ORM 5.19.0
+- **Authentication**:
+  - Custom session-based authentication
+  - @node-rs/argon2 2.0.2 (Argon2id password hashing)
+  - otpauth 9.5.1 (TOTP 2FA with QR codes via qrcode 1.5.4)
+  - Multi-device session management
+  - Rate limiting and account lockout
+  - Comprehensive audit logging
+- **Email**: nodemailer 8.0.7 (SMTP)
 - **AI/ML**:
-  - Google Generative AI (Gemini 2.0 Flash) - Primary, cost-effective
+  - Google Generative AI (Gemini 2.5 Flash) - Primary, cost-effective
   - OpenAI GPT-4o (API v4.56.0) - Optional, higher quality
   - ai SDK (Vercel AI SDK v3.3.0)
 - **PDF Processing**:
@@ -114,27 +124,95 @@ src/
 
 ## 📊 Database Architecture
 
-### Prisma Models (Current State)
+### Prisma Models (11 Total)
 
-#### 1. **User** - System user
+#### Authentication Models (5)
+
+##### 1. **User** - System user with authentication
 
 ```prisma
 - id: String (cuid)
 - email: String (unique)
 - name: String?
-- passwordHash: String?
+- passwordHash: String
 - emailVerified: DateTime?
 - image: String?
+- twoFactorSecret: String? (encrypted TOTP secret)
+- twoFactorEnabled: Boolean (default: false)
+- backupCodes: String? (JSON array of hashed codes)
+- failedLoginAttempts: Int (default: 0)
+- lockedUntil: DateTime? (account lockout timestamp)
+- lastLoginAt: DateTime?
+- lastLoginIp: String?
 - createdAt, updatedAt
 ```
 
 **Relationships**:
 
+- Has multiple `Session`
+- Has multiple `Account` (OAuth providers)
+- Has multiple `AuditLog`
 - Has multiple `BaseCV`
 - Has multiple `Application`
 - Has multiple `CoverLetter`
 
-#### 2. **BaseCV** - User's base resume
+##### 2. **Session** - User sessions
+
+```prisma
+- id: String (cuid)
+- userId: String (FK)
+- token: String (unique, indexed)
+- expiresAt: DateTime (indexed)
+- userAgent: String?
+- ipAddress: String?
+- lastActivityAt: DateTime
+- createdAt
+```
+
+##### 3. **Account** - OAuth provider accounts
+
+```prisma
+- id: String (cuid)
+- userId: String (FK)
+- provider: String ("github"/"google"/"linkedin")
+- providerAccountId: String
+- refreshToken: String?
+- accessToken: String?
+- expiresAt: Int?
+- tokenType: String?
+- scope: String?
+- idToken: String?
+- sessionState: String?
+- createdAt, updatedAt
+```
+
+##### 4. **VerificationToken** - Email verification and password reset
+
+```prisma
+- id: String (cuid)
+- email: String
+- token: String (unique)
+- type: String ("EMAIL_VERIFICATION"/"PASSWORD_RESET"/"TWO_FACTOR")
+- expiresAt: DateTime
+- createdAt
+```
+
+##### 5. **AuditLog** - Security event tracking
+
+```prisma
+- id: String (cuid)
+- userId: String? (FK, nullable for pre-auth events)
+- action: String (e.g., "LOGIN_SUCCESS", "PASSWORD_CHANGED")
+- ipAddress: String?
+- userAgent: String?
+- metadata: Json? (additional context)
+- success: Boolean
+- createdAt
+```
+
+#### Application Models (4)
+
+##### 6. **BaseCV** - User's base resume
 
 ```prisma
 - id: String (cuid)
@@ -187,7 +265,7 @@ skills: {
 }
 ```
 
-#### 3. **JobListing** - Analyzed job posting
+##### 7. **JobListing** - Analyzed job posting
 
 ```prisma
 - id: String (cuid)
@@ -216,7 +294,7 @@ keywords: {
 }
 ```
 
-#### 4. **Application** - Customized resume for a job posting
+##### 8. **Application** - Customized resume for a job posting
 
 ```prisma
 - id: String (cuid)
@@ -234,7 +312,7 @@ keywords: {
 
 **Status enum**: "draft", "ready", "applied", "interviewing", "rejected", "accepted"
 
-#### 5. **CoverLetter** - Cover letter
+##### 9. **CoverLetter** - Cover letter
 
 ```prisma
 - id: String (cuid)
@@ -247,7 +325,9 @@ keywords: {
 - createdAt, updatedAt
 ```
 
-#### 6. **CVTemplate** - Design templates
+#### Template Model (1)
+
+##### 10. **CVTemplate** - Design templates
 
 ```prisma
 - id: String (cuid)
@@ -260,10 +340,29 @@ keywords: {
 - createdAt, updatedAt
 ```
 
+#### Utility Model (1)
+
+##### 11. **RateLimit** - API rate limiting
+
+```prisma
+- id: String (cuid)
+- identifier: String (email or userId)
+- endpoint: String
+- attempts: Int
+- blockedUntil: DateTime?
+- lastAttemptAt: DateTime
+- createdAt, updatedAt
+```
+
+**Composite unique constraint**: `[identifier, endpoint]`
+
 ### Relationship Diagram
 
 ```
-User (1) ──┬──> (N) BaseCV
+User (1) ──┬──> (N) Session
+           ├──> (N) Account
+           ├──> (N) AuditLog
+           ├──> (N) BaseCV
            ├──> (N) Application
            └──> (N) CoverLetter
 
@@ -298,7 +397,17 @@ apply-job/
 │   │   ├── layout.tsx         # Root layout
 │   │   │
 │   │   ├── [locale]/          # 🌍 Internationalized routes
-│   │   │   ├── page.tsx       # Home page
+│   │   │   ├── page.tsx       # Landing page
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx           # Login page
+│   │   │   ├── register/
+│   │   │   │   └── page.tsx           # Registration page
+│   │   │   ├── verify-email/
+│   │   │   │   └── page.tsx           # Email verification
+│   │   │   ├── forgot-password/
+│   │   │   │   └── page.tsx           # Password reset request
+│   │   │   ├── reset-password/
+│   │   │   │   └── page.tsx           # Password reset form
 │   │   │   ├── dashboard/
 │   │   │   │   ├── page.tsx           # Dashboard home
 │   │   │   │   ├── cv/
@@ -312,7 +421,43 @@ apply-job/
 │   │   │   └── test-upload/
 │   │   │       └── page.tsx   # Test upload page
 │   │   │
-│   │   └── api/               # API Routes (no locale prefix)
+│   │   └── api/               # API Routes (27 total, no locale prefix)
+│   │       ├── auth/          # 🔐 Authentication (17 endpoints)
+│   │       │   ├── register/
+│   │       │   │   └── route.ts       # POST /api/auth/register
+│   │       │   ├── login/
+│   │       │   │   └── route.ts       # POST /api/auth/login
+│   │       │   ├── logout/
+│   │       │   │   └── route.ts       # POST /api/auth/logout
+│   │       │   ├── logout-all/
+│   │       │   │   └── route.ts       # POST /api/auth/logout-all
+│   │       │   ├── verify-email/
+│   │       │   │   └── route.ts       # POST /api/auth/verify-email
+│   │       │   ├── resend-verification/
+│   │       │   │   └── route.ts       # POST /api/auth/resend-verification
+│   │       │   ├── forgot-password/
+│   │       │   │   └── route.ts       # POST /api/auth/forgot-password
+│   │       │   ├── reset-password/
+│   │       │   │   └── route.ts       # POST /api/auth/reset-password
+│   │       │   ├── change-password/
+│   │       │   │   └── route.ts       # POST /api/auth/change-password
+│   │       │   ├── 2fa/
+│   │       │   │   ├── enable/
+│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/enable
+│   │       │   │   ├── verify-setup/
+│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/verify-setup
+│   │       │   │   ├── verify/
+│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/verify
+│   │       │   │   ├── disable/
+│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/disable
+│   │       │   │   └── backup-codes/
+│   │       │   │       └── route.ts   # POST /api/auth/2fa/backup-codes
+│   │       │   ├── session/
+│   │       │   │   └── route.ts       # GET /api/auth/session
+│   │       │   ├── sessions/
+│   │       │   │   ├── route.ts       # GET /api/auth/sessions
+│   │       │   │   └── [id]/
+│   │       │   │       └── route.ts   # DELETE /api/auth/sessions/[id]
 │   │       ├── application/
 │   │       │   ├── create/
 │   │       │   │   └── route.ts       # POST /api/application/create
@@ -354,6 +499,16 @@ apply-job/
 │   │   └── request.ts         # Server-side i18n
 │   │
 │   ├── lib/
+│   │   ├── auth/              # 🔐 Authentication services
+│   │   │   ├── session.ts           # Session management
+│   │   │   ├── password.ts          # Argon2id password hashing
+│   │   │   ├── totp.ts              # 2FA TOTP implementation
+│   │   │   ├── rate-limit.ts        # API rate limiting
+│   │   │   ├── account-lockout.ts   # Brute force protection
+│   │   │   ├── audit-log.ts         # Security event logging
+│   │   │   ├── email-verification.ts # Email verification
+│   │   │   └── password-reset.ts    # Password reset
+│   │   │
 │   │   ├── ai/                # AI services
 │   │   │   ├── google-ai.ts         # Google Gemini client
 │   │   │   ├── openai.ts            # OpenAI client (optional)
@@ -370,6 +525,9 @@ apply-job/
 │   │   ├── db/
 │   │   │   └── prisma.ts      # Prisma singleton client
 │   │   │
+│   │   ├── email/
+│   │   │   └── service.ts     # SMTP email service (nodemailer)
+│   │   │
 │   │   ├── pdf/
 │   │   │   └── generator.ts   # Generates PDFs with Puppeteer
 │   │   │
@@ -377,13 +535,21 @@ apply-job/
 │   │       ├── formatting.ts  # Format helpers
 │   │       └── validation.ts  # Validations with Zod
 │   │
+│   ├── components/
+│   │   ├── ui/                # shadcn/ui components
+│   │   ├── LanguageSwitcher.tsx
+│   │   └── UserMenu.tsx       # User dropdown menu
+│   │
+│   ├── hooks/
+│   │   └── use-auth.tsx       # Authentication context & hooks
+│   │
 │   ├── types/
 │   │   ├── index.ts           # General types + re-exports
 │   │   ├── application.ts     # Application types
 │   │   ├── cv.ts              # CV types
 │   │   └── job.ts             # Job types
 │   │
-│   └── middleware.ts          # 🌍 Locale detection middleware
+│   └── middleware.ts          # 🌍 Locale detection & 🔐 Auth protection
 │
 ├── templates/
 │   └── cv/
@@ -414,7 +580,205 @@ apply-job/
 
 ## 🔌 Implemented API Endpoints
 
-### 1. **POST /api/job/analyze**
+### Authentication Endpoints (17 total)
+
+#### User Registration & Login
+
+##### POST /api/auth/register
+Register new user with email/password.
+
+**Request**:
+```json
+{
+  "email": "string",
+  "password": "string",
+  "name": "string?"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Registration successful. Please check your email to verify your account."
+}
+```
+
+##### POST /api/auth/login
+Login with credentials.
+
+**Request**:
+```json
+{
+  "email": "string",
+  "password": "string",
+  "totpCode": "string?" // Required if 2FA enabled
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "requires2FA": false, // true if 2FA enabled
+  "user": {
+    "id": "string",
+    "email": "string",
+    "name": "string"
+  }
+}
+```
+
+##### POST /api/auth/logout
+Logout current session.
+
+##### POST /api/auth/logout-all
+Logout from all devices.
+
+#### Email Verification
+
+##### POST /api/auth/verify-email
+Verify email with token.
+
+**Request**:
+```json
+{
+  "token": "string"
+}
+```
+
+##### POST /api/auth/resend-verification
+Resend verification email.
+
+#### Password Management
+
+##### POST /api/auth/forgot-password
+Request password reset email.
+
+**Request**:
+```json
+{
+  "email": "string"
+}
+```
+
+##### POST /api/auth/reset-password
+Reset password with token.
+
+**Request**:
+```json
+{
+  "token": "string",
+  "password": "string"
+}
+```
+
+##### POST /api/auth/change-password
+Change password for logged-in user.
+
+**Request**:
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+
+#### Two-Factor Authentication
+
+##### POST /api/auth/2fa/enable
+Generate 2FA secret and QR code.
+
+**Response**:
+```json
+{
+  "secret": "string",
+  "qrCode": "string" // Data URL
+}
+```
+
+##### POST /api/auth/2fa/verify-setup
+Verify and enable 2FA.
+
+**Request**:
+```json
+{
+  "code": "string" // 6-digit TOTP code
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "backupCodes": ["string"] // 10 backup codes
+}
+```
+
+##### POST /api/auth/2fa/verify
+Verify 2FA code during login.
+
+**Request**:
+```json
+{
+  "email": "string",
+  "code": "string"
+}
+```
+
+##### POST /api/auth/2fa/disable
+Disable 2FA for user.
+
+**Request**:
+```json
+{
+  "password": "string" // Confirmation
+}
+```
+
+##### POST /api/auth/2fa/backup-codes
+Regenerate backup codes.
+
+#### Session Management
+
+##### GET /api/auth/session
+Get current session information.
+
+**Response**:
+```json
+{
+  "user": {
+    "id": "string",
+    "email": "string",
+    "name": "string",
+    "emailVerified": "DateTime",
+    "twoFactorEnabled": boolean
+  }
+}
+```
+
+##### GET /api/auth/sessions
+List all user sessions.
+
+**Response**:
+```json
+{
+  "sessions": [{
+    "id": "string",
+    "userAgent": "string",
+    "ipAddress": "string",
+    "lastActivityAt": "DateTime",
+    "isCurrent": boolean
+  }]
+}
+```
+
+##### DELETE /api/auth/sessions/[id]
+Revoke specific session.
+
+### Core Application Endpoints (10 total)
+
+##### 1. **POST /api/job/analyze**
 
 Analyzes a job description and extracts structured information.
 

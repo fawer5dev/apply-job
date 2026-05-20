@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { generateCustomCV } from '@/lib/ai/cv-generator';
 import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
+import { requireAuthApi } from '@/lib/auth/server-session';
 import type { CV, JobListing } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user ID
+    const userId = await requireAuthApi();
+
     const body = await request.json();
-    const { baseCVId, jobListingId, userId, tone = 'professional' } = body;
+    const { baseCVId, jobListingId, tone = 'professional' } = body;
 
     if (!baseCVId || !jobListingId) {
       return NextResponse.json(
@@ -72,7 +76,7 @@ export async function POST(request: NextRequest) {
         // Create cover letter
         const coverLetterRecord = await tx.coverLetter.create({
           data: {
-            userId: userId || 'temp-user',
+            userId,
             content: coverLetter.content,
             htmlContent: coverLetter.htmlContent || null,
             tone,
@@ -82,7 +86,7 @@ export async function POST(request: NextRequest) {
         // Create application with cover letter ID
         return await tx.application.create({
           data: {
-            userId: userId || 'temp-user',
+            userId,
             baseCVId,
             jobListingId,
             customCV: customCV as never,
@@ -142,8 +146,8 @@ export async function POST(request: NextRequest) {
 // GET - Get user applications
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'temp-user';
+    // Get authenticated user ID
+    const userId = await requireAuthApi();
 
     const applications = await prisma.application.findMany({
       where: { userId },
