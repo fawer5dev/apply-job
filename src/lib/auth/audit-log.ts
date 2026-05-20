@@ -38,7 +38,7 @@ export async function createAuditLog(options: AuditLogOptions): Promise<void> {
       data: {
         userId: options.userId,
         action: options.action,
-        details: options.details || null,
+        details: options.details || {},
         ipAddress: options.ipAddress,
         userAgent: options.userAgent,
         success: options.success,

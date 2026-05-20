@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     if (!passwordValid) {
       await createAuditLog({
         userId: user.id,
-        action: 'password_change_failure',
+        action: 'password_changed',
         details: { reason: 'invalid_current_password' },
         ipAddress: ip,
         userAgent,

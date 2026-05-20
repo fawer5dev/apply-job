@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (user.isSuspended) {
       await createAuditLog({
         userId: user.id,
-        action: 'password_reset_attempt',
+        action: 'password_reset_requested',
         details: { email, reason: 'account_suspended' },
         ipAddress: ip,
         userAgent,
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
 
       await createAuditLog({
         userId: user.id,
-        action: 'password_reset_failure',
+        action: 'password_reset_completed',
         details: { email },
         ipAddress: ip,
         userAgent,

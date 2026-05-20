@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
     const setupToken = await prisma.verificationToken.findFirst({
       where: {
         userId,
-        type: 'TWO_FACTOR_SETUP',
-        expiresAt: {
+        type: 'TWO_FACTOR',
+        expires: {
           gt: new Date(),
         },
       },
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       await createAuditLog({
         userId,
-        action: '2fa_setup_verification_failure',
+        action: '2fa_enabled',
         details: { reason: 'invalid_code' },
         ipAddress: ip,
         userAgent,

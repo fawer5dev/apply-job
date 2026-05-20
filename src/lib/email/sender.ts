@@ -30,7 +30,7 @@ function createTransporter() {
     return null;
   }
 
-  return nodemailer.createTransporter(emailConfig);
+  return nodemailer.createTransport(emailConfig);
 }
 
 /**
@@ -224,4 +224,21 @@ export function getSecurityNotificationTemplate(
     </body>
     </html>
   `;
+}
+
+/**
+ * Send security notification email
+ */
+export async function sendSecurityNotification(
+  to: string,
+  action: string,
+  details: string,
+  name?: string
+): Promise<boolean> {
+  const html = getSecurityNotificationTemplate(name || 'User', action, details);
+  return sendEmail({
+    to,
+    subject: `Security Alert: ${action}`,
+    html,
+  });
 }

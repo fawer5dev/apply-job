@@ -4,6 +4,7 @@ import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 import { verifyPasswordResetToken } from '@/lib/auth/email-verification';
 import { revokeAllUserSessions } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
+import { sendSecurityNotification } from '@/lib/email/sender';
 import { prisma } from '@/lib/db/prisma';
 
 const resetPasswordSchema = z.object({
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.valid || !result.userId) {
       await createAuditLog({
-        action: 'password_reset_failure',
+        action: 'password_reset_completed',
         details: { reason: result.error },
         ipAddress: ip,
         userAgent,
@@ -113,16 +114,11 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await createAuditLog({
       userId: result.userId,
-      action: 'password_reset_success',
+      action: 'password_reset_completed',
       details: {},
       ipAddress: ip,
       userAgent,
       success: true,
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Password reset successfully. You can now log in with your new password.',
     });
 
     // Send security notification

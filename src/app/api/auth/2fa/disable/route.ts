@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     if (!passwordValid) {
       await createAuditLog({
         userId,
-        action: '2fa_disable_failure',
+        action: '2fa_disabled',
         details: { reason: 'invalid_password' },
         ipAddress: ip,
         userAgent,

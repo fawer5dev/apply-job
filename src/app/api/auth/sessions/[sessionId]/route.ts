@@ -6,7 +6,7 @@ import { createAuditLog } from '@/lib/auth/audit-log';
 // DELETE /api/auth/sessions/[sessionId] - Revoke a specific session
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Get user ID from middleware headers
@@ -26,14 +26,14 @@ export async function DELETE(
       'unknown';
     const userAgent = request.headers.get('user-agent') || undefined;
 
-    const sessionId = params.sessionId;
+    const { sessionId } = await params;
 
     // Verify session belongs to user
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
       select: {
         userId: true,
-        token: true,
+        sessionToken: true,
       },
     });
 
@@ -55,13 +55,13 @@ export async function DELETE(
     }
 
     // Revoke session
-    await revokeSession(session.token);
+    await revokeSession(session.sessionToken);
 
     // Create audit log
     await createAuditLog({
       userId,
-      action: 'session_revoked',
-      details: { sessionId },
+      action: 'logout',
+      details: { sessionId, type: 'single_session_revoked' },
       ipAddress: ip,
       userAgent,
       success: true,

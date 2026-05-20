@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         userId,
         email: user.email,
         token: secret, // Store secret temporarily
-        type: 'TWO_FACTOR_SETUP',
+        type: 'TWO_FACTOR',
         expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes to complete setup
       },
     });
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Create audit log
     await createAuditLog({
       userId,
-      action: '2fa_setup_initiated',
+      action: '2fa_enabled',
       details: {},
       ipAddress: ip,
       userAgent,

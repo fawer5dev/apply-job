@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.valid || !result.userId) {
       await createAuditLog({
-        action: 'email_verification_failure',
+        action: 'email_verified',
         details: { reason: result.error },
         ipAddress: ip,
         userAgent,

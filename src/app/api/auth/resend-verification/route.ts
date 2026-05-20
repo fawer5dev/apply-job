@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || undefined;
 
     // Check rate limit (stricter than register)
-    const rateLimit = await checkRateLimit(ip, 'email-verification', {
-      maxAttempts: 3,
-      windowMs: 60 * 60 * 1000, // 1 hour
-    });
+    const rateLimit = await checkRateLimit(ip, 'email-verification');
 
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -83,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (user.emailVerified) {
       await createAuditLog({
         userId: user.id,
-        action: 'resend_verification_attempt',
+        action: 'email_verified',
         details: { email, reason: 'already_verified' },
         ipAddress: ip,
         userAgent,
@@ -103,7 +100,7 @@ export async function POST(request: NextRequest) {
 
       await createAuditLog({
         userId: user.id,
-        action: 'resend_verification',
+        action: 'email_verified',
         details: { email },
         ipAddress: ip,
         userAgent,
@@ -119,7 +116,7 @@ export async function POST(request: NextRequest) {
 
       await createAuditLog({
         userId: user.id,
-        action: 'resend_verification_failure',
+        action: 'email_verified',
         details: { email },
         ipAddress: ip,
         userAgent,
