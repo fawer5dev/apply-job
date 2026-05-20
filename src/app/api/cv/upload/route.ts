@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseCV } from '@/lib/cv/parser';
 import { prisma } from '@/lib/db/prisma';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user ID
+    const userId = await requireAuthApi();
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const title = formData.get('title') as string;
-    const userId = formData.get('userId') as string; // In production, get from auth
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -35,30 +38,10 @@ export async function POST(request: NextRequest) {
     console.log('Parsing CV...');
     const parsedCV = await parseCV(file);
 
-    // Ensure user exists (temporary until auth is implemented)
-    const finalUserId = userId || 'temp-user';
-
-    // Check if user exists, create if not
-    let user = await prisma.user.findUnique({
-      where: { id: finalUserId },
-    });
-
-    if (!user) {
-      console.log(`Creating user ${finalUserId}...`);
-      user = await prisma.user.create({
-        data: {
-          id: finalUserId,
-          email: `${finalUserId}@example.com`,
-          name: 'Temporary User',
-        },
-      });
-      console.log(`User ${finalUserId} created successfully`);
-    }
-
     // Save to database
     const baseCV = await prisma.baseCV.create({
       data: {
-        userId: finalUserId,
+        userId,
         title,
         personalInfo: parsedCV.personalInfo as never,
         summary: parsedCV.summary || null,
@@ -100,8 +83,8 @@ export async function POST(request: NextRequest) {
 // GET - Get user CVs
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'temp-user';
+    // Get authenticated user ID
+    const userId = await requireAuthApi();
 
     const baseCVs = await prisma.baseCV.findMany({
       where: { userId },

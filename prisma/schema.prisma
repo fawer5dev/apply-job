@@ -21,6 +21,19 @@ model User {
   emailVerified DateTime?
   image         String?
   
+  // Security fields
+  isActive      Boolean   @default(true)
+  isSuspended   Boolean   @default(false)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  backupCodes   Json?
+  
+  // Account lockout
+  failedLoginAttempts Int @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  lastLoginIp        String?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -28,7 +41,12 @@ model User {
   baseCVs       BaseCV[]
   applications  Application[]
   coverLetters  CoverLetter[]
+  sessions      Session[]
+  accounts      Account[]
+  verifyTokens  VerificationToken[]
+  auditLogs     AuditLog[]
   
+  @@index([email])
   @@map("users")
 }
 
@@ -196,4 +214,136 @@ model CVTemplate {
   updatedAt DateTime @updatedAt
   
   @@map("cv_templates")
+}
+
+// ============================================
+// SESSION (Database-backed sessions)
+// ============================================
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sessionToken String   @unique
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  lastActive   DateTime @default(now())
+  
+  userAgent    String?
+  ipAddress    String?
+  deviceId     String?
+  
+  isValid      Boolean  @default(true)
+  revokedAt    DateTime?
+  revokedReason String?
+  
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expires])
+  @@map("sessions")
+}
+
+// ============================================
+// ACCOUNT (OAuth providers)
+// ============================================
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  provider          String
+  providerAccountId String
+  type              String
+  
+  accessToken       String? @db.Text
+  refreshToken      String? @db.Text
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String? @db.Text
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// ============================================
+// VERIFICATION TOKEN
+// ============================================
+model VerificationToken {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token     String   @unique
+  type      TokenType
+  email     String?
+  
+  expires   DateTime
+  usedAt    DateTime?
+  
+  ipAddress String?
+  attempts  Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([token])
+  @@index([userId])
+  @@index([email])
+  @@map("verification_tokens")
+}
+
+enum TokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  TWO_FACTOR
+  MAGIC_LINK
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  action    String
+  details   Json?
+  
+  ipAddress String?
+  userAgent String?
+  location  String?
+  
+  success   Boolean
+  errorMessage String?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// RATE LIMIT TRACKING
+// ============================================
+model RateLimit {
+  id         String   @id @default(cuid())
+  identifier String
+  endpoint   String
+  
+  attempts   Int      @default(1)
+  windowStart DateTime @default(now())
+  
+  blockedUntil DateTime?
+  
+  @@unique([identifier, endpoint])
+  @@index([identifier])
+  @@index([windowStart])
+  @@map("rate_limits")
 }

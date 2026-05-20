@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import UserMenu from '@/components/UserMenu';
 import { FileText, Sparkles, BarChart3, ArrowRight } from '@/lib/icons';
 import { useEffect, useState } from 'react';
 
@@ -131,13 +132,8 @@ export default function DashboardPage() {
               >
                 {t('nav.myCVs')}
               </Link>
-              <Link
-                href="/dashboard/applications"
-                className="font-body text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 hover:text-primary"
-              >
-                {t('nav.applications')}
-              </Link>
               <LanguageSwitcher />
+              <UserMenu />
             </div>
           </nav>
         </div>

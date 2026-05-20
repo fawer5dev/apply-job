@@ -7,6 +7,7 @@ import { getMessages } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
+import { AuthProvider } from '@/hooks/use-auth';
 
 // Bold serif for headlines and emphasis
 const crimsonPro = Crimson_Pro({
@@ -83,7 +84,9 @@ export default async function LocaleLayout({
     >
       <body className="font-body antialiased">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

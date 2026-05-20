@@ -4,6 +4,15 @@ Web app to automate the job application process by generating personalized CVs a
 
 ## 🚀 Features
 
+### Core Features
+
+- **User Authentication**: Complete authentication system with:
+  - Email/password authentication with verification
+  - Two-Factor Authentication (2FA) with TOTP
+  - Session management with multi-device support
+  - Password reset and account recovery
+  - Rate limiting and brute force protection
+  - Comprehensive audit logging
 - **Base CV Upload**: Upload your main CV and automatically extract information
 - **Job Description Analysis**: Analyze job postings and extract key requirements
 - **Personalized CV Generation**: Generate CVs tailored to each job posting using AI
@@ -19,11 +28,14 @@ Web app to automate the job application process by generating personalized CVs a
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, React 19, Tailwind CSS, shadcn/ui, next-intl (i18n)
-- **Backend**: Next.js API Routes, TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **AI**: Google Gemini 2.0 Flash (primary), OpenAI GPT-4o (optional)
-- **PDF Generation**: Puppeteer (minimalist single-column design)
+- **Frontend**: Next.js 15, React 18.3.1, TypeScript, Tailwind CSS, shadcn/ui, next-intl (i18n)
+- **Backend**: Next.js API Routes, Node.js 20+
+- **Database**: PostgreSQL 15+ with Prisma ORM 5.19.0
+- **Authentication**: Custom implementation with Argon2id hashing, TOTP 2FA, session management
+- **AI**: Google Gemini 2.5 Flash (primary, cost-effective), OpenAI GPT-4o (optional)
+- **PDF Generation**: Puppeteer 23.1.1 (minimalist single-column design)
+- **State Management**: Zustand 4.5.4 + React Query 5.51.1
+- **Email**: Nodemailer with SMTP support
 
 ## 📦 Installation
 
@@ -33,7 +45,7 @@ pnpm install
 
 # 2. Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your credentials
+# Edit .env.local with your credentials (see docs/ENV_VARIABLES.md)
 
 # 3. Set up database
 pnpm db:push
@@ -41,6 +53,8 @@ pnpm db:push
 # 4. Run in development
 pnpm dev
 ```
+
+For detailed setup instructions including authentication configuration, see [docs/SETUP.md](docs/SETUP.md) or [docs/QUICK_START.md](docs/QUICK_START.md) for a quick 5-minute guide.
 
 ## 🗄️ Database
 
@@ -59,40 +73,68 @@ pnpm db:studio
 
 ```
 apply-job/
-├── prisma/              # DB schema and migrations
+├── prisma/              # DB schema and migrations (10 models)
 ├── public/              # Static files
 ├── messages/            # Translation files (en, es)
-├── files/               # User uploaded CVs
+├── files/               # User uploaded CVs (gitignored)
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/   # Internationalized routes
-│   │   └── api/        # API endpoints
+│   │   │   ├── login/, register/, verify-email/  # Auth pages
+│   │   │   ├── forgot-password/, reset-password/
+│   │   │   └── dashboard/  # Protected user area
+│   │   └── api/        # API endpoints (27 total)
+│   │       ├── auth/   # 17 authentication endpoints
+│   │       ├── cv/     # CV management
+│   │       ├── job/    # Job analysis
+│   │       └── application/  # Application tracking
 │   ├── components/     # React components
-│   ├── lib/            # Business logic, AI services
+│   │   └── ui/        # shadcn/ui components
+│   ├── lib/            # Business logic & services
+│   │   ├── ai/        # Google Gemini & OpenAI services
+│   │   ├── auth/      # Session, password, 2FA, rate limiting
+│   │   ├── cv/        # CV parsing (PDF, DOCX, TXT)
+│   │   ├── pdf/       # Puppeteer PDF generation
+│   │   └── email/     # SMTP email service
 │   ├── types/          # TypeScript types
 │   ├── i18n/           # Internationalization config
+│   ├── hooks/          # React hooks (useAuth)
 │   ├── config/         # Configuration
-│   └── middleware.ts   # Locale detection
+│   └── middleware.ts   # Auth & i18n middleware
 ├── templates/          # HTML templates for PDFs
-├── tests/              # Test files and documentation
+├── tests/              # Test files and scripts
 └── docs/               # Project documentation
 ```
 
 ## 🔑 Required Environment Variables
 
+### Core Configuration
 - `DATABASE_URL`: PostgreSQL connection URL
+- `SESSION_SECRET`: 64-character hex string for session encryption
+- `NEXT_PUBLIC_APP_URL`: Application URL (http://localhost:3000 for dev)
+
+### AI Providers (at least one required)
 - `GOOGLE_AI_API_KEY`: Google AI API key (recommended, cost-effective)
 - `OPENAI_API_KEY`: OpenAI API key (optional, higher quality)
 
-**Note**: At least one AI provider (Google AI or OpenAI) must be configured.
+### Email Configuration (for authentication)
+- `SMTP_HOST`: SMTP server host (e.g., smtp.gmail.com)
+- `SMTP_PORT`: SMTP port (587 for TLS)
+- `SMTP_USER`: SMTP username
+- `SMTP_PASS`: SMTP password (use app password for Gmail)
+- `EMAIL_FROM`: Sender email address
+
+For complete environment variable documentation, see [docs/ENV_VARIABLES.md](docs/ENV_VARIABLES.md)
 
 ## 📚 Documentation
 
+- **[Quick Start](docs/QUICK_START.md)** - 5-minute setup guide
 - **[Setup Guide](docs/SETUP.md)** - Detailed installation and configuration
+- **[Environment Variables](docs/ENV_VARIABLES.md)** - Complete environment configuration
+- **[Authentication](docs/AUTH_FINAL_COMPLETE.md)** - Authentication system documentation
 - **[Architecture](docs/ARCHITECTURE.md)** - Technical architecture and design
 - **[Project Context](PROJECT_CONTEXT.md)** - Complete project information
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Testing Guide](tests/README.md)** - How to write and run tests
 
 ## 📄 License
 
