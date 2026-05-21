@@ -14,13 +14,27 @@ if (process.env.NODE_ENV !== 'production' && !process.env.OPENAI_API_KEY) {
   }
 }
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY is not configured');
+// Helper function to get API key with validation at runtime
+function getApiKey(): string {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+  return apiKey;
 }
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client (only when actually used)
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: getApiKey(),
+    });
+  }
+  return openaiClient;
+}
+
+export const openai = getOpenAI;
 
 export const AI_CONFIG = {
   model: 'gpt-4o',

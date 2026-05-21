@@ -15,12 +15,23 @@ if (process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_AI_API_KEY) {
   }
 }
 
-if (!process.env.GOOGLE_AI_API_KEY) {
-  throw new Error('GOOGLE_AI_API_KEY is not configured');
+// Helper function to get API key with validation at runtime
+function getApiKey(): string {
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GOOGLE_AI_API_KEY is not configured');
+  }
+  return apiKey;
 }
 
-// Initialize Google AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+// Lazy initialization of Google AI (only when actually used)
+let genAI: GoogleGenerativeAI | null = null;
+function getGenAI(): GoogleGenerativeAI {
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(getApiKey());
+  }
+  return genAI;
+}
 
 // Default configuration
 export const AI_CONFIG = {
@@ -42,7 +53,7 @@ export async function generateContent(
     responseFormat?: 'json' | 'text';
   }
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({
+  const model = getGenAI().getGenerativeModel({
     model: AI_CONFIG.model,
     generationConfig: {
       temperature: config?.temperature ?? AI_CONFIG.temperature,
@@ -127,7 +138,7 @@ export async function generateContentStream(
   systemPrompt: string,
   userPrompt: string
 ): Promise<ReadableStream> {
-  const model = genAI.getGenerativeModel({
+  const model = getGenAI().getGenerativeModel({
     model: AI_CONFIG.model,
   });
 
@@ -146,4 +157,4 @@ export async function generateContentStream(
   });
 }
 
-export { genAI };
+export { getGenAI as genAI };
