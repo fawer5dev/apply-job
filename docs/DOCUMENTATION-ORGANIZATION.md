@@ -2,8 +2,8 @@
 
 ## Last Updated
 
-**Date**: May 13, 2026  
-**Changes**: Comprehensive update for internationalization, Google Gemini AI integration, and complete API documentation
+**Date**: May 21, 2026  
+**Changes**: Added DEPLOYMENT.md guide with Vercel deployment instructions and troubleshooting for production deployments
 
 ## Current Documentation Structure
 
@@ -16,8 +16,13 @@ apply-job/
     ├── README.md               # Documentation index
     ├── ARCHITECTURE.md         # Technical architecture
     ├── SETUP.md                # Installation and setup guide
-    ├── TROUBLESHOOTING.md      # Common issues and solutions
-    └── DOCUMENTATION-ORGANIZATION.md  # Documentation structure and maintenance guide
+    ├── QUICK_START.md          # 5-minute authentication setup
+    ├── DEPLOYMENT.md           # Vercel/production deployment guide
+    ├── ENV_VARIABLES.md        # Environment variable reference
+    ├── AUTH_FINAL_COMPLETE.md  # Complete authentication documentation
+    ├── AUTH_IMPLEMENTATION_STATUS.md  # Auth implementation status
+    ├── AUTH_PHASE2_COMPLETE.md # Auth phase 2 completion notes
+    └── DOCUMENTATION-ORGANIZATION.md  # Documentation structure guide
 
 ```
 
@@ -54,14 +59,33 @@ apply-job/
 - Environment setup
 - Development and production guides
 
-**TROUBLESHOOTING.md**
+**DEPLOYMENT.md**
 
-- Common issues and solutions
-- Google AI and OpenAI troubleshooting
-- Internationalization issues
-- File upload problems
-- Debugging procedures
-- Error resolution guides
+- Complete deployment guide for Vercel
+- Environment variable setup for production
+- Database configuration (Neon, Supabase, Railway)
+- Common deployment issues and fixes
+- Post-deployment checklist
+- Alternative platforms (Railway, Render)
+
+**QUICK_START.md**
+
+- 5-minute authentication setup guide
+- Quick database configuration
+- Email setup instructions
+- Testing authentication flows
+
+**ENV_VARIABLES.md**
+
+- Complete environment variable documentation
+- Required vs optional variables
+- Provider setup guides
+
+**AUTH_*.md Files**
+
+- Complete authentication system documentation
+- Implementation status and phases
+- API endpoints and usage examples
 
 **DOCUMENTATION-ORGANIZATION.md** (This file)
 

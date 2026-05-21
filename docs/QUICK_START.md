@@ -203,13 +203,15 @@ Before deploying to production:
 - [ ] Change `SESSION_SECRET` to a new random value
 - [ ] Update `NEXT_PUBLIC_APP_URL` to your production domain
 - [ ] Switch SMTP to a production service (SendGrid, AWS SES, etc.)
-- [ ] Enable HTTPS (required for secure cookies)
-- [ ] Set `NODE_ENV=production`
+- [ ] Enable HTTPS (automatic on Vercel)
+- [ ] Set `NODE_ENV=production` (automatic on Vercel)
 - [ ] Test email delivery in production
 - [ ] Set up error monitoring (Sentry, etc.)
 - [ ] Configure CORS if needed
 - [ ] Set up database backups
 - [ ] Test all authentication flows in production
+
+**Ready to deploy?** See [docs/DEPLOYMENT.md](../DEPLOYMENT.md) for complete deployment guide.
 
 ---
 
