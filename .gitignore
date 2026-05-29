@@ -46,9 +46,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
-prisma/migrations/
-
 # IDE
 .vscode/*
 !.vscode/settings.json

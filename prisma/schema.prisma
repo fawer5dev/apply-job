@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,156 +7,227 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// USUARIO
-// ============================================
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  passwordHash  String?
-  emailVerified DateTime?
-  image         String?
-  
-  // Security fields
-  isActive      Boolean   @default(true)
-  isSuspended   Boolean   @default(false)
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?
-  backupCodes   Json?
-  
-  // Account lockout
-  failedLoginAttempts Int @default(0)
-  lockedUntil        DateTime?
-  lastLoginAt        DateTime?
-  lastLoginIp        String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relaciones
-  baseCVs       BaseCV[]
-  applications  Application[]
-  coverLetters  CoverLetter[]
-  sessions      Session[]
-  accounts      Account[]
-  verifyTokens  VerificationToken[]
-  auditLogs     AuditLog[]
-  
+  id                  String              @id @default(cuid())
+  email               String              @unique
+  name                String?
+  passwordHash        String?
+  emailVerified       DateTime?
+  image               String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  backupCodes         Json?
+  failedLoginAttempts Int                 @default(0)
+  isActive            Boolean             @default(true)
+  isSuspended         Boolean             @default(false)
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  lockedUntil         DateTime?
+  twoFactorEnabled    Boolean             @default(false)
+  twoFactorSecret     String?
+  accounts            Account[]
+  applications        Application[]
+  auditLogs           AuditLog[]
+  baseCVs             BaseCV[]
+  coverLetters        CoverLetter[]
+  sessions            Session[]
+  verifyTokens        VerificationToken[]
+
   @@index([email])
   @@map("users")
 }
 
-// ============================================
-// CV BASE (Tu CV principal)
-// ============================================
 model BaseCV {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  title     String   // "Software Engineer CV", "Full Stack CV"
-  isDefault Boolean  @default(false)
-  
-  // Información personal
-  personalInfo Json   // { name, email, phone, location, linkedin, github, website }
-  
-  // Secciones estructuradas
-  summary      String?  @db.Text
-  experience   Json     // Array de { company, title, dates, bullets[] }
-  education    Json     // Array de { institution, degree, dates, details }
-  skills       Json     // { technical: [], soft: [], languages: [] }
-  projects     Json?    // Array de proyectos opcionales
-  certifications Json?  // Array de certificaciones
-  
-  // Metadata
-  rawText      String?  @db.Text  // Texto original del CV parseado
-  fileUrl      String?  // URL del archivo original subido
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relaciones
-  applications Application[]
-  
+  id             String        @id @default(cuid())
+  userId         String
+  title          String
+  isDefault      Boolean       @default(false)
+  personalInfo   Json
+  summary        String?
+  experience     Json
+  education      Json
+  skills         Json
+  projects       Json?
+  certifications Json?
+  rawText        String?
+  fileUrl        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  applications   Application[]
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@map("base_cvs")
 }
 
-// ============================================
-// OFERTA DE TRABAJO
-// ============================================
 model JobListing {
-  id          String   @id @default(cuid())
-  
-  // Información básica
-  title       String
-  company     String
-  location    String?
-  workMode    String?  // "remote", "hybrid", "onsite"
-  salary      String?
-  
-  // Descripción y requisitos
-  description String   @db.Text
-  requirements Json    // Array de requisitos parseados
-  
-  // Keywords extraídos (para matching)
-  keywords    Json    // { technical: [], soft: [], tools: [] }
-  
-  // Metadata
-  url         String?
-  source      String? // "LinkedIn", "Indeed", "Manual"
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relaciones
+  id           String        @id @default(cuid())
+  title        String
+  company      String
+  location     String?
+  workMode     String?
+  salary       String?
+  description  String
+  requirements Json
+  keywords     Json
+  url          String?
+  source       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   applications Application[]
-  
+
   @@index([company])
   @@map("job_listings")
 }
 
-// ============================================
-// APLICACIÓN (CV generado para un trabajo)
-// ============================================
 model Application {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  baseCVId     String
-  baseCV       BaseCV   @relation(fields: [baseCVId], references: [id])
-  
-  jobListingId String
-  jobListing   JobListing @relation(fields: [jobListingId], references: [id])
-  
-  // CV personalizado generado
-  customCV     Json     // Estructura similar a BaseCV pero tailored
-  
-  // ATS Analysis
-  atsScore     Float?   // 0-100
-  atsAnalysis  Json?    // { strengths: [], weaknesses: [], suggestions: [] }
-  matchScore   Float?   // % de match con el job
-  
-  // Status tracking
-  status       ApplicationStatus @default(DRAFT)
-  appliedAt    DateTime?
-  
-  // PDFs generados
-  cvPdfUrl     String?
-  coverLetterId String?  @unique
-  coverLetter   CoverLetter? @relation(fields: [coverLetterId], references: [id])
-  
-  // Notas del usuario
-  notes        String?  @db.Text
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id            String            @id @default(cuid())
+  userId        String
+  baseCVId      String
+  jobListingId  String
+  customCV      Json
+  atsScore      Float?
+  atsAnalysis   Json?
+  matchScore    Float?
+  status        ApplicationStatus @default(DRAFT)
+  appliedAt     DateTime?
+  cvPdfUrl      String?
+  coverLetterId String?           @unique
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  baseCV        BaseCV            @relation(fields: [baseCVId], references: [id])
+  coverLetter   CoverLetter?      @relation(fields: [coverLetterId], references: [id])
+  jobListing    JobListing        @relation(fields: [jobListingId], references: [id])
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([status])
   @@map("applications")
+}
+
+model CoverLetter {
+  id          String       @id @default(cuid())
+  userId      String
+  content     String
+  htmlContent String?
+  pdfUrl      String?
+  tone        String?
+  template    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  application Application?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("cover_letters")
+}
+
+model CVTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  htmlContent String
+  thumbnail   String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cv_templates")
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  sessionToken  String    @unique
+  expires       DateTime
+  createdAt     DateTime  @default(now())
+  lastActive    DateTime  @default(now())
+  userAgent     String?
+  ipAddress     String?
+  deviceId      String?
+  isValid       Boolean   @default(true)
+  revokedAt     DateTime?
+  revokedReason String?
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expires])
+  @@map("sessions")
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  type              String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String?
+  token     String    @unique
+  type      TokenType
+  email     String?
+  expires   DateTime
+  usedAt    DateTime?
+  ipAddress String?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([email])
+  @@map("verification_tokens")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  action       String
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+  location     String?
+  success      Boolean
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model RateLimit {
+  id           String    @id @default(cuid())
+  identifier   String
+  endpoint     String
+  attempts     Int       @default(1)
+  windowStart  DateTime  @default(now())
+  blockedUntil DateTime?
+
+  @@unique([identifier, endpoint])
+  @@index([identifier])
+  @@index([windowStart])
+  @@map("rate_limits")
 }
 
 enum ApplicationStatus {
@@ -173,177 +241,9 @@ enum ApplicationStatus {
   WITHDRAWN
 }
 
-// ============================================
-// COVER LETTER
-// ============================================
-model CoverLetter {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Contenido
-  content       String   @db.Text
-  htmlContent   String?  @db.Text
-  pdfUrl        String?
-  
-  // Metadata
-  tone          String?  // "professional", "creative", "formal"
-  template      String?  // Nombre del template usado
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  application   Application?
-  
-  @@index([userId])
-  @@map("cover_letters")
-}
-
-// ============================================
-// TEMPLATES (opcional, para templates custom)
-// ============================================
-model CVTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  htmlContent String   @db.Text
-  thumbnail   String?
-  isPublic    Boolean  @default(true)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@map("cv_templates")
-}
-
-// ============================================
-// SESSION (Database-backed sessions)
-// ============================================
-model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  sessionToken String   @unique
-  expires      DateTime
-  createdAt    DateTime @default(now())
-  lastActive   DateTime @default(now())
-  
-  userAgent    String?
-  ipAddress    String?
-  deviceId     String?
-  
-  isValid      Boolean  @default(true)
-  revokedAt    DateTime?
-  revokedReason String?
-  
-  @@index([userId])
-  @@index([sessionToken])
-  @@index([expires])
-  @@map("sessions")
-}
-
-// ============================================
-// ACCOUNT (OAuth providers)
-// ============================================
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  provider          String
-  providerAccountId String
-  type              String
-  
-  accessToken       String? @db.Text
-  refreshToken      String? @db.Text
-  expiresAt         Int?
-  tokenType         String?
-  scope             String?
-  idToken           String? @db.Text
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-  @@map("accounts")
-}
-
-// ============================================
-// VERIFICATION TOKEN
-// ============================================
-model VerificationToken {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  token     String   @unique
-  type      TokenType
-  email     String?
-  
-  expires   DateTime
-  usedAt    DateTime?
-  
-  ipAddress String?
-  attempts  Int      @default(0)
-  
-  createdAt DateTime @default(now())
-  
-  @@index([token])
-  @@index([userId])
-  @@index([email])
-  @@map("verification_tokens")
-}
-
 enum TokenType {
   EMAIL_VERIFY
   PASSWORD_RESET
   TWO_FACTOR
   MAGIC_LINK
-}
-
-// ============================================
-// AUDIT LOG
-// ============================================
-model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  action    String
-  details   Json?
-  
-  ipAddress String?
-  userAgent String?
-  location  String?
-  
-  success   Boolean
-  errorMessage String?
-  
-  createdAt DateTime @default(now())
-  
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// ============================================
-// RATE LIMIT TRACKING
-// ============================================
-model RateLimit {
-  id         String   @id @default(cuid())
-  identifier String
-  endpoint   String
-  
-  attempts   Int      @default(1)
-  windowStart DateTime @default(now())
-  
-  blockedUntil DateTime?
-  
-  @@unique([identifier, endpoint])
-  @@index([identifier])
-  @@index([windowStart])
-  @@map("rate_limits")
 }
