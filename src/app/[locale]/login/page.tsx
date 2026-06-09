@@ -29,6 +29,9 @@ export default function LoginPage() {
   const [requires2FA, setRequires2FA] = useState(false);
   const [tempToken, setTempToken] = useState<string | null>(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || '/dashboard';
 
@@ -36,6 +39,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    setRequiresVerification(false);
+    setResendSuccess(false);
 
     try {
       const result = await login(email, password);
@@ -51,6 +56,13 @@ export default function LoginPage() {
         }
       } else {
         setError(result.error || 'Login failed');
+        // Check if the error is about email verification
+        if (
+          result.error?.includes('verify your email') ||
+          result.error?.includes('verification')
+        ) {
+          setRequiresVerification(true);
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -86,6 +98,38 @@ export default function LoginPage() {
       setError('An unexpected error occurred during 2FA verification');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setResendingEmail(true);
+    setError(null);
+    setResendSuccess(false);
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResendSuccess(true);
+        setError(null);
+      } else {
+        setError(data.error || 'Failed to resend verification email');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setResendingEmail(false);
     }
   };
 
@@ -170,7 +214,34 @@ export default function LoginPage() {
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {error}
+                  {requiresVerification && (
+                    <div className="mt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResendVerification}
+                        disabled={resendingEmail}
+                        className="w-full"
+                      >
+                        {resendingEmail
+                          ? 'Sending...'
+                          : 'Resend Verification Email'}
+                      </Button>
+                    </div>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {resendSuccess && (
+              <Alert variant="success">
+                <AlertDescription>
+                  Verification email sent! Please check your inbox and spam
+                  folder.
+                </AlertDescription>
               </Alert>
             )}
 
