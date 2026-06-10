@@ -37,13 +37,13 @@ export async function GET(request: NextRequest) {
         userAgent: session.userAgent,
         deviceId: session.deviceId,
       },
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        emailVerified: session.user.emailVerified,
-        twoFactorEnabled: session.user.twoFactorEnabled,
-        isActive: session.user.isActive,
+      users: {
+        id: session.users.id,
+        email: session.users.email,
+        name: session.users.name,
+        emailVerified: session.users.emailVerified,
+        twoFactorEnabled: session.users.twoFactorEnabled,
+        isActive: session.users.isActive,
       },
     });
   } catch (error) {

@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
 
     // Get base CV and job listing
     const [baseCV, jobListing] = await Promise.all([
-      prisma.baseCV.findUnique({ where: { id: baseCVId } }),
-      prisma.jobListing.findUnique({ where: { id: jobListingId } }),
+      prisma.base_cvs.findUnique({ where: { id: baseCVId } }),
+      prisma.job_listings.findUnique({ where: { id: jobListingId } }),
     ]);
 
     if (!baseCV || !jobListing) {
@@ -74,18 +74,23 @@ export async function POST(request: NextRequest) {
     const application = await prisma.$transaction(
       async (tx) => {
         // Create cover letter
-        const coverLetterRecord = await tx.coverLetter.create({
+        const coverLetterId = `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        const coverLetterRecord = await tx.cover_letters.create({
           data: {
+            id: coverLetterId,
             userId,
             content: coverLetter.content,
             htmlContent: coverLetter.htmlContent || null,
             tone,
+            updatedAt: new Date(),
           },
         });
 
         // Create application with cover letter ID
-        return await tx.application.create({
+        const applicationId = `app_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        return await tx.applications.create({
           data: {
+            id: applicationId,
             userId,
             baseCVId,
             jobListingId,
@@ -99,11 +104,12 @@ export async function POST(request: NextRequest) {
             matchScore: customCV.atsOptimizations?.matchScore || null,
             status: 'DRAFT',
             coverLetterId: coverLetterRecord.id,
+            updatedAt: new Date(),
           },
           include: {
-            coverLetter: true,
-            jobListing: true,
-            baseCV: {
+            cover_letters: true,
+            job_listings: true,
+            base_cvs: {
               select: {
                 title: true,
               },
@@ -122,12 +128,12 @@ export async function POST(request: NextRequest) {
       application: {
         id: application.id,
         customCV: application.customCV,
-        coverLetter: application.coverLetter,
+        cover_letters: application.cover_letters,
         atsScore: application.atsScore,
         matchScore: application.matchScore,
-        jobListing: {
-          title: application.jobListing.title,
-          company: application.jobListing.company,
+        job_listings: {
+          title: application.job_listings.title,
+          company: application.job_listings.company,
         },
       },
     });
@@ -149,17 +155,17 @@ export async function GET(request: NextRequest) {
     // Get authenticated user ID
     const userId = await requireAuthApi();
 
-    const applications = await prisma.application.findMany({
+    const applications = await prisma.applications.findMany({
       where: { userId },
       include: {
-        jobListing: {
+        job_listings: {
           select: {
             title: true,
             company: true,
             location: true,
           },
         },
-        baseCV: {
+        base_cvs: {
           select: {
             title: true,
           },

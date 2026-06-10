@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const { password } = validation.data;
 
     // Get user with 2FA status and password hash
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         twoFactorEnabled: true,
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Disable 2FA and clear secret and backup codes
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: userId },
       data: {
         twoFactorEnabled: false,

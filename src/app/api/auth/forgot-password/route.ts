@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const { email } = validation.data;
 
     // Find user
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email: email.toLowerCase() },
       select: {
         id: true,

@@ -11,12 +11,12 @@ interface Application {
   atsScore: number | null;
   matchScore: number | null;
   createdAt: string;
-  jobListing: {
+  job_listings: {
     title: string;
     company: string;
     location: string | null;
   };
-  baseCV: {
+  base_cvs: {
     title: string;
   };
 }
@@ -133,7 +133,7 @@ export default function ApplicationsPage() {
                   <div className="flex-1">
                     <div className="mb-2 flex items-center gap-3">
                       <h3 className="text-xl font-semibold">
-                        {application.jobListing.title}
+                        {application.job_listings.title}
                       </h3>
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(application.status)}`}
@@ -143,9 +143,9 @@ export default function ApplicationsPage() {
                     </div>
 
                     <p className="mb-3 text-muted-foreground">
-                      {application.jobListing.company}
-                      {application.jobListing.location && (
-                        <> · {application.jobListing.location}</>
+                      {application.job_listings.company}
+                      {application.job_listings.location && (
+                        <> · {application.job_listings.location}</>
                       )}
                     </p>
 

@@ -29,8 +29,8 @@ export default function HomePage() {
     },
     {
       icon: Mail,
-      title: t('features.coverLetters.title'),
-      description: t('features.coverLetters.description'),
+      title: t('features.cover_letterss.title'),
+      description: t('features.cover_letterss.description'),
       number: '03',
     },
     {

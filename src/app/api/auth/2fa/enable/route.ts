@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || undefined;
 
     // Check if 2FA is already enabled
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         twoFactorEnabled: true,
@@ -46,8 +46,10 @@ export async function POST(request: NextRequest) {
     const { secret, qrCodeUrl, backupCodes } = await generateTOTPSecret(user.email);
 
     // Store secret and backup codes temporarily (not enabled until verified)
-    await prisma.verificationToken.create({
+    const tokenId = `vt_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    await prisma.verification_tokens.create({
       data: {
+        id: tokenId,
         userId,
         email: user.email,
         token: secret, // Store secret temporarily

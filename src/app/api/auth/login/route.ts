@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const { email, password, deviceId } = validation.data;
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email: email.toLowerCase() },
       select: {
         id: true,
@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Update last login
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: {
         lastLoginAt: new Date(),
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       sessionToken,
-      user: {
+      users: {
         id: user.id,
         email: user.email,
         name: user.name,

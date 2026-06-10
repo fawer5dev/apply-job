@@ -11,7 +11,7 @@ export default function NewApplicationPage() {
   const router = useRouter();
 
   const [step, setStep] = useState(1);
-  const [baseCVs, setBaseCVs] = useState<any[]>([]);
+  const [base_cvs, setBaseCVs] = useState<any[]>([]);
   const [selectedCVId, setSelectedCVId] = useState('');
   const [loading, setLoading] = useState(false);
   const [analyzingJob, setAnalyzingJob] = useState(false);
@@ -41,7 +41,7 @@ export default function NewApplicationPage() {
     try {
       const response = await fetch('/api/cv/upload?userId=temp-user');
       const data = await response.json();
-      setBaseCVs(data.baseCVs || []);
+      setBaseCVs(data.base_cvs || []);
     } catch (err) {
       console.error('Error cargando CVs:', err);
     } finally {
@@ -71,7 +71,7 @@ export default function NewApplicationPage() {
         throw new Error(data.error || t('errors.analysisFailed'));
       }
 
-      setJobListingId(data.jobListing.id);
+      setJobListingId(data.job_listings.id);
       setStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.analysisFailed'));
@@ -335,7 +335,7 @@ export default function NewApplicationPage() {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
-                ) : baseCVs.length === 0 ? (
+                ) : base_cvs.length === 0 ? (
                   <div className="py-8 text-center">
                     <p className="mb-4 text-muted-foreground">
                       {t('selectCVForm.noCV')}
@@ -349,7 +349,7 @@ export default function NewApplicationPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {baseCVs.map((cv) => (
+                    {base_cvs.map((cv) => (
                       <label
                         key={cv.id}
                         className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${

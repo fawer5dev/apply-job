@@ -8,7 +8,7 @@ const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
  * @returns true if account is now locked, false otherwise
  */
 export async function recordFailedLogin(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { failedLoginAttempts: true, lockedUntil: true },
   });
@@ -23,7 +23,7 @@ export async function recordFailedLogin(userId: string): Promise<boolean> {
   const newAttempts = user.failedLoginAttempts + 1;
   const shouldLock = newAttempts >= MAX_FAILED_ATTEMPTS;
 
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: userId },
     data: {
       failedLoginAttempts: newAttempts,
@@ -40,7 +40,7 @@ export async function recordFailedLogin(userId: string): Promise<boolean> {
  * Reset failed login attempts (call on successful login)
  */
 export async function resetFailedAttempts(userId: string): Promise<void> {
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: userId },
     data: {
       failedLoginAttempts: 0,
@@ -57,7 +57,7 @@ export async function checkAccountLocked(userId: string): Promise<{
   unlockAt?: Date;
   attemptsRemaining?: number;
 }> {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: {
       lockedUntil: true,
@@ -100,7 +100,7 @@ export async function checkAccountLocked(userId: string): Promise<{
  * Manually unlock an account (admin function)
  */
 export async function unlockAccount(userId: string): Promise<void> {
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: userId },
     data: {
       lockedUntil: null,
@@ -115,7 +115,7 @@ export async function unlockAccount(userId: string): Promise<void> {
 export async function getFailedAttempts(
   userId: string
 ): Promise<number | null> {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { failedLoginAttempts: true },
   });

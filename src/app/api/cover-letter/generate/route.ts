@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Get application with relations
-    const application = await prisma.application.findUnique({
+    const application = await prisma.applications.findUnique({
       where: { id: applicationId },
       include: {
-        baseCV: true,
-        jobListing: true,
+        base_cvs: true,
+        job_listings: true,
       },
     });
 
@@ -38,20 +38,20 @@ export async function POST(req: NextRequest) {
 
     // Prepare data
     const cvData = {
-      personalInfo: application.baseCV.personalInfo,
-      summary: application.baseCV.summary || undefined,
-      experience: application.baseCV.experience,
-      education: application.baseCV.education,
-      skills: application.baseCV.skills,
+      personalInfo: application.base_cvs.personalInfo,
+      summary: application.base_cvs.summary || undefined,
+      experience: application.base_cvs.experience,
+      education: application.base_cvs.education,
+      skills: application.base_cvs.skills,
     } as unknown as CV;
 
     const jobData = {
-      title: application.jobListing.title,
-      company: application.jobListing.company,
-      location: application.jobListing.location || undefined,
-      description: application.jobListing.description,
-      requirements: application.jobListing.requirements as any,
-      keywords: application.jobListing.keywords as any,
+      title: application.job_listings.title,
+      company: application.job_listings.company,
+      location: application.job_listings.location || undefined,
+      description: application.job_listings.description,
+      requirements: application.job_listings.requirements as any,
+      keywords: application.job_listings.keywords as any,
     } as JobListing;
 
     // Generate cover letter
@@ -63,17 +63,20 @@ export async function POST(req: NextRequest) {
     );
 
     // Save cover letter
-    const coverLetter = await prisma.coverLetter.create({
+    const coverLetterId = `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const coverLetter = await prisma.cover_letters.create({
       data: {
+        id: coverLetterId,
         userId: application.userId,
         content: coverLetterResult.content,
         htmlContent: coverLetterResult.htmlContent,
         tone: tone || 'professional',
+        updatedAt: new Date(),
       },
     });
 
     // Update application
-    await prisma.application.update({
+    await prisma.applications.update({
       where: { id: applicationId },
       data: {
         coverLetterId: coverLetter.id,

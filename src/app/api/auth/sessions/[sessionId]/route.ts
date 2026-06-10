@@ -29,7 +29,7 @@ export async function DELETE(
     const { sessionId } = await params;
 
     // Verify session belongs to user
-    const session = await prisma.session.findUnique({
+    const session = await prisma.sessions.findUnique({
       where: { id: sessionId },
       select: {
         userId: true,

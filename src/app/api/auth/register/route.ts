@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -89,13 +89,16 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
 
     // Create user (inactive until email verified)
-    const user = await prisma.user.create({
+    const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const user = await prisma.users.create({
       data: {
+        id: userId,
         email: email.toLowerCase(),
         name: name || null,
         passwordHash,
         isActive: false, // Will be activated on email verification
         emailVerified: null,
+        updatedAt: new Date(),
       },
     });
 

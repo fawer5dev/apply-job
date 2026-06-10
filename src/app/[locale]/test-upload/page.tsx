@@ -164,22 +164,22 @@ export default function TestUploadPage() {
             </h3>
             <div className="space-y-2 text-sm text-green-800">
               <p>
-                <strong>ID del CV:</strong> {result.baseCV.id}
+                <strong>ID del CV:</strong> {result.base_cvs.id}
               </p>
               <p>
-                <strong>Título:</strong> {result.baseCV.title}
+                <strong>Título:</strong> {result.base_cvs.title}
               </p>
 
               <div className="mt-4">
                 <strong>📝 Información Personal:</strong>
                 <ul className="ml-4 mt-1">
-                  <li>Nombre: {result.baseCV.personalInfo.name}</li>
-                  <li>Email: {result.baseCV.personalInfo.email}</li>
-                  {result.baseCV.personalInfo.phone && (
-                    <li>Teléfono: {result.baseCV.personalInfo.phone}</li>
+                  <li>Nombre: {result.base_cvs.personalInfo.name}</li>
+                  <li>Email: {result.base_cvs.personalInfo.email}</li>
+                  {result.base_cvs.personalInfo.phone && (
+                    <li>Teléfono: {result.base_cvs.personalInfo.phone}</li>
                   )}
-                  {result.baseCV.personalInfo.location && (
-                    <li>Ubicación: {result.baseCV.personalInfo.location}</li>
+                  {result.base_cvs.personalInfo.location && (
+                    <li>Ubicación: {result.base_cvs.personalInfo.location}</li>
                   )}
                 </ul>
               </div>
@@ -187,22 +187,22 @@ export default function TestUploadPage() {
               <div className="mt-4">
                 <strong>📊 Estadísticas:</strong>
                 <ul className="ml-4 mt-1">
-                  <li>💼 Experiencias: {result.baseCV.experience.length}</li>
-                  <li>🎓 Educación: {result.baseCV.education.length}</li>
+                  <li>💼 Experiencias: {result.base_cvs.experience.length}</li>
+                  <li>🎓 Educación: {result.base_cvs.education.length}</li>
                   <li>
-                    🛠️ Categorías de habilidades: {result.baseCV.skills.length}
+                    🛠️ Categorías de habilidades: {result.base_cvs.skills.length}
                   </li>
-                  {result.baseCV.projects && (
-                    <li>🚀 Proyectos: {result.baseCV.projects.length}</li>
+                  {result.base_cvs.projects && (
+                    <li>🚀 Proyectos: {result.base_cvs.projects.length}</li>
                   )}
                 </ul>
               </div>
 
-              {result.baseCV.summary && (
+              {result.base_cvs.summary && (
                 <div className="mt-4">
                   <strong>📄 Resumen:</strong>
                   <p className="mt-1 text-gray-700">
-                    {result.baseCV.summary.substring(0, 200)}...
+                    {result.base_cvs.summary.substring(0, 200)}...
                   </p>
                 </div>
               )}

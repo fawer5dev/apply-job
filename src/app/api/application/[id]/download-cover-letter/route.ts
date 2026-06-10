@@ -10,17 +10,17 @@ export async function GET(
     const { id } = await context.params;
 
     // Get the application with cover letter
-    const application = await prisma.application.findUnique({
+    const application = await prisma.applications.findUnique({
       where: { id },
       include: {
-        coverLetter: true,
-        jobListing: {
+        cover_letters: true,
+        job_listings: {
           select: {
             title: true,
             company: true,
           },
         },
-        user: {
+        users: {
           select: {
             name: true,
           },
@@ -35,7 +35,7 @@ export async function GET(
       );
     }
 
-    if (!application.coverLetter) {
+    if (!application.cover_letters) {
       return NextResponse.json(
         { error: 'No cover letter found' },
         { status: 404 }
@@ -49,13 +49,13 @@ export async function GET(
     // Generate PDF
     console.log('Generating cover letter PDF...');
     const pdfBuffer = await generateCoverLetterPDF(
-      application.coverLetter.content,
-      application.coverLetter.htmlContent || undefined,
+      application.cover_letters.content,
+      application.cover_letters.htmlContent || undefined,
       candidateName
     );
 
     // Generate filename
-    const companyName = application.jobListing.company.replace(/\s+/g, '_');
+    const companyName = application.job_listings.company.replace(/\s+/g, '_');
     const candidateFileName = candidateName.replace(/\s+/g, '_');
     const filename = `${candidateFileName}_CL_${companyName}.pdf`;
 

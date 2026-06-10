@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const { code } = validation.data;
 
     // Get the temporary secret from verification token
-    const setupToken = await prisma.verificationToken.findFirst({
+    const setupToken = await prisma.verification_tokens.findFirst({
       where: {
         userId,
         type: 'TWO_FACTOR',
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const backupCodes = generateBackupCodes();
 
     // Enable 2FA and store secret and backup codes
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: userId },
       data: {
         twoFactorEnabled: true,
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Delete the temporary setup token
-    await prisma.verificationToken.delete({
+    await prisma.verification_tokens.delete({
       where: { id: setupToken.id },
     });
 

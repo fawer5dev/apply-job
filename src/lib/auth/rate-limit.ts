@@ -53,7 +53,7 @@ export async function checkRateLimit(
     return { allowed: true };
   }
 
-  const record = await prisma.rateLimit.findUnique({
+  const record = await prisma.rate_limits.findUnique({
     where: {
       identifier_endpoint: {
         identifier,
@@ -75,11 +75,12 @@ export async function checkRateLimit(
     !record ||
     Date.now() - record.windowStart.getTime() > config.windowMs
   ) {
-    await prisma.rateLimit.upsert({
+    await prisma.rate_limits.upsert({
       where: {
         identifier_endpoint: { identifier, endpoint },
       },
       create: {
+        id: `rl_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         identifier,
         endpoint,
         attempts: 1,
@@ -103,7 +104,7 @@ export async function checkRateLimit(
   // Check if exceeds limit
   if (newAttempts > config.maxAttempts) {
     const blockedUntil = new Date(Date.now() + config.blockDurationMs);
-    await prisma.rateLimit.update({
+    await prisma.rate_limits.update({
       where: { id: record.id },
       data: {
         attempts: newAttempts,
@@ -116,7 +117,7 @@ export async function checkRateLimit(
   }
 
   // Update attempts
-  await prisma.rateLimit.update({
+  await prisma.rate_limits.update({
     where: { id: record.id },
     data: { attempts: newAttempts },
   });
@@ -134,7 +135,7 @@ export async function resetRateLimit(
   identifier: string,
   endpoint: string
 ): Promise<void> {
-  await prisma.rateLimit
+  await prisma.rate_limits
     .delete({
       where: {
         identifier_endpoint: { identifier, endpoint },
@@ -152,7 +153,7 @@ export async function cleanupRateLimits(): Promise<number> {
   // Delete records older than 7 days
   const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const result = await prisma.rateLimit.deleteMany({
+  const result = await prisma.rate_limits.deleteMany({
     where: {
       windowStart: { lt: cutoffDate },
       blockedUntil: { lt: new Date() },
@@ -174,7 +175,7 @@ export async function getRateLimitStatus(
     return { blocked: false, remaining: 999 };
   }
 
-  const record = await prisma.rateLimit.findUnique({
+  const record = await prisma.rate_limits.findUnique({
     where: {
       identifier_endpoint: { identifier, endpoint },
     },

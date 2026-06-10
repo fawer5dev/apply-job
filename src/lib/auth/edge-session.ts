@@ -4,11 +4,11 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
-import type { Session, User } from '@prisma/client';
+import type { sessions, users } from '@prisma/client';
 import { hashToken } from './edge-crypto';
 
-interface SessionWithUser extends Session {
-  user: User;
+interface SessionWithUser extends sessions {
+  users: users;
 }
 
 export interface EdgeSessionValidationResult {
@@ -29,9 +29,9 @@ export async function validateSessionEdge(
     const tokenHash = await hashToken(token);
 
     // Look up session
-    const session = await prisma.session.findUnique({
+    const session = await prisma.sessions.findUnique({
       where: { sessionToken: tokenHash },
-      include: { user: true },
+      include: { users: true },
     });
 
     // Check if session exists and is not expired
@@ -40,12 +40,12 @@ export async function validateSessionEdge(
     }
 
     // Check if user is active and not suspended
-    if (!session.user.isActive || session.user.isSuspended) {
+    if (!session.users.isActive || session.users.isSuspended) {
       return { valid: false };
     }
 
     // Check if account is locked
-    if (session.user.lockedUntil && session.user.lockedUntil > new Date()) {
+    if (session.users.lockedUntil && session.users.lockedUntil > new Date()) {
       return { valid: false };
     }
 

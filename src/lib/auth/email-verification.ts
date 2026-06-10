@@ -23,7 +23,7 @@ export async function sendVerificationEmail(
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
   // Delete existing verification tokens for this user
-  await prisma.verificationToken.deleteMany({
+  await prisma.verification_tokens.deleteMany({
     where: {
       userId,
       type: 'EMAIL_VERIFY',
@@ -31,8 +31,10 @@ export async function sendVerificationEmail(
   });
 
   // Create verification token
-  await prisma.verificationToken.create({
+  const tokenId = `vt_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  await prisma.verification_tokens.create({
     data: {
+      id: tokenId,
       userId,
       email,
       token: tokenHash,
@@ -61,7 +63,7 @@ export async function verifyEmailToken(token: string): Promise<{
 }> {
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
-  const verifyToken = await prisma.verificationToken.findUnique({
+  const verifyToken = await prisma.verification_tokens.findUnique({
     where: { token: tokenHash },
   });
 
@@ -78,14 +80,14 @@ export async function verifyEmailToken(token: string): Promise<{
   }
 
   // Mark token as used
-  await prisma.verificationToken.update({
+  await prisma.verification_tokens.update({
     where: { id: verifyToken.id },
     data: { usedAt: new Date() },
   });
 
   // Verify user email and activate account
   if (verifyToken.userId) {
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: verifyToken.userId },
       data: {
         emailVerified: new Date(),
@@ -106,7 +108,7 @@ export async function sendPasswordResetEmail(
   email: string
 ): Promise<boolean> {
   // Find user by email (case-insensitive)
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { email: email.toLowerCase() },
     select: { id: true, name: true },
   });
@@ -122,7 +124,7 @@ export async function sendPasswordResetEmail(
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
   // Delete existing password reset tokens for this user
-  await prisma.verificationToken.deleteMany({
+  await prisma.verification_tokens.deleteMany({
     where: {
       userId: user.id,
       type: 'PASSWORD_RESET',
@@ -130,8 +132,10 @@ export async function sendPasswordResetEmail(
   });
 
   // Create password reset token
-  await prisma.verificationToken.create({
+  const resetTokenId = `vt_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  await prisma.verification_tokens.create({
     data: {
+      id: resetTokenId,
       userId: user.id,
       email,
       token: tokenHash,
@@ -163,7 +167,7 @@ export async function verifyPasswordResetToken(token: string): Promise<{
 }> {
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
-  const resetToken = await prisma.verificationToken.findUnique({
+  const resetToken = await prisma.verification_tokens.findUnique({
     where: { token: tokenHash },
   });
 
@@ -192,7 +196,7 @@ export async function verifyPasswordResetToken(token: string): Promise<{
 export async function markPasswordResetTokenUsed(token: string): Promise<void> {
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
-  await prisma.verificationToken.updateMany({
+  await prisma.verification_tokens.updateMany({
     where: { token: tokenHash },
     data: { usedAt: new Date() },
   });
@@ -202,7 +206,7 @@ export async function markPasswordResetTokenUsed(token: string): Promise<void> {
  * Clean up expired tokens (run periodically)
  */
 export async function cleanupExpiredTokens(): Promise<number> {
-  const result = await prisma.verificationToken.deleteMany({
+  const result = await prisma.verification_tokens.deleteMany({
     where: {
       expires: { lt: new Date() },
     },

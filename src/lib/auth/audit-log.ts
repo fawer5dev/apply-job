@@ -34,8 +34,10 @@ interface AuditLogOptions {
  */
 export async function createAuditLog(options: AuditLogOptions): Promise<void> {
   try {
-    await prisma.auditLog.create({
+    const logId = `log_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    await prisma.audit_logs.create({
       data: {
+        id: logId,
         userId: options.userId,
         action: options.action,
         details: options.details || {},
@@ -67,7 +69,7 @@ export async function getUserAuditLogs(
     where.action = options.action;
   }
 
-  return prisma.auditLog.findMany({
+  return prisma.audit_logs.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: options?.limit || 50,
@@ -94,7 +96,7 @@ export async function getRecentFailedLogins(
 ): Promise<number> {
   const cutoffDate = new Date(Date.now() - minutesAgo * 60 * 1000);
 
-  const count = await prisma.auditLog.count({
+  const count = await prisma.audit_logs.count({
     where: {
       OR: [
         { userId: emailOrUserId },
@@ -120,7 +122,7 @@ export async function detectSuspiciousActivity(
   const reasons: string[] = [];
 
   // Check for multiple failed logins in last hour
-  const recentFailures = await prisma.auditLog.count({
+  const recentFailures = await prisma.audit_logs.count({
     where: {
       userId,
       action: 'login_failure',
@@ -133,7 +135,7 @@ export async function detectSuspiciousActivity(
   }
 
   // Check for logins from multiple IPs in last hour
-  const recentLogins = await prisma.auditLog.findMany({
+  const recentLogins = await prisma.audit_logs.findMany({
     where: {
       userId,
       action: 'login_success',
@@ -150,7 +152,7 @@ export async function detectSuspiciousActivity(
   }
 
   // Check for password changes after failed logins
-  const recentPasswordChange = await prisma.auditLog.findFirst({
+  const recentPasswordChange = await prisma.audit_logs.findFirst({
     where: {
       userId,
       action: 'password_changed',
@@ -174,7 +176,7 @@ export async function detectSuspiciousActivity(
 export async function cleanupOldAuditLogs(daysToKeep: number = 90): Promise<number> {
   const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000);
 
-  const result = await prisma.auditLog.deleteMany({
+  const result = await prisma.audit_logs.deleteMany({
     where: {
       createdAt: { lt: cutoffDate },
     },
@@ -198,24 +200,24 @@ export async function getSecuritySummary(userId: string): Promise<{
 
   const [lastLogin, totalLogins, failedLogins, passwordChanges, twoFactorEvents] =
     await Promise.all([
-      prisma.auditLog.findFirst({
+      prisma.audit_logs.findFirst({
         where: { userId, action: 'login_success' },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: { userId, action: 'login_success' },
       }),
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: {
           userId,
           action: 'login_failure',
           createdAt: { gte: thirtyDaysAgo },
         },
       }),
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: { userId, action: 'password_changed' },
       }),
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: {
           userId,
           action: { in: ['2fa_enabled', '2fa_disabled', '2fa_verified'] },

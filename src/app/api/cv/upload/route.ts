@@ -39,8 +39,10 @@ export async function POST(request: NextRequest) {
     const parsedCV = await parseCV(file);
 
     // Save to database
-    const baseCV = await prisma.baseCV.create({
+    const baseCVId = `cv_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const baseCV = await prisma.base_cvs.create({
       data: {
+        id: baseCVId,
         userId,
         title,
         personalInfo: parsedCV.personalInfo as never,
@@ -51,12 +53,13 @@ export async function POST(request: NextRequest) {
         projects: (parsedCV.projects || null) as never,
         certifications: (parsedCV.certifications || null) as never,
         rawText: parsedCV.rawText || null,
+        updatedAt: new Date(),
       },
     });
 
     return NextResponse.json({
       success: true,
-      baseCV: {
+      base_cvs: {
         id: baseCV.id,
         title: baseCV.title,
         personalInfo: baseCV.personalInfo,
@@ -86,7 +89,7 @@ export async function GET(request: NextRequest) {
     // Get authenticated user ID
     const userId = await requireAuthApi();
 
-    const baseCVs = await prisma.baseCV.findMany({
+    const base_cvs = await prisma.base_cvs.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -100,7 +103,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ baseCVs });
+    return NextResponse.json({ base_cvs });
   } catch (error) {
     console.error('Error fetching CVs:', error);
     return NextResponse.json({ error: 'Error fetching CVs' }, { status: 500 });

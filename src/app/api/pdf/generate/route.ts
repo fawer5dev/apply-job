@@ -18,10 +18,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Get application
-    const application = await prisma.application.findUnique({
+    const application = await prisma.applications.findUnique({
       where: { id: applicationId },
       include: {
-        jobListing: true,
+        job_listings: true,
       },
     });
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="CV_${application.jobListing.company}_${application.jobListing.title}.pdf"`,
+        'Content-Disposition': `attachment; filename="CV_${application.job_listings.company}_${application.job_listings.title}.pdf"`,
       },
     });
   } catch (error) {

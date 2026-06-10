@@ -9,10 +9,10 @@ export async function GET(
   try {
     const { id } = await context.params;
 
-    const application = await prisma.application.findUnique({
+    const application = await prisma.applications.findUnique({
       where: { id },
       include: {
-        jobListing: {
+        job_listings: {
           select: {
             title: true,
             company: true,
@@ -22,12 +22,12 @@ export async function GET(
             description: true,
           },
         },
-        baseCV: {
+        base_cvs: {
           select: {
             title: true,
           },
         },
-        coverLetter: {
+        cover_letters: {
           select: {
             content: true,
             htmlContent: true,
@@ -71,7 +71,7 @@ export async function PATCH(
       updateData.appliedAt = new Date();
     }
 
-    const application = await prisma.application.update({
+    const application = await prisma.applications.update({
       where: { id },
       data: updateData,
     });
@@ -94,7 +94,7 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-    await prisma.application.delete({
+    await prisma.applications.delete({
       where: { id },
     });
 

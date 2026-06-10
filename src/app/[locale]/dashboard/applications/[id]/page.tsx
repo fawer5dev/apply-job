@@ -37,7 +37,7 @@ interface ApplicationDetail {
   notes: string | null;
   customCV: any;
   atsAnalysis: any;
-  jobListing: {
+  job_listings: {
     title: string;
     company: string;
     location: string | null;
@@ -45,10 +45,10 @@ interface ApplicationDetail {
     salary: string | null;
     description: string;
   };
-  baseCV: {
+  base_cvs: {
     title: string;
   };
-  coverLetter: {
+  cover_letters: {
     content: string;
   } | null;
 }
@@ -389,7 +389,7 @@ export default function ApplicationDetailPage() {
             <div>
               <div className="mb-2 flex items-center gap-3">
                 <h1 className="text-3xl font-bold tracking-tight">
-                  {application.jobListing.title}
+                  {application.job_listings.title}
                 </h1>
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(application.status)}`}
@@ -400,18 +400,18 @@ export default function ApplicationDetailPage() {
               <div className="flex items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4" />
-                  <span>{application.jobListing.company}</span>
+                  <span>{application.job_listings.company}</span>
                 </div>
-                {application.jobListing.location && (
+                {application.job_listings.location && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    <span>{application.jobListing.location}</span>
+                    <span>{application.job_listings.location}</span>
                   </div>
                 )}
-                {application.jobListing.salary && (
+                {application.job_listings.salary && (
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
-                    <span>{application.jobListing.salary}</span>
+                    <span>{application.job_listings.salary}</span>
                   </div>
                 )}
               </div>
@@ -658,10 +658,10 @@ export default function ApplicationDetailPage() {
           {activeTab === 'cover-letter' && (
             <div>
               <h2 className="mb-4 text-xl font-semibold">Cover Letter</h2>
-              {application.coverLetter ? (
+              {application.cover_letters ? (
                 <div className="prose prose-sm max-w-none">
                   <pre className="whitespace-pre-wrap font-sans text-sm text-muted-foreground">
-                    {application.coverLetter.content}
+                    {application.cover_letters.content}
                   </pre>
                 </div>
               ) : (
@@ -676,7 +676,7 @@ export default function ApplicationDetailPage() {
             <div>
               <h2 className="mb-4 text-xl font-semibold">Job Description</h2>
               <pre className="whitespace-pre-wrap font-sans text-sm text-muted-foreground">
-                {application.jobListing.description}
+                {application.job_listings.description}
               </pre>
             </div>
           )}

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user details
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: result.userId },
       select: {
         id: true,
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
 
     // Update password and reset failed login attempts
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: result.userId },
       data: {
         passwordHash,

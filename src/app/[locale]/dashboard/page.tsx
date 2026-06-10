@@ -8,7 +8,7 @@ import { FileText, Sparkles, BarChart3, ArrowRight } from '@/lib/icons';
 import { useEffect, useState } from 'react';
 
 interface Stats {
-  baseCVs: number;
+  base_cvs: number;
   applications: number;
   inProgress: number;
   responseRate: string;
@@ -17,7 +17,7 @@ interface Stats {
 export default function DashboardPage() {
   const t = useTranslations('Dashboard');
   const [stats, setStats] = useState<Stats>({
-    baseCVs: 0,
+    base_cvs: 0,
     applications: 0,
     inProgress: 0,
     responseRate: '-',
@@ -32,7 +32,7 @@ export default function DashboardPage() {
         // Fetch CVs
         const cvResponse = await fetch('/api/cv/upload?userId=temp-user');
         const cvData = await cvResponse.json();
-        const baseCVsCount = cvData.baseCVs?.length || 0;
+        const base_cvsCount = cvData.base_cvs?.length || 0;
 
         // Fetch Applications
         const appResponse = await fetch(
@@ -73,7 +73,7 @@ export default function DashboardPage() {
             : '-';
 
         setStats({
-          baseCVs: baseCVsCount,
+          base_cvs: base_cvsCount,
           applications: applicationsCount,
           inProgress: inProgressCount,
           responseRate,
@@ -168,10 +168,10 @@ export default function DashboardPage() {
                   <div className="space-y-4 pl-4">
                     <div>
                       <div className="font-display text-4xl font-bold text-primary">
-                        {loading ? '...' : stats.baseCVs}
+                        {loading ? '...' : stats.base_cvs}
                       </div>
                       <p className="mt-1 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        {t('stats.baseCVs')}
+                        {t('stats.base_cvs')}
                       </p>
                     </div>
                     <div className="h-px bg-border" />
@@ -249,10 +249,10 @@ export default function DashboardPage() {
             >
               <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
                 <div className="font-display text-3xl font-bold">
-                  {loading ? '...' : stats.baseCVs}
+                  {loading ? '...' : stats.base_cvs}
                 </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {t('stats.baseCVs')}
+                  {t('stats.base_cvs')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />
               </div>

@@ -4,7 +4,7 @@ import { validateSession } from './session';
 import type { User, Session } from '@prisma/client';
 
 interface AuthResult {
-  user: User;
+  users: User;
   session: Session;
 }
 
@@ -27,7 +27,7 @@ export async function requireAuth(): Promise<AuthResult> {
   }
 
   return {
-    user: sessionCheck.session.user,
+    users: sessionCheck.session.user,
     session: sessionCheck.session,
   };
 }
@@ -51,7 +51,7 @@ export async function getAuth(): Promise<AuthResult | null> {
   }
 
   return {
-    user: sessionCheck.session.user,
+    users: sessionCheck.session.user,
     session: sessionCheck.session,
   };
 }

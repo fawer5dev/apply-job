@@ -1,6 +1,6 @@
 import { randomBytes, createHash } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
-import type { Session, User } from '@prisma/client';
+import type { sessions, users } from '@prisma/client';
 
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SESSION_REFRESH_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
@@ -12,8 +12,8 @@ interface SessionMetadata {
   deviceId?: string;
 }
 
-interface SessionWithUser extends Session {
-  user: User;
+interface SessionWithUser extends sessions {
+  users: users;
 }
 
 export interface SessionValidationResult {
@@ -40,8 +40,10 @@ export async function createSession(
   await cleanupUserSessions(userId, MAX_SESSIONS_PER_USER - 1);
 
   // Create session
-  await prisma.session.create({
+  const sessionId = `ses_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  await prisma.sessions.create({
     data: {
+      id: sessionId,
       userId,
       sessionToken: tokenHash,
       expires: new Date(Date.now() + SESSION_DURATION),
@@ -63,9 +65,9 @@ export async function validateSession(
 ): Promise<SessionValidationResult> {
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
-  const session = await prisma.session.findUnique({
+  const session = await prisma.sessions.findUnique({
     where: { sessionToken: tokenHash },
-    include: { user: true },
+    include: { users: true },
   });
 
   // Session not found or revoked
@@ -80,12 +82,12 @@ export async function validateSession(
   }
 
   // Check if user is active
-  if (!session.user.isActive || session.user.isSuspended) {
+  if (!session.users.isActive || session.users.isSuspended) {
     return { valid: false };
   }
 
   // Update last activity
-  await prisma.session.update({
+  await prisma.sessions.update({
     where: { id: session.id },
     data: { lastActive: new Date() },
   });
@@ -104,7 +106,7 @@ export async function refreshSession(token: string): Promise<string> {
   const tokenHash = createHash('sha256').update(token).digest('hex');
 
   // Get old session data
-  const oldSession = await prisma.session.findUnique({
+  const oldSession = await prisma.sessions.findUnique({
     where: { sessionToken: tokenHash },
     select: {
       userId: true,
@@ -136,7 +138,7 @@ export async function revokeSession(
   tokenHash: string,
   reason: string = 'user_logout'
 ): Promise<void> {
-  await prisma.session.updateMany({
+  await prisma.sessions.updateMany({
     where: { sessionToken: tokenHash },
     data: {
       isValid: false,
@@ -153,7 +155,7 @@ export async function revokeAllUserSessions(
   userId: string,
   reason: string = 'security_action'
 ): Promise<number> {
-  const result = await prisma.session.updateMany({
+  const result = await prisma.sessions.updateMany({
     where: { userId, isValid: true },
     data: {
       isValid: false,
@@ -181,7 +183,7 @@ export async function revokeOtherSessions(
     .update(currentToken)
     .digest('hex');
 
-  const result = await prisma.session.updateMany({
+  const result = await prisma.sessions.updateMany({
     where: {
       userId,
       isValid: true,
@@ -201,7 +203,7 @@ export async function revokeOtherSessions(
  * Get all active sessions for a user
  */
 export async function getUserSessions(userId: string) {
-  return prisma.session.findMany({
+  return prisma.sessions.findMany({
     where: {
       userId,
       isValid: true,
@@ -224,7 +226,7 @@ export async function getUserSessions(userId: string) {
  * Clean up expired sessions (run periodically)
  */
 export async function cleanupExpiredSessions(): Promise<number> {
-  const result = await prisma.session.deleteMany({
+  const result = await prisma.sessions.deleteMany({
     where: {
       expires: { lt: new Date() },
     },
@@ -240,7 +242,7 @@ async function cleanupUserSessions(
   userId: string,
   keepCount: number
 ): Promise<void> {
-  const sessions = await prisma.session.findMany({
+  const sessions = await prisma.sessions.findMany({
     where: { userId, isValid: true },
     orderBy: { lastActive: 'desc' },
     select: { id: true },
@@ -248,7 +250,7 @@ async function cleanupUserSessions(
 
   if (sessions.length > keepCount) {
     const toDelete = sessions.slice(keepCount).map((s) => s.id);
-    await prisma.session.updateMany({
+    await prisma.sessions.updateMany({
       where: { id: { in: toDelete } },
       data: {
         isValid: false,

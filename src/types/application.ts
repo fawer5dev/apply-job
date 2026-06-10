@@ -40,7 +40,7 @@ export interface Application {
 }
 
 export interface ApplicationWithRelations extends Application {
-    jobListing: {
+    job_listings: {
         title: string;
         company: string;
         location?: string;

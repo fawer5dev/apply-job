@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all active sessions for user
-    const sessions = await prisma.session.findMany({
+    const sessions = await prisma.sessions.findMany({
       where: {
         userId,
         expires: {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     if (currentSessionToken) {
       // Session tokens in DB are already hashed, so we need to compare with the hashed version
       // But requireAuthApi already validated our session, so we can get the session ID from there
-      const currentSession = await prisma.session.findUnique({
+      const currentSession = await prisma.sessions.findUnique({
         where: { sessionToken: currentSessionToken },
         select: { id: true },
       });

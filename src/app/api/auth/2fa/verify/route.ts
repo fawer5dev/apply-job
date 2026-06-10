@@ -58,10 +58,10 @@ export async function POST(request: NextRequest) {
     const { tempToken, code, useBackupCode } = validation.data;
 
     // Verify temporary session exists (created during login)
-    const tempSession = await prisma.session.findUnique({
+    const tempSession = await prisma.sessions.findUnique({
       where: { sessionToken: tempToken },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             email: true,
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = tempSession.user;
+    const user = tempSession.users;
 
     if (!user.twoFactorSecret) {
       return NextResponse.json(
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
         // Remove used backup code
         const updatedBackupCodes = backupCodes.filter((_, i) => i !== codeIndex);
-        await prisma.user.update({
+        await prisma.users.update({
           where: { id: user.id },
           data: { backupCodes: updatedBackupCodes },
         });
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete temporary session
-    await prisma.session.delete({
+    await prisma.sessions.delete({
       where: { id: tempSession.id },
     });
 
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Update last login
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: {
         lastLoginAt: new Date(),
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: '2FA verification successful',
       sessionToken,
-      user: {
+      users: {
         id: user.id,
         email: user.email,
         name: user.name,

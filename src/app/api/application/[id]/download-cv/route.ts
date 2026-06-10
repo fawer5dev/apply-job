@@ -11,11 +11,11 @@ export async function GET(
     const { id } = await context.params;
 
     // Get the application with custom CV
-    const application = await prisma.application.findUnique({
+    const application = await prisma.applications.findUnique({
       where: { id },
       select: {
         customCV: true,
-        jobListing: {
+        job_listings: {
           select: {
             title: true,
             company: true,
@@ -43,7 +43,7 @@ export async function GET(
     const pdfBuffer = await generateCVPDF(cv);
 
     // Generate filename
-    const companyName = application.jobListing.company.replace(/\s+/g, '_');
+    const companyName = application.job_listings.company.replace(/\s+/g, '_');
     const filename = `Fawer_Vargas_CV_${companyName}.pdf`;
 
     // Return PDF as Uint8Array

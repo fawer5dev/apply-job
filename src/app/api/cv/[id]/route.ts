@@ -13,7 +13,7 @@ export async function DELETE(
     }
 
     // Check if CV exists
-    const cv = await prisma.baseCV.findUnique({
+    const cv = await prisma.base_cvs.findUnique({
       where: { id },
       include: {
         applications: true,
@@ -36,7 +36,7 @@ export async function DELETE(
     }
 
     // Delete the CV
-    await prisma.baseCV.delete({
+    await prisma.base_cvs.delete({
       where: { id },
     });
 
@@ -67,10 +67,10 @@ export async function GET(
       return NextResponse.json({ error: 'CV ID required' }, { status: 400 });
     }
 
-    const cv = await prisma.baseCV.findUnique({
+    const cv = await prisma.base_cvs.findUnique({
       where: { id },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -81,7 +81,7 @@ export async function GET(
           select: {
             id: true,
             createdAt: true,
-            jobListing: {
+            job_listings: {
               select: {
                 title: true,
                 company: true,

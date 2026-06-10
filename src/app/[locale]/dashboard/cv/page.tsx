@@ -41,7 +41,7 @@ export default function ManageCVPage() {
         throw new Error(data.error || 'Failed to fetch CVs');
       }
 
-      setCvs(data.baseCVs || []);
+      setCvs(data.base_cvs || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error loading CVs');
     } finally {

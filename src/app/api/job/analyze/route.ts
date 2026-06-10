@@ -27,8 +27,10 @@ export async function POST(req: NextRequest) {
     );
 
     // Create job listing in DB
-    const jobListing = await prisma.jobListing.create({
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const jobListing = await prisma.job_listings.create({
       data: {
+        id: jobId,
         title: body.title,
         company: body.company,
         location: body.location || null,
@@ -39,12 +41,13 @@ export async function POST(req: NextRequest) {
         source: body.source || 'Manual',
         requirements: analysis.requirements as never,
         keywords: analysis.keywords as never,
+        updatedAt: new Date(),
       },
     });
 
     return NextResponse.json({
       success: true,
-      jobListing: {
+      job_listings: {
         id: jobListing.id,
         title: jobListing.title,
         company: jobListing.company,
@@ -71,7 +74,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const jobListings = await prisma.jobListing.findMany({
+    const jobListings = await prisma.job_listings.findMany({
       orderBy: {
         createdAt: 'desc',
       },

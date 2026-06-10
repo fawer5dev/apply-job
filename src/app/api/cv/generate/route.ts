@@ -20,10 +20,10 @@ export async function POST(req: NextRequest) {
 
     // Get base CV and job listing
     const [baseCV, jobListing] = await Promise.all([
-      prisma.baseCV.findUnique({
+      prisma.base_cvs.findUnique({
         where: { id: baseCVId },
       }),
-      prisma.jobListing.findUnique({
+      prisma.job_listings.findUnique({
         where: { id: jobListingId },
       }),
     ]);
@@ -73,8 +73,10 @@ export async function POST(req: NextRequest) {
     const atsAnalysis = await scoreCV(customCV, jobData);
 
     // Crear application
-    const application = await prisma.application.create({
+    const appId = `app_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const application = await prisma.applications.create({
       data: {
+        id: appId,
         userId,
         baseCVId,
         jobListingId,
@@ -83,9 +85,10 @@ export async function POST(req: NextRequest) {
         atsAnalysis: atsAnalysis as any,
         matchScore: customCV.atsOptimizations.matchScore,
         status: 'DRAFT',
+        updatedAt: new Date(),
       },
       include: {
-        jobListing: {
+        job_listings: {
           select: {
             title: true,
             company: true,
