@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     // This also prevents sequential awaits by executing both operations together
     // Increase timeout to 15 seconds to handle large data inserts
     const application = await prisma.$transaction(
-      async (tx) => {
+      async (tx: any) => {
         // Create cover letter
         const coverLetterId = `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const coverLetterRecord = await tx.cover_letters.create({
