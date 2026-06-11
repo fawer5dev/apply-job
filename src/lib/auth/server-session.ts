@@ -1,11 +1,11 @@
 import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from './session';
-import type { User, Session } from '@prisma/client';
+import type { users, sessions } from '@prisma/client';
 
 interface AuthResult {
-  users: User;
-  session: Session;
+  users: users;
+  session: sessions;
 }
 
 /**
@@ -26,10 +26,10 @@ export async function requireAuth(): Promise<AuthResult> {
     redirect('/login?error=session_expired');
   }
 
-  return {
-    users: sessionCheck.session.user,
-    session: sessionCheck.session,
-  };
+    return {
+      users: sessionCheck.session.users,
+      session: sessionCheck.session,
+    };
 }
 
 /**
@@ -50,10 +50,10 @@ export async function getAuth(): Promise<AuthResult | null> {
     return null;
   }
 
-  return {
-    users: sessionCheck.session.user,
-    session: sessionCheck.session,
-  };
+    return {
+      users: sessionCheck.session.users,
+      session: sessionCheck.session,
+    };
 }
 
 /**
