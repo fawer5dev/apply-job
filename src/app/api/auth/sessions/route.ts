@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Format sessions with parsed device info
-    const formattedSessions = sessions.map((session) => {
+    const formattedSessions = sessions.map((session: any) => {
       let deviceInfo = {
         browser: 'Unknown',
         os: 'Unknown',
