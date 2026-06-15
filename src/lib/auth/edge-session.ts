@@ -4,12 +4,24 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
-import type { sessions, users } from '@prisma/client';
-import { hashToken } from './edge-crypto';
+// Don't import Prisma model types directly to avoid build failures when the
+// generated client exports different type names across environments. Define a
+// minimal local type that covers the fields we use here.
+type MinimalUser = {
+  id: string;
+  isActive: boolean;
+  isSuspended: boolean;
+  lockedUntil?: Date | null;
+};
 
-interface SessionWithUser extends sessions {
-  users: users;
-}
+type SessionWithUser = {
+  id: string;
+  sessionToken?: string;
+  expires: Date;
+  lastActive: Date;
+  users: MinimalUser;
+};
+import { hashToken } from './edge-crypto';
 
 export interface EdgeSessionValidationResult {
   valid: boolean;
