@@ -248,8 +248,8 @@ async function cleanupUserSessions(
     select: { id: true },
   });
 
-  if (sessions.length > keepCount) {
-    const toDelete = sessions.slice(keepCount).map((s) => s.id);
+    if (sessions.length > keepCount) {
+    const toDelete = sessions.slice(keepCount).map((s: any) => s.id);
     await prisma.sessions.updateMany({
       where: { id: { in: toDelete } },
       data: {
