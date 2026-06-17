@@ -45,13 +45,14 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your.email@gmail.com"
 SMTP_PASS="your-gmail-app-password"
-EMAIL_FROM="Apply Job <noreply@applyjob.com>"
+# Must be a valid address — for Gmail use your actual Gmail address here
+EMAIL_FROM="Apply Job <your.email@gmail.com>"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# OpenAI (you should already have this)
-OPENAI_API_KEY="your-existing-openai-key"
+# Google AI (primary AI provider)
+GOOGLE_AI_API_KEY="your-google-ai-api-key"
 ```
 
 ### How to Get Gmail App Password:
@@ -105,17 +106,24 @@ npm run dev
 
 ### Check Console for Verification Email
 
-In development mode, emails are logged to the console. Look for:
+In development mode (when `SMTP_USER` is not set), emails are logged to the console. Look for:
 
 ```
-========================================
-EMAIL SENT (Development Mode)
-========================================
-To: test@example.com
-Subject: Verify Your Email Address
-...
-Verification Link: http://localhost:3000/en/verify-email?token=...
-========================================
+📧 Email would be sent to: test@example.com
+📧 Subject: Verify your email - Apply Job
+📧 Content: <!DOCTYPE html>...
+```
+
+If `SMTP_USER` is configured, the app will attempt to send a real email and log:
+```
+ℹ️ SMTP transporter verified.
+✅ Email sent successfully to test@example.com
+```
+
+Or on failure:
+```
+❌ SMTP transporter verification failed: ...
+❌ Error sending email: ...
 ```
 
 ### Verify Email
@@ -146,11 +154,11 @@ Your authentication system is now running!
 ### Issue: "Session secret is required"
 **Fix**: Make sure `SESSION_SECRET` is set in `.env.local` and is 64 characters long (32 bytes in hex)
 
-### Issue: "SMTP connection failed"
+### Issue: "SMTP connection failed" or "Bad sender address syntax"
 **Fix**: 
-- Check Gmail credentials
-- Make sure you're using an App Password, not your regular password
-- Enable "Less secure app access" if using regular password (not recommended)
+- Check Gmail credentials and make sure you're using an App Password
+- `Bad sender address syntax` means `EMAIL_FROM` is malformed or empty — use `Apply Job <your.email@gmail.com>` and ensure it matches `SMTP_USER` for Gmail
+- Enable "2FA + App Password" — regular passwords are blocked by Gmail
 
 ### Issue: "Database connection failed"
 **Fix**: 

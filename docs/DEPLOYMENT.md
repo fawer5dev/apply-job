@@ -23,15 +23,22 @@ Vercel provides the best experience for Next.js applications with automatic buil
    git push origin main
    ```
 
-2. **Verify package.json has postinstall script**
+2. **Verify the build script is present**
+
+   The project uses `scripts/vercel-build.js` as the build entry point. It automatically:
+   - Runs `prisma migrate deploy` if `DATABASE_URL` is set (production/preview with DB)
+   - Skips migrations and only runs `next build` if `DATABASE_URL` is absent (e.g. preview builds without a DB)
+
+   `package.json` should have:
    ```json
    {
      "scripts": {
+       "build": "node ./scripts/vercel-build.js",
        "postinstall": "prisma generate"
      }
    }
    ```
-   ✅ This is already configured in your project
+   ✅ Both are already configured in your project
 
 ### Step 2: Set Up Database
 
@@ -96,35 +103,33 @@ Choose a PostgreSQL provider that works well with Vercel:
    - Click "Deploy"
    - Wait for build to complete (3-5 minutes)
 
-### Step 4: Run Database Migrations
+### Step 4: Database Migrations
 
-After first deployment:
+**Migrations run automatically** during each Vercel build via `scripts/vercel-build.js` when `DATABASE_URL` is set. You do **not** need to run them manually after each deploy.
+
+If you need to run migrations manually (e.g. first-time setup or emergency fix):
 
 1. **Install Vercel CLI** (if not already installed)
    ```bash
    npm i -g vercel
    ```
 
-2. **Login to Vercel**
+2. **Login and link your project**
    ```bash
    vercel login
-   ```
-
-3. **Link your project**
-   ```bash
    vercel link
    ```
 
-4. **Run migrations**
+3. **Pull production environment and run migrations**
    ```bash
-   vercel env pull .env.production
-   pnpm prisma db push
+   vercel env pull .env.production --environment production
+   DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d= -f2-) pnpm prisma migrate deploy
    ```
 
-   Or use Vercel's deployment hook:
+   Or set `DATABASE_URL` directly:
    ```bash
-   vercel env add DATABASE_URL
-   npx prisma db push
+   export DATABASE_URL="postgresql://..."
+   pnpm prisma migrate deploy
    ```
 
 ### Step 5: Verify Deployment
@@ -197,6 +202,20 @@ For `SMTP_PASS`:
 - Use Gmail App Password, not regular password
 - Check `SMTP_HOST` and `SMTP_PORT` are correct
 - Test with SendGrid or AWS SES for production
+
+**Common error: `501 Error: Bad sender address syntax`**  
+This means `EMAIL_FROM` is malformed. Use a valid format:
+```
+# Valid formats:
+EMAIL_FROM="noreply@yourdomain.com"
+EMAIL_FROM="Apply Job <noreply@yourdomain.com>"
+
+# Invalid (causes 501 error):
+EMAIL_FROM=""                        # empty
+EMAIL_FROM="Apply Job"               # no email address
+EMAIL_FROM="Apply Job <>"            # empty angle brackets
+```
+The address in `EMAIL_FROM` must also be accepted by your SMTP provider (e.g. Gmail requires it to match `SMTP_USER`).
 
 ---
 
@@ -428,7 +447,8 @@ For enterprise deployments, consider:
 
 ---
 
-**Last Updated**: May 2026  
+**Last Updated**: June 2026  
 **Deployment Platform**: Vercel (recommended), Railway, Render  
-**Build Status**: ✅ All TypeScript/ESLint errors resolved  
-**Database**: PostgreSQL 15+ with Prisma ORM
+**Build Status**: ✅ All TypeScript/ESLint errors resolved — production deployed and working  
+**Database**: PostgreSQL 15+ with Prisma ORM  
+**Email**: ✅ Verified working in production (nodemailer SMTP)

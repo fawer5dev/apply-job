@@ -1,6 +1,6 @@
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: May 20, 2026
+> **Last updated**: June 17, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -969,40 +969,39 @@ Manage individual base CVs (get, update, delete).
 # ============================================
 # DATABASE
 # ============================================
-# PostgreSQL connection string
-# Format: postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 DATABASE_URL="postgresql://..."
+
+# ============================================
+# AUTHENTICATION & SESSIONS
+# ============================================
+# Generate with: openssl rand -hex 32
+SESSION_SECRET="your-64-character-hex-string"
+
+# ============================================
+# EMAIL / SMTP
+# ============================================
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-gmail-app-password"
+# Must be a valid address — for Gmail, match SMTP_USER
+EMAIL_FROM="Apply Job <your-email@gmail.com>"
+
+# ============================================
+# APPLICATION URL
+# ============================================
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 # ============================================
 # GOOGLE AI (Recommended - Cost-effective)
 # ============================================
-# Get your API key at: https://aistudio.google.com/apikey
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 
 # ============================================
 # OPENAI (Optional - Higher quality)
 # ============================================
-# Get your API key at: https://platform.openai.com/api-keys
-# Note: At least one AI provider (Google AI or OpenAI) is required
 # OPENAI_API_KEY="sk-..."
-
-# ============================================
-# APPLICATION
-# ============================================
-# Application base URL
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-
-# ============================================
-# AUTHENTICATION (Future)
-# ============================================
-# NEXTAUTH_URL="http://localhost:3000"
-# NEXTAUTH_SECRET="..."
-
-# ============================================
-# STORAGE (Future)
-# ============================================
-# For file uploads (Vercel Blob, S3, etc.)
-# BLOB_READ_WRITE_TOKEN="..."
 ```
 
 ### Recommended Database Providers
@@ -1308,7 +1307,7 @@ margin: {
 - [x] Tailwind CSS + shadcn/ui configuration
 - [x] Prisma + PostgreSQL setup
 - [x] Complete database models
-- [x] Google Generative AI (Gemini 2.0 Flash) integration - Primary AI provider
+- [x] Google Generative AI (Gemini 2.5 Flash) integration - Primary AI provider
 - [x] OpenAI GPT-4o integration - Optional alternative
 - [x] Multi-language support (English/Spanish) with next-intl
 - [x] Internationalization middleware and routing
@@ -1327,44 +1326,39 @@ margin: {
 - [x] TypeScript types structure
 - [x] Transaction timeout fixes for application creation
 - [x] Skills section repositioned (after Summary, before Experience)
+- [x] **Complete authentication system** (custom, session-based — no NextAuth)
+  - [x] Email/password registration with email verification flow
+  - [x] Login with session cookie management
+  - [x] Logout (single session and all sessions)
+  - [x] Password reset via email (forgot-password + reset-password)
+  - [x] Two-Factor Authentication (TOTP via `otpauth`)
+  - [x] Rate limiting and account lockout (brute force protection)
+  - [x] Comprehensive audit logging
+  - [x] Multi-device session management
+- [x] **SMTP email delivery** working in production (nodemailer)
+  - [x] Email verification on registration
+  - [x] Password reset email
+  - [x] Transporter verification + error logging for production diagnostics
+- [x] **Vercel production deployment** at `apply-job-self.vercel.app`
+  - [x] `scripts/vercel-build.js` — auto-runs migrations when `DATABASE_URL` is set
+  - [x] Neon PostgreSQL database (ap-southeast-2) connected
+  - [x] All environment variables configured in Vercel
 
 ### 🚧 In Development / Pending
 
-#### Frontend (UI/UX)
+#### Frontend (UI/UX) — partially done
 
-- [ ] Landing page (/)
-- [ ] Main dashboard (/dashboard)
-  - [ ] Applications list
-  - [ ] Stats cards (total apps, response rate, etc.)
-  - [ ] Progress charts
-- [ ] Base resume upload form
+- [x] Login / Register / Verify Email pages
+- [x] Forgot Password / Reset Password pages
+- [x] Dashboard skeleton
+- [ ] Landing page polish (/)
+- [ ] Dashboard stats cards (total apps, response rate, etc.)
+- [ ] Progress charts
 - [ ] Base resume editor (review/edit extracted info)
-- [ ] New application form
-  - [ ] Job description input
-  - [ ] Base resume selector
-  - [ ] Analysis preview
-- [ ] Generated resume view
-  - [ ] Resume preview
-  - [ ] ATS score with visualization
-  - [ ] Suggestions list
-  - [ ] PDF download button
-- [ ] Cover letter generator
-  - [ ] Editor with live preview
-  - [ ] Tone selector
-  - [ ] Download as PDF or text
-- [ ] Application tracking
-  - [ ] List with filters
-  - [ ] States (draft, applied, interviewing, etc.)
-  - [ ] Notes per application
-  - [ ] Event timeline
-
-#### Authentication and Users
-
-- [ ] Authentication system (NextAuth.js)
-- [ ] Login / Registration
-- [ ] Session management
-- [ ] User profile
-- [ ] Route protection
+- [ ] Generated resume view with ATS score visualization
+- [ ] Cover letter editor with live preview and tone selector
+- [ ] Application tracking: filters, states, notes, event timeline
+- [ ] User settings page (password change, 2FA setup, session management)
 
 #### Additional APIs
 
@@ -1471,59 +1465,32 @@ margin: {
 
 ## 📈 Recommended Next Steps
 
-### High Priority (MVP)
+### High Priority (MVP polish)
 
-1. **Implement authentication**
-   - Setup NextAuth.js
-   - Protect routes
-   - Associate data with users
+1. **Build Dashboard UI**
+   - Applications list with filters and status
+   - Stats cards (total apps, response rate, ATS average)
+   - Navigation and user menu
 
-2. **Build Dashboard**
-   - Applications list
-   - Basic stats
-   - Navigation
-
-3. **Resume Upload Form**
+2. **Resume Upload Form**
    - Drag & drop
-   - Extraction preview
-   - Data editing
+   - Extraction preview and data editing
 
-4. **Complete generation flow**
+3. **Complete generation flow UI**
    - Job description input
    - Analysis + Preview
-   - Resume generation
-   - PDF download
+   - Resume generation and PDF download
 
-5. **Deploy to production**
-   - Vercel deployment
-   - Configure DB in Neon
-   - Environment variables
+4. **User Settings Page**
+   - Password change
+   - 2FA setup and backup codes
+   - Active sessions list with revoke option
 
 ### Medium Priority
 
-6. **Template system**
-   - 2-3 additional designs
-   - UI selector
-
-7. **Cover Letter UI**
-   - Editor + Preview
-   - Download
-
-8. **Application tracking**
-   - States
-   - Notes
-   - Timeline
-
-### Low Priority
-
-9. **Analytics**
-   - Event tracking
-   - Internal dashboards
-
-10. **Advanced features**
-    - Streaming
-    - Integrations
-    - Automations
+5. **Template system** — 2-3 additional PDF designs
+6. **Cover Letter UI** — Editor + Preview + Download
+7. **Application tracking** — States, Notes, Timeline
 
 ---
 
@@ -1699,13 +1666,13 @@ const config: Config = {
 
 When resuming the project, verify:
 
-- [ ] `npm install` executed without errors
-- [ ] `.env.local` configured correctly
-- [ ] Database accessible (`npm run db:studio`)
-- [ ] Prisma client generated (`npm run db:generate`)
+- [ ] `pnpm install` executed without errors
+- [ ] `.env.local` configured correctly (DATABASE_URL, SESSION_SECRET, SMTP_*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
+- [ ] Database accessible (`pnpm db:studio`)
+- [ ] Prisma client generated (`pnpm db:generate`)
 - [ ] Valid AI API key (Google AI or OpenAI) configured
-- [ ] `npm run dev` works at http://localhost:3000
-- [ ] No TypeScript errors (`npm run type-check`)
+- [ ] `pnpm dev` works at http://localhost:3000
+- [ ] No TypeScript errors (`pnpm type-check`)
 - [ ] Review this document for complete context
 
 ---
@@ -1719,52 +1686,37 @@ This project is in a solid technical foundation phase. The architecture is scala
 - ✅ Dual AI provider support (Google Gemini + OpenAI)
 - ✅ Multi-language interface (English/Spanish)
 - ✅ AI APIs (job analysis, resume generation, cover letters)
-- ✅ Robust database system
+- ✅ Robust database system (Neon PostgreSQL in production)
 - ✅ PDF generation and download
 - ✅ Resume parsing
+- ✅ Complete authentication system (registration, login, email verification, 2FA, password reset)
+- ✅ SMTP email delivery working in production
+- ✅ Vercel production deployment
 
 **What's missing**:
 
-- 🚧 Complete frontend
-- 🚧 Authentication
-- 🚧 Polished UI/UX
-- 🚧 Production deployment
-
-**Recommended next milestone**: Build the MVP dashboard with resume upload and end-to-end customized resume generation.
+- 🚧 Dashboard UI polish
+- 🚧 User settings page (2FA setup, session list)
+- 🚧 More PDF templates
 
 ---
 
-**Last updated**: May 13, 2026  
-**Version**: 0.2.0  
+**Last updated**: June 17, 2026  
+**Version**: 0.3.0  
 **Maintainer**: @fawer5dev
 
-## 📝 Recent Updates (May 2026)
+## 📝 Recent Updates (June 2026)
 
-### Internationalization (May 13, 2026)
-- Implemented next-intl for multi-language support
-- Added English (default) and Spanish translations
-- Created [locale] routing pattern for all user-facing pages
-- Added middleware for automatic locale detection
-- Language switcher component for user preference
+### Authentication System Live (June 17, 2026)
+- Full custom auth system deployed to production (no NextAuth — 100% custom)
+- Email verification on registration working end-to-end in production
+- SMTP delivery confirmed via nodemailer (Gmail SMTP with App Password)
+- Fixed SMTP auth field typo: `auth.users` → `auth.user` in `src/lib/email/sender.ts`
+- Added `transporter.verify()` + full stack trace logging for production SMTP diagnostics
+- Root cause of email failure identified and resolved: `EMAIL_FROM` must be a valid sender address accepted by the SMTP provider (`501 Bad sender address syntax` if malformed)
+- Password reset, 2FA, rate limiting, and audit logging all deployed
 
-### AI Provider Enhancement (May 13, 2026)
-- Set Google Gemini 2.0 Flash as primary AI provider (cost-effective)
-- OpenAI GPT-4o available as optional alternative (higher quality)
-- Updated API endpoints with download functionality
-- Added comprehensive application management endpoints
-
-### PDF Template Redesign
-- Implemented minimalist single-column layout (black text only)
-- Optimized for 1-page A4 format with responsive spacing
-- Dynamic subtitle generation from job experience
-- Skills section moved before Experience with inline display
-- Experience bullets limited to 3 per position for space optimization
-
-### Bug Fixes
-- Fixed Prisma transaction timeout in application creation (5s → 15s)
-- Resolved Google AI 503 errors documentation
-
-### UI/UX Improvements
-- Skills section repositioned in both web view and PDF output
-- Improved category grouping for Technical and Soft Skills
-- Enhanced readability with optimized spacing and typography
+### Vercel Build Improvements (June 2026)
+- Added `scripts/vercel-build.js`: auto-runs `prisma migrate deploy` when `DATABASE_URL` is present; skips migrations for preview builds without DB
+- `package.json` build command updated to `node ./scripts/vercel-build.js`
+- Resolved TypeScript build failures caused by Prisma model name mismatches between local and CI environments (pragmatic `any` annotations in `server-session.ts`, `prisma.ts`, and several API routes — to be cleaned up later)

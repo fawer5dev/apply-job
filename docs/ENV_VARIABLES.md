@@ -25,13 +25,16 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-gmail-app-password"
-EMAIL_FROM="Apply Job <noreply@applyjob.com>"
+EMAIL_FROM="Apply Job <your-email@gmail.com>"
 ```
 
-**Note**: To use Gmail:
-1. Enable 2FA on your Google account
-2. Generate an App Password at: https://myaccount.google.com/apppasswords
-3. Use the app password (not your regular password)
+**Important notes:**
+- `EMAIL_FROM` must be a valid email address in one of these formats:
+  - `"your-email@gmail.com"` (plain)
+  - `"Apply Job <your-email@gmail.com>"` (with display name)
+- For Gmail, the address in `EMAIL_FROM` must match `SMTP_USER` (or a verified alias).
+- A malformed `EMAIL_FROM` causes a `501 Bad sender address syntax` SMTP error.
+- To use Gmail, enable 2FA and generate an App Password (see below).
 
 #### Option 2: SendGrid (Production)
 ```env
@@ -92,7 +95,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-gmail-app-password"
-EMAIL_FROM="Apply Job <noreply@applyjob.com>"
+EMAIL_FROM="Apply Job <your-email@gmail.com>"
 
 # Application URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -164,6 +167,7 @@ After setting up environment variables:
 - Check SMTP credentials are correct
 - Verify firewall/network allows SMTP ports (587/465)
 - For Gmail: Ensure 2FA is enabled and you're using an App Password
+- **`501 Bad sender address syntax`**: `EMAIL_FROM` is malformed or empty. Use a valid address like `Apply Job <your-email@gmail.com>`. For Gmail it must match `SMTP_USER`.
 - Check spam folder for verification emails
 - Review logs in development mode (emails log to console)
 
@@ -202,5 +206,5 @@ After setting up environment variables:
 
 ---
 
-**Last Updated**: $(date)  
-**Version**: 1.0
+**Last Updated**: June 2026  
+**Version**: 1.1
