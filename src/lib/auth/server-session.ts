@@ -3,11 +3,13 @@ import { redirect } from 'next/navigation';
 import { validateSession } from './session';
 import type { User, Session } from '@prisma/client';
 
+// Session with related User included (matches how validateSession returns it)
+type SessionWithUser = Session & { users: User };
+
 interface AuthResult {
   // `users` property name is kept for compatibility with existing code
-  // but the type should match Prisma's generated `User` type.
   users: User;
-  session: Session;
+  session: SessionWithUser;
 }
 
 /**
