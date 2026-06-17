@@ -1,11 +1,13 @@
 import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from './session';
-import type { users, sessions } from '@prisma/client';
+import type { User, Session } from '@prisma/client';
 
 interface AuthResult {
-  users: users;
-  session: sessions;
+  // `users` property name is kept for compatibility with existing code
+  // but the type should match Prisma's generated `User` type.
+  users: User;
+  session: Session;
 }
 
 /**
