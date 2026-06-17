@@ -17,7 +17,7 @@ function createTransporter() {
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
-      users: process.env.SMTP_USER,
+      user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   };
@@ -48,6 +48,18 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   }
 
   try {
+    // Verify transporter connectivity/auth before sending. This surfaces
+    // connection/auth errors early and produces a clearer stack in logs.
+    try {
+      await transporter.verify();
+      console.log('ℹ️ SMTP transporter verified.');
+    } catch (verifyError) {
+      // Log verify error with stack for easier diagnosis in production logs.
+      console.error('❌ SMTP transporter verification failed:', verifyError);
+      if ((verifyError as any)?.stack) console.error((verifyError as any).stack);
+      // Continue to attempt sendMail - nodemailer may still provide a clearer error.
+    }
+
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || '"Apply Job" <noreply@applyjob.com>',
       to: options.to,
@@ -59,7 +71,9 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     console.log(`✅ Email sent successfully to ${options.to}`);
     return true;
   } catch (error) {
+    // Log the full error and stack to help diagnose provider / auth issues in Vercel logs.
     console.error('❌ Error sending email:', error);
+    if ((error as any)?.stack) console.error((error as any).stack);
     return false;
   }
 }
