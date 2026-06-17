@@ -1,9 +1,6 @@
 import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from './session';
-import type { User, Session } from '@prisma/client';
-
-// Session with related User included (matches how validateSession returns it)
 // Use pragmatic any here to avoid mismatches between generated Prisma types
 // across different build environments. This keeps the build stable; we can
 // reintroduce stricter types once the @prisma/client generation is consistent
