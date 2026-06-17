@@ -94,7 +94,8 @@ export async function requireAuthApi(): Promise<string> {
     throw new Error('Unauthorized');
   }
 
-  return validation.session.userId;
+  // Cast to any to avoid cross-file Prisma type mismatches during CI builds.
+  return (validation.session as any).userId;
 }
 
 /**
