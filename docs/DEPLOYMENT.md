@@ -17,6 +17,7 @@ Vercel provides the best experience for Next.js applications with automatic buil
 ### Step 1: Prepare Your Repository
 
 1. **Ensure all code is committed and pushed to GitHub**
+
    ```bash
    git add .
    git commit -m "Prepare for deployment"
@@ -30,6 +31,7 @@ Vercel provides the best experience for Next.js applications with automatic buil
    - Skips migrations and only runs `next build` if `DATABASE_URL` is absent (e.g. preview builds without a DB)
 
    `package.json` should have:
+
    ```json
    {
      "scripts": {
@@ -38,6 +40,7 @@ Vercel provides the best experience for Next.js applications with automatic buil
      }
    }
    ```
+
    ✅ Both are already configured in your project
 
 ### Step 2: Set Up Database
@@ -45,17 +48,20 @@ Vercel provides the best experience for Next.js applications with automatic buil
 Choose a PostgreSQL provider that works well with Vercel:
 
 #### Option A: Neon (Recommended)
+
 1. Go to https://neon.tech
 2. Create a new project
 3. Copy the connection string (looks like `postgresql://user:pass@host/db?sslmode=require`)
 
 #### Option B: Supabase
+
 1. Go to https://supabase.com
 2. Create a new project
 3. Go to Settings > Database
 4. Copy the "Connection string" under "Connection pooling"
 
 #### Option C: Railway
+
 1. Go to https://railway.app
 2. Create a new PostgreSQL database
 3. Copy the connection string
@@ -77,6 +83,7 @@ Choose a PostgreSQL provider that works well with Vercel:
    Click "Environment Variables" and add the following:
 
    **Required Variables:**
+
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
    SESSION_SECRET=your-64-character-hex-string
@@ -85,6 +92,7 @@ Choose a PostgreSQL provider that works well with Vercel:
    ```
 
    **Email Configuration (Required for Auth):**
+
    ```env
    SMTP_HOST=smtp.gmail.com
    SMTP_PORT=587
@@ -95,6 +103,7 @@ Choose a PostgreSQL provider that works well with Vercel:
    ```
 
    **Optional (if using OpenAI):**
+
    ```env
    OPENAI_API_KEY=your-openai-api-key
    ```
@@ -110,23 +119,27 @@ Choose a PostgreSQL provider that works well with Vercel:
 If you need to run migrations manually (e.g. first-time setup or emergency fix):
 
 1. **Install Vercel CLI** (if not already installed)
+
    ```bash
    npm i -g vercel
    ```
 
 2. **Login and link your project**
+
    ```bash
    vercel login
    vercel link
    ```
 
 3. **Pull production environment and run migrations**
+
    ```bash
    vercel env pull .env.production --environment production
    DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d= -f2-) pnpm prisma migrate deploy
    ```
 
    Or set `DATABASE_URL` directly:
+
    ```bash
    export DATABASE_URL="postgresql://..."
    pnpm prisma migrate deploy
@@ -151,6 +164,7 @@ openssl rand -hex 32
 ```
 
 Or using Node.js:
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -158,6 +172,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### Gmail App Password Setup
 
 For `SMTP_PASS`:
+
 1. Go to https://myaccount.google.com/security
 2. Enable 2-Factor Authentication
 3. Go to https://myaccount.google.com/apppasswords
@@ -173,6 +188,7 @@ For `SMTP_PASS`:
 
 **Cause:** `postinstall` script not running  
 **Fix:** Ensure `package.json` has:
+
 ```json
 {
   "scripts": {
@@ -189,7 +205,8 @@ For `SMTP_PASS`:
 ### ❌ Runtime Error: "Failed to connect to database"
 
 **Cause:** Invalid `DATABASE_URL` or database not accessible  
-**Fix:** 
+**Fix:**
+
 - Verify connection string is correct
 - Ensure database allows connections from Vercel IPs
 - Check SSL mode is enabled (`?sslmode=require`)
@@ -198,6 +215,7 @@ For `SMTP_PASS`:
 
 **Cause:** Invalid SMTP configuration  
 **Fix:**
+
 - Verify SMTP credentials in Vercel env vars
 - Use Gmail App Password, not regular password
 - Check `SMTP_HOST` and `SMTP_PORT` are correct
@@ -205,6 +223,7 @@ For `SMTP_PASS`:
 
 **Common error: `501 Error: Bad sender address syntax`**  
 This means `EMAIL_FROM` is malformed. Use a valid format:
+
 ```
 # Valid formats:
 EMAIL_FROM="noreply@yourdomain.com"
@@ -215,6 +234,7 @@ EMAIL_FROM=""                        # empty
 EMAIL_FROM="Apply Job"               # no email address
 EMAIL_FROM="Apply Job <>"            # empty angle brackets
 ```
+
 The address in `EMAIL_FROM` must also be accepted by your SMTP provider (e.g. Gmail requires it to match `SMTP_USER`).
 
 ---
@@ -242,12 +262,14 @@ After successful deployment:
 ## Continuous Deployment
 
 Vercel automatically deploys:
+
 - **Production**: Pushes to `main` branch
 - **Preview**: Pull requests and other branches
 
 ### Deployment Workflow
 
 1. Push code to GitHub
+
    ```bash
    git push origin main
    ```
@@ -279,6 +301,7 @@ Vercel automatically deploys:
 ### Enable Vercel Edge Functions
 
 Add to `vercel.json`:
+
 ```json
 {
   "buildCommand": "pnpm build",
@@ -290,6 +313,7 @@ Add to `vercel.json`:
 ### Enable Caching
 
 Vercel automatically caches:
+
 - Static assets (images, fonts)
 - API routes with proper headers
 - Server components
@@ -297,6 +321,7 @@ Vercel automatically caches:
 ### Database Connection Pooling
 
 Use PgBouncer or connection pooling URL for better performance:
+
 ```env
 DATABASE_URL=postgresql://user:pass@host/db?pgbouncer=true&connection_limit=1
 ```
@@ -312,6 +337,7 @@ vercel logs [deployment-url]
 ```
 
 Or view in Vercel dashboard:
+
 - Go to your project
 - Click "Deployments"
 - Click on a deployment
@@ -328,19 +354,24 @@ Or view in Vercel dashboard:
 ## Scaling Considerations
 
 ### Database
+
 - Use connection pooling (PgBouncer)
 - Monitor query performance
 - Add indexes for frequently queried fields
 - Consider read replicas for high traffic
 
 ### API Rate Limiting
+
 Already implemented in the application:
+
 - Login attempts: 5 per 15 minutes
 - Registration: 3 per hour
 - Email sending: 5 per hour
 
 ### File Storage
+
 For production, consider:
+
 - AWS S3 for CV storage
 - Cloudinary for image optimization
 - Vercel Blob for simple file storage
@@ -372,6 +403,7 @@ If deployment fails or has issues:
    - Click "Promote to Production"
 
 2. **Git Revert**
+
    ```bash
    git revert HEAD
    git push origin main
@@ -404,6 +436,7 @@ If deployment fails or has issues:
 ### AWS/GCP/Azure
 
 For enterprise deployments, consider:
+
 - Docker containerization
 - Kubernetes orchestration
 - Managed PostgreSQL (RDS, Cloud SQL)
@@ -415,22 +448,26 @@ For enterprise deployments, consider:
 ## Cost Estimation
 
 ### Vercel (Free Tier)
+
 - Hobby: $0/month
   - 100 GB bandwidth
   - Unlimited deployments
   - 100 GB-hours execution
 
 ### Database
+
 - Neon (Free): $0/month (0.5 GB storage)
 - Supabase (Free): $0/month (500 MB storage)
 - Railway ($5/month for 5GB storage)
 
 ### Email
+
 - Gmail: Free (for development)
 - SendGrid: $15/month (40,000 emails)
 - AWS SES: ~$0.10 per 1,000 emails
 
 ### AI APIs
+
 - Google AI: ~$0.35 per 1M tokens (Gemini 2.5 Flash)
 - OpenAI: ~$5 per 1M tokens (GPT-4o)
 
@@ -443,7 +480,8 @@ For enterprise deployments, consider:
 - **Vercel Documentation**: https://vercel.com/docs
 - **Next.js Deployment**: https://nextjs.org/docs/deployment
 - **Prisma with Vercel**: https://www.prisma.io/docs/guides/deployment/deployment-guides/deploying-to-vercel
-- **Troubleshooting**: See `docs/TROUBLESHOOTING.md`
+- **Documentation Index**: See `docs/README.md`
+- **Project Issues/Context**: See `PROJECT_CONTEXT.md`
 
 ---
 

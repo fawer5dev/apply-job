@@ -34,11 +34,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+dev_logs.txt
 
 # local env files
 .env
 .env*.local
 .env.production
+.env.example
 
 # vercel
 .vercel
@@ -63,3 +65,7 @@ uploads/
 
 #files
 files/
+public/test-upload.html
+src/app/[locale]/test-upload/
+src/lib/pdf/generator.ts.backup
+scripts/test-*.js

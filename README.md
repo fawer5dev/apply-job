@@ -109,15 +109,18 @@ apply-job/
 ## 🔑 Required Environment Variables
 
 ### Core Configuration
+
 - `DATABASE_URL`: PostgreSQL connection URL
 - `SESSION_SECRET`: 64-character hex string for session encryption
 - `NEXT_PUBLIC_APP_URL`: Application URL (http://localhost:3000 for dev)
 
 ### AI Providers (at least one required)
+
 - `GOOGLE_AI_API_KEY`: Google AI API key (recommended, cost-effective)
 - `OPENAI_API_KEY`: OpenAI API key (optional, higher quality)
 
 ### Email Configuration (for authentication)
+
 - `SMTP_HOST`: SMTP server host (e.g., smtp.gmail.com)
 - `SMTP_PORT`: SMTP port (587 for TLS)
 - `SMTP_USER`: SMTP username
@@ -131,6 +134,7 @@ For complete environment variable documentation, see [docs/ENV_VARIABLES.md](doc
 Ready to deploy? See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for complete deployment instructions.
 
 **Quick Deploy to Vercel:**
+
 1. Push code to GitHub
 2. Import repository to Vercel
 3. Add environment variables
@@ -140,6 +144,7 @@ Build status: ✅ All errors resolved and production-ready
 
 ## 📚 Documentation
 
+- **[Documentation Index](docs/README.md)** - Central index of all technical docs
 - **[Quick Start](docs/QUICK_START.md)** - 5-minute setup guide
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel, Railway, or Render
 - **[Setup Guide](docs/SETUP.md)** - Detailed installation and configuration
@@ -147,6 +152,7 @@ Build status: ✅ All errors resolved and production-ready
 - **[Authentication](docs/AUTH_FINAL_COMPLETE.md)** - Authentication system documentation
 - **[Architecture](docs/ARCHITECTURE.md)** - Technical architecture and design
 - **[Project Context](PROJECT_CONTEXT.md)** - Complete project information
+- **[Repository File Inventory](files.md)** - Current file and folder map
 
 ## 📄 License
 

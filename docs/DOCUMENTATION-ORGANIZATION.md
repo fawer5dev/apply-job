@@ -1,266 +1,77 @@
-# Documentation Organization Summary
+# Documentation Organization
 
 ## Last Updated
 
-**Date**: May 21, 2026  
-**Changes**: Added DEPLOYMENT.md guide with Vercel deployment instructions and troubleshooting for production deployments
+**Date**: June 18, 2026  
+**Changes**: Synced documentation map with current repository state, removed stale references, and added file inventory docs.
 
 ## Current Documentation Structure
 
 ```
 apply-job/
-├── README.md                    # ✅ Project overview and quick start
-├── PROJECT_CONTEXT.md           # ✅ Complete development context
+├── README.md                         # Project overview and quick start
+├── PROJECT_CONTEXT.md                # Complete development context
+├── files.md                          # Current repository file inventory
 │
-├── docs/                        # 📚 Technical documentation
-    ├── README.md               # Documentation index
-    ├── ARCHITECTURE.md         # Technical architecture
-    ├── SETUP.md                # Installation and setup guide
-    ├── QUICK_START.md          # 5-minute authentication setup
-    ├── DEPLOYMENT.md           # Vercel/production deployment guide
-    ├── ENV_VARIABLES.md        # Environment variable reference
-    ├── AUTH_FINAL_COMPLETE.md  # Complete authentication documentation
-    ├── AUTH_IMPLEMENTATION_STATUS.md  # Auth implementation status
-    ├── AUTH_PHASE2_COMPLETE.md # Auth phase 2 completion notes
-    └── DOCUMENTATION-ORGANIZATION.md  # Documentation structure guide
-
+└── docs/                             # Technical documentation
+    ├── README.md                     # Documentation index
+    ├── ARCHITECTURE.md               # Technical architecture
+    ├── SETUP.md                      # Installation and setup guide
+    ├── QUICK_START.md                # 5-minute setup guide
+    ├── DEPLOYMENT.md                 # Deployment guide (Vercel/Railway/Render)
+    ├── ENV_VARIABLES.md              # Environment variable reference
+    ├── AUTH_FINAL_COMPLETE.md        # Authentication system documentation
+    ├── AUTH_IMPLEMENTATION_STATUS.md # Authentication implementation status
+    ├── AUTH_PHASE2_COMPLETE.md       # Authentication phase 2 notes
+    └── DOCUMENTATION-ORGANIZATION.md # This file
 ```
 
-## Files Kept in Root
+## Markdown Files Analysis
 
-### ✅ Essential Files (KEPT)
-
-**README.md**
-
-- Purpose: Project overview and quick start
-- Why: Standard location for repository introduction
-- Status: Updated with links to docs/ directory
-
-**PROJECT_CONTEXT.md**
-
-- Purpose: Complete project context and development information
-- Why: Critical reference for developers
-- Status: Updated with new file structure
-
-## Files Organized
-
-### 📚 Moved to `docs/`
-
-**ARCHITECTURE.md**
-
-- Technical architecture and design decisions
-- System workflows and data models
-- Performance considerations
-
-**SETUP.md**
-
-- Detailed installation instructions
-- Database configuration
-- Environment setup
-- Development and production guides
-
-**DEPLOYMENT.md**
-
-- Complete deployment guide for Vercel
-- Environment variable setup for production
-- Database configuration (Neon, Supabase, Railway)
-- Common deployment issues and fixes
-- Post-deployment checklist
-- Alternative platforms (Railway, Render)
-
-**QUICK_START.md**
-
-- 5-minute authentication setup guide
-- Quick database configuration
-- Email setup instructions
-- Testing authentication flows
-
-**ENV_VARIABLES.md**
-
-- Complete environment variable documentation
-- Required vs optional variables
-- Provider setup guides
-
-**AUTH_*.md Files**
-
-- Complete authentication system documentation
-- Implementation status and phases
-- API endpoints and usage examples
-
-**DOCUMENTATION-ORGANIZATION.md** (This file)
-
-- Overview of the documentation layout
-- Rationale behind file placement and grouping
-- Standards for maintaining documentation consistency
-
-**README.md** (NEW)
-
-- Documentation index
-- Quick reference to all docs
-- Documentation standards
-
-### 🧪 Moved to `tests/docs/`
-
-**TEST-ORGANIZATION-MIGRATION.md**
-
-- Test reorganization documentation
-- Migration guide for test structure
-- Updated with new paths
-
-## Files Analysis
-
-### Total Markdown Files Found: 7
-
-- ✅ **2 kept in root** (essential: README.md, PROJECT_CONTEXT.md)
-- ✅ **4 in docs/** (technical documentation)
-- ✅ **1 in tests/docs/** (test-specific)
-- ✅ **0 deleted** (all files were necessary)
-
-## Updates Made
-
-1. ✅ Created `docs/` directory
-2. ✅ Moved technical documentation to `docs/`
-3. ✅ Created `docs/README.md` as documentation index
-4. ✅ Updated `README.md` with documentation links
-5. ✅ Updated `PROJECT_CONTEXT.md` with new structure
-6. ✅ Updated all internal references to moved files
-7. ✅ Updated `tests/README.md` references
-8. ✅ Updated `tests/docs/TEST-ORGANIZATION-MIGRATION.md` references
-9. ✅ Moved `DOCUMENTATION-ORGANIZATION.md` to `docs/`
-10. ✅ Comprehensive update for i18n and Google Gemini AI (May 13, 2026)
-
-## Benefits
-
-### 🎯 Better Organization
-
-- Clear separation between essential and detailed docs
-- Easy to find relevant documentation
-- Follows standard project structure conventions
-
-### 📖 Improved Navigation
-
-- Documentation index in `docs/README.md`
-- Cross-references between docs
-- Clear hierarchy and structure
-
-### 🔍 Easier Maintenance
-
-- Related docs grouped together
-- Test docs separated from general docs
-- Consistent file organization
-
-### 👥 Better Developer Experience
-
-- Quick start in root README
-- Detailed guides in docs/
-- Test-specific info in tests/
-- Clear documentation paths
-
-## Documentation Access
-
-### Quick Start
-
-```bash
-# Read project overview
-cat README.md
-
-# Complete project context
-cat PROJECT_CONTEXT.md
-```
-
-### Technical Documentation
-
-```bash
-# Browse all documentation
-ls docs/
-
-# Read specific guide
-cat docs/SETUP.md
-cat docs/ARCHITECTURE.md
-cat docs/TROUBLESHOOTING.md
-```
-
-### Testing Documentation
-
-```bash
-# Testing guide
-cat tests/README.md
-
-# Test results and procedures
-ls tests/docs/
-```
+- Root markdown files: **3** (`README.md`, `PROJECT_CONTEXT.md`, `files.md`)
+- docs markdown files: **9**
+- tests markdown files: **0**
+- Total markdown files: **12**
 
 ## Navigation Guide
 
-### For New Developers
+1. Start with `README.md` for product overview and setup commands.
+2. Use `docs/README.md` for the full documentation index.
+3. Use `files.md` to quickly inspect the current repository structure.
+4. Use `PROJECT_CONTEXT.md` for complete implementation and architecture context.
 
-1. Start with `README.md` - Project overview
-2. Read `docs/SETUP.md` - Get the project running
-3. Review `PROJECT_CONTEXT.md` - Understand the full context
-4. Check `docs/ARCHITECTURE.md` - Learn the technical design
+## Documentation Access
 
-### For Contributors
+```bash
+# Root docs
+cat README.md
+cat PROJECT_CONTEXT.md
+cat files.md
 
-1. `README.md` - Quick project info
-2. `docs/ARCHITECTURE.md` - Understand the system
-3. `tests/README.md` - Learn how to write tests
-4. `docs/TROUBLESHOOTING.md` - Common issues
+# Technical docs index and main guides
+cat docs/README.md
+cat docs/SETUP.md
+cat docs/ARCHITECTURE.md
+cat docs/DEPLOYMENT.md
+```
 
-### For Troubleshooting
+## Standards
 
-1. `docs/TROUBLESHOOTING.md` - General issues
-2. `tests/docs/` - Test-specific issues
-3. `PROJECT_CONTEXT.md` - Known issues section
+### Where To Place Documentation
 
-## Standards for Future Documentation
+- Root (`/`): High-level project docs and repository-wide inventories.
+- `docs/`: Product, architecture, auth, setup, deployment, and operational guides.
+- `tests/`: Keep automated test files only unless test documentation is intentionally added.
 
-### Where to Place New Documentation
+### Best Practices
 
-**Root directory** (`/`)
-
-- Only essential, frequently accessed files
-- README.md and PROJECT_CONTEXT.md
-
-**docs/ directory**
-
-- Technical architecture documents
-- Setup and configuration guides
-- API documentation
-- Deployment guides
-- Development workflows
-
-**tests/docs/ directory**
-
-- Test procedures and results
-- Testing guidelines
-- Test migration guides
-- Performance test reports
-
-### File Naming Conventions
-
-- Use UPPERCASE for major documentation: `SETUP.md`, `ARCHITECTURE.md`
-- Use descriptive names: `API-DOCUMENTATION.md`, `DEPLOYMENT-GUIDE.md`
-- Use hyphens for multi-word names: `CODE-STYLE-GUIDE.md`
-
-### Documentation Best Practices
-
-1. ✅ Keep README.md concise and actionable
-2. ✅ Cross-reference related documents
-3. ✅ Update docs when code changes
-4. ✅ Include examples and code samples
-5. ✅ Maintain a docs/README.md index
+1. Update docs in the same PR/commit as code changes.
+2. Avoid references to files that do not exist.
+3. Keep `files.md` current after structural changes.
+4. Prefer linking to existing guides instead of duplicating content.
 
 ## Verification
 
-All markdown files have been properly organized:
-
-- ✅ Root directory: Clean with only essential files
-- ✅ docs/: Contains all technical documentation
-- ✅ tests/docs/: Contains all test-related documentation
-- ✅ All references updated to new paths
-- ✅ No broken links
-- ✅ Documentation index created
-
-## Summary
-
-**Result**: Successfully organized all documentation files with improved structure, better navigation, and clearer purpose for each file location. All necessary files retained, properly categorized, and cross-referenced.
+- Documentation links in this file reference existing files only.
+- Repository markdown counts reflect the current state.
+- Stale references to removed test docs and troubleshooting docs were removed.

@@ -146,7 +146,7 @@ export default function DashboardPage() {
                         {loading ? '...' : stats.base_cvs}
                       </div>
                       <p className="mt-1 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        {t('stats.base_cvs')}
+                        {t('stats.baseCVs')}
                       </p>
                     </div>
                     <div className="h-px bg-border" />
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                   {loading ? '...' : stats.base_cvs}
                 </div>
                 <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {t('stats.base_cvs')}
+                  {t('stats.baseCVs')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />
               </div>

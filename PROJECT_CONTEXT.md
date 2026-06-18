@@ -82,7 +82,7 @@
 ### Implementation
 
 - **Library**: next-intl 4.11.0
-- **Supported Languages**: 
+- **Supported Languages**:
   - English (en) - Default
   - Spanish (es)
 - **Translation Files**: `messages/en.json`, `messages/es.json`
@@ -418,8 +418,6 @@ apply-job/
 │   │   │   │       ├── page.tsx       # Applications list
 │   │   │   │       ├── new/page.tsx   # New application
 │   │   │   │       └── [id]/page.tsx  # View application
-│   │   │   └── test-upload/
-│   │   │       └── page.tsx   # Test upload page
 │   │   │
 │   │   └── api/               # API Routes (27 total, no locale prefix)
 │   │       ├── auth/          # 🔐 Authentication (17 endpoints)
@@ -585,9 +583,11 @@ apply-job/
 #### User Registration & Login
 
 ##### POST /api/auth/register
+
 Register new user with email/password.
 
 **Request**:
+
 ```json
 {
   "email": "string",
@@ -597,6 +597,7 @@ Register new user with email/password.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -605,9 +606,11 @@ Register new user with email/password.
 ```
 
 ##### POST /api/auth/login
+
 Login with credentials.
 
 **Request**:
+
 ```json
 {
   "email": "string",
@@ -617,6 +620,7 @@ Login with credentials.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -630,17 +634,21 @@ Login with credentials.
 ```
 
 ##### POST /api/auth/logout
+
 Logout current session.
 
 ##### POST /api/auth/logout-all
+
 Logout from all devices.
 
 #### Email Verification
 
 ##### POST /api/auth/verify-email
+
 Verify email with token.
 
 **Request**:
+
 ```json
 {
   "token": "string"
@@ -648,14 +656,17 @@ Verify email with token.
 ```
 
 ##### POST /api/auth/resend-verification
+
 Resend verification email.
 
 #### Password Management
 
 ##### POST /api/auth/forgot-password
+
 Request password reset email.
 
 **Request**:
+
 ```json
 {
   "email": "string"
@@ -663,9 +674,11 @@ Request password reset email.
 ```
 
 ##### POST /api/auth/reset-password
+
 Reset password with token.
 
 **Request**:
+
 ```json
 {
   "token": "string",
@@ -674,9 +687,11 @@ Reset password with token.
 ```
 
 ##### POST /api/auth/change-password
+
 Change password for logged-in user.
 
 **Request**:
+
 ```json
 {
   "currentPassword": "string",
@@ -687,9 +702,11 @@ Change password for logged-in user.
 #### Two-Factor Authentication
 
 ##### POST /api/auth/2fa/enable
+
 Generate 2FA secret and QR code.
 
 **Response**:
+
 ```json
 {
   "secret": "string",
@@ -698,9 +715,11 @@ Generate 2FA secret and QR code.
 ```
 
 ##### POST /api/auth/2fa/verify-setup
+
 Verify and enable 2FA.
 
 **Request**:
+
 ```json
 {
   "code": "string" // 6-digit TOTP code
@@ -708,6 +727,7 @@ Verify and enable 2FA.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -716,9 +736,11 @@ Verify and enable 2FA.
 ```
 
 ##### POST /api/auth/2fa/verify
+
 Verify 2FA code during login.
 
 **Request**:
+
 ```json
 {
   "email": "string",
@@ -727,9 +749,11 @@ Verify 2FA code during login.
 ```
 
 ##### POST /api/auth/2fa/disable
+
 Disable 2FA for user.
 
 **Request**:
+
 ```json
 {
   "password": "string" // Confirmation
@@ -737,14 +761,17 @@ Disable 2FA for user.
 ```
 
 ##### POST /api/auth/2fa/backup-codes
+
 Regenerate backup codes.
 
 #### Session Management
 
 ##### GET /api/auth/session
+
 Get current session information.
 
 **Response**:
+
 ```json
 {
   "user": {
@@ -758,9 +785,11 @@ Get current session information.
 ```
 
 ##### GET /api/auth/sessions
+
 List all user sessions.
 
 **Response**:
+
 ```json
 {
   "sessions": [{
@@ -774,6 +803,7 @@ List all user sessions.
 ```
 
 ##### DELETE /api/auth/sessions/[id]
+
 Revoke specific session.
 
 ### Core Application Endpoints (10 total)
@@ -899,10 +929,18 @@ Uploads and parses a CV file (PDF, DOCX, TXT).
   "success": true,
   "data": {
     "id": "string",
-    "personalInfo": { /* ... */ },
-    "experience": [ /* ... */ ],
-    "education": [ /* ... */ ],
-    "skills": { /* ... */ }
+    "personalInfo": {
+      /* ... */
+    },
+    "experience": [
+      /* ... */
+    ],
+    "education": [
+      /* ... */
+    ],
+    "skills": {
+      /* ... */
+    }
   }
 }
 ```
@@ -928,9 +966,13 @@ Creates a new job application with customized CV.
   "success": true,
   "data": {
     "id": "string",
-    "customCV": { /* ... */ },
+    "customCV": {
+      /* ... */
+    },
     "atsScore": 85,
-    "atsAnalysis": { /* ... */ }
+    "atsAnalysis": {
+      /* ... */
+    }
   }
 }
 ```
@@ -1168,6 +1210,7 @@ npm run db:seed
 #### PDF Styling Details
 
 **CV PDF:**
+
 - Font: Arial/Helvetica (system fonts)
 - Size: 9pt
 - Layout: Single-column, minimalist black design
@@ -1175,6 +1218,7 @@ npm run db:seed
 - Filename: `User_Name_CV_[CompanyName].pdf`
 
 **Cover Letter PDF:**
+
 - Font: Libre Baskerville (Google Fonts) with fallbacks to Baskerville, Georgia, serif
 - Size: 12pt
 - Line Height: 1.7
@@ -1261,14 +1305,14 @@ File: `src/lib/pdf/generator.ts`
 **Design Specifications**:
 
 - **Font**: Arial, Helvetica (sans-serif)
-- **Font Sizes**: 
+- **Font Sizes**:
   - Name: 26pt (bold, uppercase)
   - Section Headers: 11pt (bold, uppercase)
   - Subtitle: 9.5pt (black)
   - Body: 9pt
   - Skills/Bullets: 8.5pt
 - **Line Height**: 1.3 (optimized for 1-page fit)
-- **Colors**: 
+- **Colors**:
   - All text: #000000 (black)
   - Section borders: 2px solid black
 - **Layout**:
@@ -1667,7 +1711,7 @@ const config: Config = {
 When resuming the project, verify:
 
 - [ ] `pnpm install` executed without errors
-- [ ] `.env.local` configured correctly (DATABASE_URL, SESSION_SECRET, SMTP_*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
+- [ ] `.env.local` configured correctly (DATABASE*URL, SESSION_SECRET, SMTP*\*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
 - [ ] Database accessible (`pnpm db:studio`)
 - [ ] Prisma client generated (`pnpm db:generate`)
 - [ ] Valid AI API key (Google AI or OpenAI) configured
@@ -1708,6 +1752,7 @@ This project is in a solid technical foundation phase. The architecture is scala
 ## 📝 Recent Updates (June 2026)
 
 ### Authentication System Live (June 17, 2026)
+
 - Full custom auth system deployed to production (no NextAuth — 100% custom)
 - Email verification on registration working end-to-end in production
 - SMTP delivery confirmed via nodemailer (Gmail SMTP with App Password)
@@ -1717,6 +1762,7 @@ This project is in a solid technical foundation phase. The architecture is scala
 - Password reset, 2FA, rate limiting, and audit logging all deployed
 
 ### Vercel Build Improvements (June 2026)
+
 - Added `scripts/vercel-build.js`: auto-runs `prisma migrate deploy` when `DATABASE_URL` is present; skips migrations for preview builds without DB
 - `package.json` build command updated to `node ./scripts/vercel-build.js`
 - Resolved TypeScript build failures caused by Prisma model name mismatches between local and CI environments (pragmatic `any` annotations in `server-session.ts`, `prisma.ts`, and several API routes — to be cleaned up later)
