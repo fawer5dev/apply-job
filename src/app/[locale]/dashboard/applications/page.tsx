@@ -74,22 +74,7 @@ export default function ApplicationsPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center justify-between">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="font-bold">← Dashboard</span>
-          </Link>
-          <Link
-            href="/dashboard/applications/new"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            New Application
-          </Link>
-        </div>
-      </header>
-
+    <div className="flex flex-col">
       <main className="container flex-1 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">My Applications</h1>

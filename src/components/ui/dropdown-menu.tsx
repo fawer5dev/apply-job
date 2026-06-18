@@ -114,11 +114,13 @@ interface DropdownMenuItemProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   destructive?: boolean;
+  asChild?: boolean;
 }
 
 export function DropdownMenuItem({
   children,
   destructive = false,
+  asChild = false,
   onClick,
   className = '',
   ...props
@@ -131,13 +133,20 @@ export function DropdownMenuItem({
   const { setOpen } = context;
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    onClick?.(e);
+    onClick?.(e as any);
     setOpen(false);
   };
 
   const destructiveClass = destructive
     ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
     : 'hover:bg-primary/5';
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<any>, {
+      onClick: handleClick,
+      className: `${children.props.className || ''} block w-full px-4 py-3 text-left font-body text-sm transition-colors ${destructiveClass} ${className}`,
+    });
+  }
 
   return (
     <button

@@ -92,27 +92,7 @@ export default function ManageCVPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground/10 bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="group flex items-center space-x-2 transition-transform hover:scale-105"
-          >
-            <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-              ← {t('backToDashboard')}
-            </span>
-          </Link>
-          <Link
-            href="/dashboard/cv/new"
-            className="group flex items-center gap-2 bg-primary px-6 py-3 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            {t('uploadNew')}
-          </Link>
-        </div>
-      </header>
-
+    <div className="flex flex-col">
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-6xl">
           {/* Page header */}

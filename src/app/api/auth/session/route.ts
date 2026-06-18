@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         userAgent: s.userAgent,
         deviceId: s.deviceId,
       },
-      users: {
+      user: {
         id: s.users?.id,
         email: s.users?.email,
         name: s.users?.name,

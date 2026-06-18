@@ -6,6 +6,7 @@ export type AuditAction =
   | 'logout'
   | 'logout_all'
   | 'register'
+  | 'profile_update'
   | 'email_verified'
   | 'password_changed'
   | 'password_reset_requested'

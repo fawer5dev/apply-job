@@ -155,7 +155,7 @@ export default function ViewCVPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="flex flex-col items-center justify-center py-24">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary" />
           <p className="font-body text-sm uppercase tracking-wider text-muted-foreground">
@@ -168,34 +168,30 @@ export default function ViewCVPage() {
 
   if (error || !cv) {
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5">
-        <header className="sticky top-0 z-50 w-full border-b-2 border-foreground/10 bg-background/80 backdrop-blur-xl">
-          <div className="container flex h-16 items-center">
-            <Link
-              href="/dashboard/cv"
-              className="group flex items-center space-x-2 transition-transform hover:scale-105"
-            >
-              <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-                ← {t('backToCVs')}
-              </span>
-            </Link>
-          </div>
-        </header>
-        <main className="container flex flex-1 items-center justify-center py-12">
+      <div className="flex flex-col">
+        <div className="container py-8">
+          <Link
+            href="/dashboard/cv"
+            className="group mb-8 inline-flex items-center space-x-2 transition-transform hover:scale-105"
+          >
+            <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+              ← {t('backToCVs')}
+            </span>
+          </Link>
           <div className="relative animate-scale-in overflow-hidden border-2 border-red-500/50 bg-red-50 p-8 dark:bg-red-950/30">
             <div className="absolute left-0 top-0 h-full w-2 bg-red-500" />
             <p className="pl-4 font-body text-sm text-red-800 dark:text-red-200">
               {error || t('notFound')}
             </p>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground/10 bg-background/80 backdrop-blur-xl">
+    <div className="flex flex-col">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <Link
             href="/dashboard/cv"
@@ -232,7 +228,7 @@ export default function ViewCVPage() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-4xl">

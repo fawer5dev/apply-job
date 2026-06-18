@@ -119,14 +119,14 @@ export default function NewApplicationPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center">
-          <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">← {t('backToDashboard')}</span>
+    <div className="flex flex-col">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center">
+          <Link href="/dashboard/applications" className="mr-6 flex items-center space-x-2 transition-transform hover:scale-105">
+            <span className="font-display text-xl font-bold tracking-tight transition-colors hover:text-primary">← {t('backToDashboard')}</span>
           </Link>
         </div>
-      </header>
+      </div>
 
       <main className="container flex-1 py-8">
         <div className="mx-auto max-w-3xl">

@@ -67,11 +67,11 @@ export default function NewCVPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground/10 bg-background/80 backdrop-blur-xl">
+    <div className="flex flex-col">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center">
           <Link
-            href="/dashboard"
+            href="/dashboard/cv"
             className="group flex items-center space-x-2 transition-transform hover:scale-105"
           >
             <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
@@ -79,7 +79,7 @@ export default function NewCVPage() {
             </span>
           </Link>
         </div>
-      </header>
+      </div>
 
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-3xl">

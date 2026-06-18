@@ -258,39 +258,35 @@ export default function ApplicationDetailPage() {
 
   if (error || !application) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-          <div className="container flex h-14 items-center">
-            <Link
-              href="/dashboard/applications"
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="font-bold">Back to Applications</span>
-            </Link>
-          </div>
-        </header>
-        <main className="container flex-1 py-8">
+      <div className="flex flex-col">
+        <div className="container py-8">
+          <Link
+            href="/dashboard/applications"
+            className="group mb-8 inline-flex items-center space-x-2 transition-transform hover:scale-105"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="font-bold">Back to Applications</span>
+          </Link>
           <div className="rounded-lg border border-red-500 bg-red-50 p-6 dark:bg-red-950">
             <p className="text-sm text-red-800 dark:text-red-200">
               {error || 'Application not found'}
             </p>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-col">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed right-4 top-4 z-50 animate-in slide-in-from-top-5">
+        <div className="fixed right-4 top-20 z-50 animate-in slide-in-from-top-5">
           <div
             className={`rounded-lg border px-4 py-3 shadow-lg ${
               toast.type === 'success'
                 ? 'border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200'
-                : 'border-red-500 bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200'
+                : 'border-red-500 bg-red-50 text-red-800 dark:bg-red-950 dark:text-green-200'
             }`}
           >
             {toast.message}
@@ -347,14 +343,14 @@ export default function ApplicationDetailPage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center justify-between">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center justify-between">
           <Link
             href="/dashboard/applications"
-            className="flex items-center space-x-2"
+            className="group flex items-center space-x-2 transition-transform hover:scale-105"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="font-bold">Back to Applications</span>
+            <ArrowLeft className="h-4 w-4 transition-colors group-hover:text-primary" />
+            <span className="font-bold transition-colors group-hover:text-primary">Back to Applications</span>
           </Link>
           <div className="flex items-center gap-2">
             <button
@@ -380,7 +376,7 @@ export default function ApplicationDetailPage() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container flex-1 py-8">
         {/* Header */}
