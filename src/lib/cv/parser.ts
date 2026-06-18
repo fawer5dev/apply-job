@@ -47,9 +47,6 @@ async function parseDOCX(file: File): Promise<string> {
 }
 
 async function structureCVText(text: string): Promise<ParsedCV> {
-  // Use Google AI to extract CV structure
-  const { generateContent } = await import('@/lib/ai/google-ai');
-
   const systemPrompt =
     'You are an expert in CV analysis. You extract structured information from CVs with precision. You always respond in valid JSON format.';
 
@@ -139,19 +136,16 @@ IMPORTANT:
 `;
 
   try {
-    console.log('Calling Google AI to structure CV...');
-    const content = await generateContent(systemPrompt, userPrompt, {
-      temperature: 0.3,
-      maxTokens: 3000,
-      responseFormat: 'json',
-    });
-
-    if (!content) {
-      throw new Error('No response received from Google AI');
-    }
-
-    console.log('Received response from Google AI, parsing JSON...');
-    const parsed = JSON.parse(content);
+    console.log('Calling AI service to structure CV...');
+    const { generateJSON } = await import('@/lib/ai/service');
+    const parsed = await generateJSON<Omit<ParsedCV, 'rawText'>>(
+      userPrompt,
+      systemPrompt,
+      {
+        temperature: 0.3,
+        maxTokens: 3000,
+      }
+    );
 
     console.log('Successfully parsed CV structure:', {
       hasPersonalInfo: !!parsed.personalInfo,

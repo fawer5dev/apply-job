@@ -197,10 +197,18 @@ For `SMTP_PASS`:
 }
 ```
 
-### ❌ Build Error: "GOOGLE_AI_API_KEY is not configured"
+### ❌ Error: "GOOGLE_AI_API_KEY is not configured"
 
-**Cause:** Environment variable validation at build time  
-**Fix:** ✅ Already fixed in commit `7157dcd` - API keys are now validated at runtime
+**Cause:** The application requires an AI provider to function, and the `GOOGLE_AI_API_KEY` environment variable is missing in the production environment.
+**Fix:** 
+
+1. Go to your Vercel Dashboard.
+2. Select your project and go to **Settings** > **Environment Variables**.
+3. Add `GOOGLE_AI_API_KEY` with your Google AI API key.
+4. If you prefer OpenAI, add `OPENAI_API_KEY`. The system now includes an automatic fallback mechanism.
+5. Redeploy the application for the changes to take effect.
+
+*Note: The application now supports automatic fallback between Google AI and OpenAI. Ensure at least one is configured.*
 
 ### ❌ Runtime Error: "Failed to connect to database"
 

@@ -1,4 +1,4 @@
-import { generateJSON } from './google-ai';
+import { generateJSON } from './service';
 import { COVER_LETTER_PROMPT } from './prompts';
 import type { CV, JobListing } from '@/types';
 

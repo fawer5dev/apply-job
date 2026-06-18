@@ -2,8 +2,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// Load environment variables in development/script mode
-if (process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_AI_API_KEY) {
+// Load environment variables if not already present
+if (!process.env.GOOGLE_AI_API_KEY) {
   try {
     // Try loading .env.local first, then .env
     dotenv.config({ path: path.join(process.cwd(), '.env.local') });
@@ -19,7 +19,9 @@ if (process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_AI_API_KEY) {
 function getApiKey(): string {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
-    throw new Error('GOOGLE_AI_API_KEY is not configured');
+    throw new Error(
+      'GOOGLE_AI_API_KEY is not configured. Please add it to your .env.local file or environment variables.'
+    );
   }
   return apiKey;
 }

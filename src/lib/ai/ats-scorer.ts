@@ -1,4 +1,4 @@
-import { generateJSON } from './google-ai';
+import { generateJSON } from './service';
 import { ATS_SCORER_PROMPT } from './prompts';
 import type { CV, JobListing, ATSAnalysis } from '@/types';
 

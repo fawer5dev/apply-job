@@ -2,8 +2,8 @@ import OpenAI from 'openai';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// Load environment variables in development/script mode
-if (process.env.NODE_ENV !== 'production' && !process.env.OPENAI_API_KEY) {
+// Load environment variables if not already present
+if (!process.env.OPENAI_API_KEY) {
   try {
     dotenv.config({ path: path.join(process.cwd(), '.env.local') });
     if (!process.env.OPENAI_API_KEY) {
@@ -18,7 +18,9 @@ if (process.env.NODE_ENV !== 'production' && !process.env.OPENAI_API_KEY) {
 function getApiKey(): string {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured');
+    throw new Error(
+      'OPENAI_API_KEY is not configured. Please add it to your .env.local file or environment variables.'
+    );
   }
   return apiKey;
 }
@@ -41,3 +43,31 @@ export const AI_CONFIG = {
   temperature: 0.7,
   maxTokens: 4000,
 };
+
+/**
+ * Helper function to generate content with OpenAI
+ */
+export async function generateContent(
+  systemPrompt: string,
+  userPrompt: string,
+  config?: {
+    temperature?: number;
+    maxTokens?: number;
+    responseFormat?: 'json' | 'text';
+  }
+): Promise<string> {
+  const client = getOpenAI();
+  const response = await client.chat.completions.create({
+    model: AI_CONFIG.model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: config?.temperature ?? AI_CONFIG.temperature,
+    max_tokens: config?.maxTokens ?? AI_CONFIG.maxTokens,
+    response_format:
+      config?.responseFormat === 'json' ? { type: 'json_object' } : undefined,
+  });
+
+  return response.choices[0]?.message?.content || '';
+}

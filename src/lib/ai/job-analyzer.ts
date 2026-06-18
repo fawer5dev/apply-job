@@ -1,4 +1,4 @@
-import { generateJSON } from './google-ai';
+import { generateJSON } from './service';
 import { JOB_ANALYZER_PROMPT } from './prompts';
 import type { JobAnalysis, JobKeywords, JobRequirement } from '@/types';
 
