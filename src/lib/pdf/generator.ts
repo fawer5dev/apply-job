@@ -1,14 +1,18 @@
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import type { CV, Experience } from '@/types';
 
+// Chromium pack hosted on GitHub Releases — downloaded once per Lambda instance
+// into /tmp/ (Lambda's writable filesystem) and reused on warm invocations.
+// Architecture is detected at runtime: Vercel uses x64 by default.
+const CHROMIUM_PACK_URL =
+  `https://github.com/Sparticuz/chromium/releases/download/v149.0.0/` +
+  `chromium-v149.0.0-pack.${process.arch === 'arm64' ? 'arm64' : 'x64'}.tar`;
+
 async function launchBrowser() {
-  // In serverless environments (Vercel/Lambda), Chrome is not available in the
-  // filesystem. @sparticuz/chromium provides a Chromium binary compiled for Lambda.
-  // For local development, fall back to a system Chrome if CHROME_EXECUTABLE_PATH
-  // is set, otherwise also use @sparticuz/chromium's bundled binary.
   const executablePath =
-    process.env.CHROME_EXECUTABLE_PATH || (await chromium.executablePath());
+    process.env.CHROME_EXECUTABLE_PATH ||
+    (await chromium.executablePath(CHROMIUM_PACK_URL));
 
   return puppeteer.launch({
     args: chromium.args,
