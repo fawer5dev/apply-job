@@ -1,5 +1,21 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import type { CV, Experience } from '@/types';
+
+async function launchBrowser() {
+  // In serverless environments (Vercel/Lambda), Chrome is not available in the
+  // filesystem. @sparticuz/chromium provides a Chromium binary compiled for Lambda.
+  // For local development, fall back to a system Chrome if CHROME_EXECUTABLE_PATH
+  // is set, otherwise also use @sparticuz/chromium's bundled binary.
+  const executablePath =
+    process.env.CHROME_EXECUTABLE_PATH || (await chromium.executablePath());
+
+  return puppeteer.launch({
+    args: chromium.args,
+    executablePath,
+    headless: true,
+  });
+}
 
 export async function generateCVPDF(
   cv: CV,
@@ -7,14 +23,11 @@ export async function generateCVPDF(
 ): Promise<Buffer> {
   const html = renderCVTemplate(cv, template);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'load' });
 
     const pdf = await page.pdf({
       format: 'A4',
@@ -418,14 +431,14 @@ export async function generateCoverLetterPDF(
 ): Promise<Buffer> {
   const html = htmlContent || renderCoverLetterTemplate(content, candidateName);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Use 'load' (networkidle0 was removed in puppeteer-core v25).
+    // waitForNetworkIdle() ensures Google Fonts finishes loading before printing.
+    await page.setContent(html, { waitUntil: 'load' });
+    await page.waitForNetworkIdle({ idleTime: 500, timeout: 10000 });
 
     const pdf = await page.pdf({
       format: 'A4',

@@ -13,8 +13,10 @@ export async function generateCoverLetter(
   tone: 'professional' | 'creative' | 'formal' | 'friendly' = 'professional',
   additionalInfo?: string
 ): Promise<CoverLetterResult> {
-  // Get candidate name from CV
-  const candidateName = cv.personalInfo?.name || 'Candidate';
+  // Get candidate name from CV (normalized to Title Case)
+  const toTitleCase = (str: string) =>
+    str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+  const candidateName = toTitleCase(cv.personalInfo?.name || 'Candidate');
   
   // Replace placeholders in the prompt
   const promptWithReplacements = COVER_LETTER_PROMPT

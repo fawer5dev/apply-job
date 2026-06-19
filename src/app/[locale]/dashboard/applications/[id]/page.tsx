@@ -27,6 +27,30 @@ const cleanMarkdown = (text: string): string => {
     .trim();
 };
 
+// Helper to convert a string to Title Case
+const toTitleCase = (str: string): string =>
+  str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+
+// Converts the signature name in a cover letter to Title Case
+const processSignatureCase = (content: string): string => {
+  if (!content) return content;
+  const lines = content.split('\n');
+  let inSignatureBlock = false;
+  return lines
+    .map((line) => {
+      const trimmed = line.trim().toLowerCase();
+      if (trimmed.includes('best regards') || trimmed.includes('sincerely')) {
+        inSignatureBlock = true;
+        return line;
+      }
+      if (inSignatureBlock && line.trim()) {
+        return toTitleCase(line);
+      }
+      return line;
+    })
+    .join('\n');
+};
+
 interface ApplicationDetail {
   id: string;
   status: string;
@@ -657,7 +681,7 @@ export default function ApplicationDetailPage() {
               {application.cover_letters ? (
                 <div className="prose prose-sm max-w-none">
                   <pre className="whitespace-pre-wrap font-sans text-sm text-muted-foreground">
-                    {application.cover_letters.content}
+                    {processSignatureCase(application.cover_letters.content)}
                   </pre>
                 </div>
               ) : (
