@@ -279,52 +279,47 @@ function renderCVTemplate(cv: CV, template: string): string {
     </header>
     
     <!-- SUMMARY -->
-    ${
-      cv.summary
-        ? `
+    ${cv.summary
+      ? `
     <section class="summary">
       <h2>Summary</h2>
       <p>${cv.summary}</p>
     </section>
     `
-        : ''
+      : ''
     }
     
     <!-- SKILLS -->
-    ${
-      technicalSkills || softSkills
-        ? `
+    ${technicalSkills || softSkills
+      ? `
     <section class="skills">
       <h2>Skills</h2>
-      ${
-        technicalSkills
-          ? `
+      ${technicalSkills
+        ? `
       <div class="skill-group">
         <h3>Technical Skills</h3>
         <p>${technicalSkills}</p>
       </div>
       `
-          : ''
+        : ''
       }
-      ${
-        softSkills
-          ? `
+      ${softSkills
+        ? `
       <div class="skill-group">
         <h3>Soft Skills</h3>
         <p>${softSkills}</p>
       </div>
       `
-          : ''
+        : ''
       }
     </section>
     `
-        : ''
+      : ''
     }
     
     <!-- EXPERIENCE -->
-    ${
-      cv.experience && cv.experience.length > 0
-        ? `
+    ${cv.experience && cv.experience.length > 0
+      ? `
     <section class="experience">
       <h2>Experience</h2>
       ${experienceItems
@@ -334,28 +329,26 @@ function renderCVTemplate(cv: CV, template: string): string {
         <h3>${exp.title}</h3>
         <p class="company">${exp.company}${exp.location ? ` | ${exp.location}` : ''}</p>
         <p class="dates">${exp.startDate} - ${exp.current ? 'Present' : exp.endDate || 'Present'}</p>
-        ${
-          exp.achievements && exp.achievements.length > 0
-            ? `
+        ${exp.achievements && exp.achievements.length > 0
+              ? `
         <ul>
           ${exp.achievements.map((achievement) => `<li>${achievement}</li>`).join('')}
         </ul>
         `
-            : ''
-        }
+              : ''
+            }
       </div>
       `
         )
         .join('')}
     </section>
     `
-        : ''
+      : ''
     }
     
     <!-- EDUCATION -->
-    ${
-      cv.education && cv.education.length > 0
-        ? `
+    ${cv.education && cv.education.length > 0
+      ? `
     <section class="education">
       <h2>Education</h2>
       ${cv.education
@@ -373,13 +366,12 @@ function renderCVTemplate(cv: CV, template: string): string {
         .join('')}
     </section>
     `
-        : ''
+      : ''
     }
     
     <!-- PROJECTS (if any) -->
-    ${
-      cv.projects && cv.projects.length > 0
-        ? `
+    ${cv.projects && cv.projects.length > 0
+      ? `
     <section class="projects">
       <h2>Projects</h2>
       ${cv.projects
@@ -396,13 +388,12 @@ function renderCVTemplate(cv: CV, template: string): string {
         .join('')}
     </section>
     `
-        : ''
+      : ''
     }
     
     <!-- CERTIFICATIONS (if any) -->
-    ${
-      cv.certifications && cv.certifications.length > 0
-        ? `
+    ${cv.certifications && cv.certifications.length > 0
+      ? `
     <section class="certifications">
       <h2>Certifications</h2>
       ${cv.certifications
@@ -419,7 +410,7 @@ function renderCVTemplate(cv: CV, template: string): string {
         .join('')}
     </section>
     `
-        : ''
+      : ''
     }
     
   </div>
@@ -433,7 +424,11 @@ export async function generateCoverLetterPDF(
   htmlContent?: string,
   candidateName?: string
 ): Promise<Buffer> {
-  const html = htmlContent || renderCoverLetterTemplate(content, candidateName);
+  const normalizedContent = processCoverLetterSignatureCase(content);
+  const normalizedHtmlContent = htmlContent
+    ? processCoverLetterHtmlSignatureCase(htmlContent)
+    : undefined;
+  const html = normalizedHtmlContent || renderCoverLetterTemplate(normalizedContent, candidateName);
 
   const browser = await launchBrowser();
 
@@ -459,6 +454,53 @@ export async function generateCoverLetterPDF(
   } finally {
     await browser.close();
   }
+}
+
+const toTitleCase = (str: string): string =>
+  str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+
+function processCoverLetterSignatureCase(content: string): string {
+  if (!content) return content;
+
+  const lines = content.split('\n');
+  let inSignatureBlock = false;
+
+  return lines
+    .map((line) => {
+      const trimmed = line.trim().toLowerCase();
+
+      if (trimmed.includes('best regards') || trimmed.includes('sincerely')) {
+        inSignatureBlock = true;
+        return line;
+      }
+
+      if (inSignatureBlock && line.trim()) {
+        return toTitleCase(line);
+      }
+
+      return line;
+    })
+    .join('\n');
+}
+
+function processCoverLetterHtmlSignatureCase(htmlContent: string): string {
+  if (!htmlContent) return htmlContent;
+
+  const signatureAndNameRegex =
+    /(<p[^>]*>\s*(?:best regards|sincerely)[^<]*<\/p>\s*<p[^>]*>)([\s\S]*?)(<\/p>)/gi;
+
+  return htmlContent.replace(signatureAndNameRegex, (_, opening, nameBlock, closing) => {
+    const normalizedNameBlock = nameBlock
+      .split(/<br\s*\/?\s*>/gi)
+      .map((segment: string) => {
+        const plain = segment.replace(/<[^>]+>/g, '').trim();
+        if (!plain) return segment;
+        return toTitleCase(plain);
+      })
+      .join('<br>');
+
+    return `${opening}${normalizedNameBlock}${closing}`;
+  });
 }
 
 // Helper function to format cover letter content with proper styling
