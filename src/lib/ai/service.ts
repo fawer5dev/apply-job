@@ -11,6 +11,84 @@ export interface GenerateConfig {
   provider?: AIProvider;
 }
 
+interface GenerateContentResult {
+  content: string;
+  /**
+   * When the primary provider failed but the fallback succeeded, this holds the
+   * classified primary error. If the fallback response can't be processed we can
+   * surface the root cause (e.g. "AI service is busy") instead of a generic
+   * "unexpected response" parse error.
+   */
+  originalError?: AIError;
+}
+
+async function tryGenerateContent(
+  systemPrompt: string,
+  userPrompt: string,
+  config: GenerateConfig = {}
+): Promise<GenerateContentResult> {
+  const { provider = 'auto', ...rest } = config;
+
+  // If specific provider is requested
+  if (provider === 'google') {
+    try {
+      return {
+        content: await googleAI.generateContent(systemPrompt, userPrompt, rest),
+      };
+    } catch (error) {
+      throw toAIError(error);
+    }
+  }
+  if (provider === 'openai') {
+    try {
+      return {
+        content: await openaiAI.generateContent(
+          systemPrompt,
+          userPrompt,
+          rest
+        ),
+      };
+    } catch (error) {
+      throw toAIError(error);
+    }
+  }
+
+  // Auto mode: Try Google first (usually cheaper/available), then fallback to OpenAI
+  let googleAIError: AIError | null = null;
+  try {
+    return {
+      content: await googleAI.generateContent(systemPrompt, userPrompt, rest),
+    };
+  } catch (error) {
+    googleAIError = toAIError(error);
+    console.warn(
+      'Google AI failed, trying OpenAI fallback...',
+      googleAIError.code,
+      googleAIError.message
+    );
+
+    try {
+      const content = await openaiAI.generateContent(
+        systemPrompt,
+        userPrompt,
+        rest
+      );
+      return {
+        content,
+        // Remember the root cause only when it's a transient failure. That way
+        // if the fallback response can't be parsed we can show a useful message
+        // (e.g. service busy) instead of blaming the fallback's response shape.
+        originalError: googleAIError.isRetryable ? googleAIError : undefined,
+      };
+    } catch {
+      console.error('Both AI providers failed');
+      // Throw the classified primary (Google) error so the UI can show a
+      // localized, retryable-aware message instead of the raw technical string.
+      throw googleAIError;
+    }
+  }
+}
+
 /**
  * Unified function to generate content with automatic fallback
  */
@@ -19,45 +97,8 @@ export async function generateContent(
   userPrompt: string,
   config: GenerateConfig = {}
 ): Promise<string> {
-  const { provider = 'auto', ...rest } = config;
-
-  // If specific provider is requested
-  if (provider === 'google') {
-    try {
-      return await googleAI.generateContent(systemPrompt, userPrompt, rest);
-    } catch (error) {
-      throw toAIError(error);
-    }
-  }
-  if (provider === 'openai') {
-    try {
-      return await openaiAI.generateContent(systemPrompt, userPrompt, rest);
-    } catch (error) {
-      throw toAIError(error);
-    }
-  }
-
-  // Auto mode: Try Google first (usually cheaper/available), then fallback to OpenAI
-  let googleError: unknown = null;
-  try {
-    return await googleAI.generateContent(systemPrompt, userPrompt, rest);
-  } catch (error) {
-    googleError = error;
-    console.warn(
-      'Google AI failed, trying OpenAI fallback...',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-
-    try {
-      return await openaiAI.generateContent(systemPrompt, userPrompt, rest);
-    } catch {
-      console.error('Both AI providers failed');
-      // Throw a classified version of the primary (Google) error so the UI
-      // can show a localized, retryable-aware message instead of the raw
-      // technical string (e.g. "503 Service Unavailable ... high demand").
-      throw toAIError(googleError);
-    }
-  }
+  const { content } = await tryGenerateContent(systemPrompt, userPrompt, config);
+  return content;
 }
 
 /**
@@ -68,10 +109,14 @@ export async function generateJSON<T>(
   systemPrompt: string,
   config: Omit<GenerateConfig, 'responseFormat'> = {}
 ): Promise<T> {
-  const content = await generateContent(systemPrompt, userPrompt, {
-    ...config,
-    responseFormat: 'json',
-  });
+  const { content, originalError } = await tryGenerateContent(
+    systemPrompt,
+    userPrompt,
+    {
+      ...config,
+      responseFormat: 'json',
+    }
+  );
 
   try {
     // Clean content if it's not perfectly clean JSON
@@ -101,9 +146,16 @@ export async function generateJSON<T>(
   } catch (error) {
     console.error('Failed to parse JSON response:', error);
     console.error('Raw content:', content.substring(0, 500));
-    // Re-throw existing AIError as-is; otherwise classify the parse failure.
+    // Re-throw existing AIError as-is.
     if (error instanceof AIError) {
       throw error;
+    }
+    // If the primary provider failed with a retryable error but the fallback
+    // returned content we can't parse, surface the original root cause so the
+    // user gets a meaningful message (e.g. "AI service is busy") and a retry
+    // button instead of "unexpected response".
+    if (originalError?.isRetryable) {
+      throw originalError;
     }
     throw toAIError(
       new Error(`Failed to parse AI response as JSON: ${error}`)
