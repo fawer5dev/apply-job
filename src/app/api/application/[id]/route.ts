@@ -74,6 +74,29 @@ export async function PATCH(
     const application = await prisma.applications.update({
       where: { id },
       data: updateData,
+      include: {
+        job_listings: {
+          select: {
+            title: true,
+            company: true,
+            location: true,
+            workMode: true,
+            salary: true,
+            description: true,
+          },
+        },
+        base_cvs: {
+          select: {
+            title: true,
+          },
+        },
+        cover_letters: {
+          select: {
+            content: true,
+            htmlContent: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({ application });
