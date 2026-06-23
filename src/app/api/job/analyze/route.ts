@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { analyzeJobDescription } from '@/lib/ai/job-analyzer';
+import { AIError } from '@/lib/ai/errors';
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,11 +62,24 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error analyzing job:', error);
+    if (error instanceof AIError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+          errorCode: error.code,
+          isRetryable: error.isRetryable,
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
         error:
           error instanceof Error ? error.message : 'Error analyzing job offer',
+        errorCode: 'AI_UNKNOWN',
+        isRetryable: false,
       },
       { status: 500 }
     );

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { generateCustomCV } from '@/lib/ai/cv-generator';
 import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
 import { requireAuthApi } from '@/lib/auth/server-session';
+import { AIError } from '@/lib/ai/errors';
 import type { CV, JobListing } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -139,10 +140,24 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating application:', error);
+    if (error instanceof AIError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+          errorCode: error.code,
+          isRetryable: error.isRetryable,
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       {
+        success: false,
         error: 'Error generating application',
         details: error instanceof Error ? error.message : 'Unknown error',
+        errorCode: 'AI_UNKNOWN',
+        isRetryable: false,
       },
       { status: 500 }
     );

@@ -122,11 +122,38 @@
     "analyzeJob": "Analizar Oferta",
     "generateApplication": "Generar Aplicación",
     "back": "Atrás",
+    "retry": "Reintentar",
     "errors": {
       "missingJobFields": "Completa título, empresa y descripción",
       "analysisFailed": "Error al analizar la oferta",
       "selectCV": "Selecciona un CV base",
       "generationFailed": "Error al generar la aplicación"
+    },
+    "aiErrors": {
+      "AI_SERVICE_BUSY": {
+        "title": "El servicio de IA está saturado",
+        "description": "El modelo de IA está experimentando alta demanda en este momento. Suele ser temporal: vuelve a intentarlo en unos instantes."
+      },
+      "AI_RATE_LIMITED": {
+        "title": "Límite de solicitudes alcanzado",
+        "description": "Se han enviado demasiadas solicitudes al servicio de IA. Espera un momento y vuelve a intentarlo."
+      },
+      "AI_API_KEY_MISSING": {
+        "title": "Error de configuración",
+        "description": "El servicio de IA no está configurado correctamente. Contacta con un administrador."
+      },
+      "AI_INVALID_RESPONSE": {
+        "title": "Respuesta inesperada de la IA",
+        "description": "La IA devolvió una respuesta que no se pudo procesar. Vuelve a intentarlo."
+      },
+      "AI_NETWORK_ERROR": {
+        "title": "Error de red",
+        "description": "Ocurrió un error de red al contactar con el servicio de IA. Revisa tu conexión e inténtalo de nuevo."
+      },
+      "AI_UNKNOWN": {
+        "title": "Algo salió mal",
+        "description": "Ocurrió un error inesperado al contactar con el servicio de IA. Vuelve a intentarlo."
+      }
     }
   },
   "ManageCV": {

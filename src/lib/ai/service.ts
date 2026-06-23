@@ -1,5 +1,6 @@
 import * as googleAI from './google-ai';
 import * as openaiAI from './openai';
+import { toAIError, AIError } from './errors';
 
 export type AIProvider = 'google' | 'openai' | 'auto';
 
@@ -22,25 +23,39 @@ export async function generateContent(
 
   // If specific provider is requested
   if (provider === 'google') {
-    return googleAI.generateContent(systemPrompt, userPrompt, rest);
+    try {
+      return await googleAI.generateContent(systemPrompt, userPrompt, rest);
+    } catch (error) {
+      throw toAIError(error);
+    }
   }
   if (provider === 'openai') {
-    return openaiAI.generateContent(systemPrompt, userPrompt, rest);
+    try {
+      return await openaiAI.generateContent(systemPrompt, userPrompt, rest);
+    } catch (error) {
+      throw toAIError(error);
+    }
   }
 
   // Auto mode: Try Google first (usually cheaper/available), then fallback to OpenAI
+  let googleError: unknown = null;
   try {
     return await googleAI.generateContent(systemPrompt, userPrompt, rest);
   } catch (error) {
-    console.warn('Google AI failed, trying OpenAI fallback...', 
-      error instanceof Error ? error.message : 'Unknown error');
-    
+    googleError = error;
+    console.warn(
+      'Google AI failed, trying OpenAI fallback...',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+
     try {
       return await openaiAI.generateContent(systemPrompt, userPrompt, rest);
-    } catch (openAIError) {
+    } catch {
       console.error('Both AI providers failed');
-      // Throw the original error which is usually more descriptive of the main provider's issue
-      throw error;
+      // Throw a classified version of the primary (Google) error so the UI
+      // can show a localized, retryable-aware message instead of the raw
+      // technical string (e.g. "503 Service Unavailable ... high demand").
+      throw toAIError(googleError);
     }
   }
 }
@@ -86,6 +101,12 @@ export async function generateJSON<T>(
   } catch (error) {
     console.error('Failed to parse JSON response:', error);
     console.error('Raw content:', content.substring(0, 500));
-    throw new Error(`Failed to parse AI response as JSON: ${error}`);
+    // Re-throw existing AIError as-is; otherwise classify the parse failure.
+    if (error instanceof AIError) {
+      throw error;
+    }
+    throw toAIError(
+      new Error(`Failed to parse AI response as JSON: ${error}`)
+    );
   }
 }

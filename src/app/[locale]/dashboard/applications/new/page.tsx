@@ -4,7 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, AlertTriangle, RotateCcw } from 'lucide-react';
+
+type AICode =
+  | 'AI_SERVICE_BUSY'
+  | 'AI_RATE_LIMITED'
+  | 'AI_API_KEY_MISSING'
+  | 'AI_INVALID_RESPONSE'
+  | 'AI_NETWORK_ERROR'
+  | 'AI_UNKNOWN';
+
+interface AIErrorState {
+  message: string;
+  code?: AICode;
+  isRetryable?: boolean;
+}
 
 export default function NewApplicationPage() {
   const t = useTranslations('NewApplication');
@@ -16,7 +30,7 @@ export default function NewApplicationPage() {
   const [loading, setLoading] = useState(false);
   const [analyzingJob, setAnalyzingJob] = useState(false);
   const [generatingApplication, setGeneratingApplication] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<AIErrorState | null>(null);
 
   // Job form data
   const [jobData, setJobData] = useState({
@@ -51,13 +65,14 @@ export default function NewApplicationPage() {
 
   const handleAnalyzeJob = async () => {
     if (!jobData.title || !jobData.company || !jobData.description) {
-      setError(t('errors.missingJobFields'));
+      setError({ message: t('errors.missingJobFields') });
       return;
     }
 
     setAnalyzingJob(true);
-    setError('');
+    setError(null);
 
+    let data: any = null;
     try {
       const response = await fetch('/api/job/analyze', {
         method: 'POST',
@@ -65,7 +80,7 @@ export default function NewApplicationPage() {
         body: JSON.stringify(jobData),
       });
 
-      const data = await response.json();
+      data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || t('errors.analysisFailed'));
@@ -74,7 +89,13 @@ export default function NewApplicationPage() {
       setJobListingId(data.job_listings.id);
       setStep(2);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('errors.analysisFailed'));
+      const message =
+        err instanceof Error ? err.message : t('errors.analysisFailed');
+      setError({
+        message,
+        code: data?.errorCode,
+        isRetryable: data?.isRetryable === true,
+      });
     } finally {
       setAnalyzingJob(false);
     }
@@ -82,13 +103,14 @@ export default function NewApplicationPage() {
 
   const handleGenerateApplication = async () => {
     if (!selectedCVId || !jobListingId) {
-      setError(t('errors.selectCV'));
+      setError({ message: t('errors.selectCV') });
       return;
     }
 
     setGeneratingApplication(true);
-    setError('');
+    setError(null);
 
+    let data: any = null;
     try {
       const response = await fetch('/api/application/create', {
         method: 'POST',
@@ -101,7 +123,7 @@ export default function NewApplicationPage() {
         }),
       });
 
-      const data = await response.json();
+      data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || t('errors.generationFailed'));
@@ -110,12 +132,64 @@ export default function NewApplicationPage() {
       setApplicationId(data.application.id);
       router.push(`/dashboard/applications/${data.application.id}`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t('errors.generationFailed')
-      );
+      const message =
+        err instanceof Error ? err.message : t('errors.generationFailed');
+      setError({
+        message,
+        code: data?.errorCode,
+        isRetryable: data?.isRetryable === true,
+      });
     } finally {
       setGeneratingApplication(false);
     }
+  };
+
+  const renderError = (onRetry: () => void, isRetrying: boolean) => {
+    if (!error) return null;
+
+    // Classified AI error: show localized title + description (+ retry).
+    if (error.code) {
+      const title = t(`aiErrors.${error.code}.title` as any);
+      const description = t(`aiErrors.${error.code}.description` as any);
+      return (
+        <div
+          role="alert"
+          className="mt-4 flex items-start gap-3 rounded-lg border border-red-500 bg-red-50 p-4 dark:bg-red-950"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+              {title}
+            </p>
+            <p className="text-sm text-red-700 dark:text-red-300">
+              {description}
+            </p>
+            {error.isRetryable && (
+              <button
+                onClick={onRetry}
+                disabled={isRetrying}
+                className="mt-2 inline-flex h-9 items-center justify-center gap-2 rounded-md border border-red-400 bg-red-50 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:pointer-events-none disabled:opacity-50 dark:border-red-500 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800"
+              >
+                <RotateCcw
+                  className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`}
+                />
+                {t('retry')}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Non-classified error (e.g. validation): plain message.
+    return (
+      <div
+        role="alert"
+        className="mt-4 rounded-lg border border-red-500 bg-red-50 p-4 dark:bg-red-950"
+      >
+        <p className="text-sm text-red-800 dark:text-red-200">{error.message}</p>
+      </div>
+    );
   };
 
   return (
@@ -294,13 +368,7 @@ export default function NewApplicationPage() {
                   </div>
                 </div>
 
-                {error && (
-                  <div className="mt-4 rounded-lg border border-red-500 bg-red-50 p-4 dark:bg-red-950">
-                    <p className="text-sm text-red-800 dark:text-red-200">
-                      {error}
-                    </p>
-                  </div>
-                )}
+                {renderError(handleAnalyzeJob, analyzingJob)}
 
                 <button
                   onClick={handleAnalyzeJob}
@@ -377,13 +445,7 @@ export default function NewApplicationPage() {
                   </div>
                 )}
 
-                {error && (
-                  <div className="mt-4 rounded-lg border border-red-500 bg-red-50 p-4 dark:bg-red-950">
-                    <p className="text-sm text-red-800 dark:text-red-200">
-                      {error}
-                    </p>
-                  </div>
-                )}
+                {renderError(handleGenerateApplication, generatingApplication)}
 
                 <div className="mt-6 flex gap-4">
                   <button

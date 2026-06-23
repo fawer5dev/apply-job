@@ -122,11 +122,38 @@
     "analyzeJob": "Analyze Job",
     "generateApplication": "Generate Application",
     "back": "Back",
+    "retry": "Try again",
     "errors": {
       "missingJobFields": "Complete title, company and description",
       "analysisFailed": "Error analyzing job offer",
       "selectCV": "Select a base CV",
       "generationFailed": "Error generating application"
+    },
+    "aiErrors": {
+      "AI_SERVICE_BUSY": {
+        "title": "AI service is busy",
+        "description": "The AI model is currently experiencing high demand. This is usually temporary — please try again in a few moments."
+      },
+      "AI_RATE_LIMITED": {
+        "title": "Rate limit reached",
+        "description": "Too many requests have been sent to the AI service. Please wait a moment and try again."
+      },
+      "AI_API_KEY_MISSING": {
+        "title": "Configuration error",
+        "description": "The AI service is not configured correctly. Please contact an administrator."
+      },
+      "AI_INVALID_RESPONSE": {
+        "title": "Unexpected AI response",
+        "description": "The AI returned a response that couldn't be processed. Please try again."
+      },
+      "AI_NETWORK_ERROR": {
+        "title": "Network error",
+        "description": "A network error occurred while contacting the AI service. Check your connection and try again."
+      },
+      "AI_UNKNOWN": {
+        "title": "Something went wrong",
+        "description": "An unexpected error occurred while contacting the AI service. Please try again."
+      }
     }
   },
   "ManageCV": {
