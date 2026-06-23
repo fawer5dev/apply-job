@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { generateCoverLetterPDF } from '@/lib/pdf/generator';
 
+const toTitleCase = (str: string): string =>
+  str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -56,8 +59,8 @@ export async function GET(
 
     // Generate filename
     const companyName = application.job_listings.company.replace(/\s+/g, '_');
-    const candidateFileName = candidateName.replace(/\s+/g, '_');
-    const filename = `${candidateFileName}_CL_${companyName}.pdf`;
+    const candidateFileName = toTitleCase(candidateName).replace(/\s+/g, '_');
+    const filename = `${candidateFileName}_cover-letter_${companyName}.pdf`;
 
     // Return PDF as Uint8Array
     return new NextResponse(new Uint8Array(pdfBuffer), {
