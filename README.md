@@ -151,7 +151,7 @@ Build status: ✅ All errors resolved and production-ready
 - **[Environment Variables](docs/ENV_VARIABLES.md)** - Complete environment configuration
 - **[Authentication](docs/AUTH_FINAL_COMPLETE.md)** - Authentication system documentation
 - **[Architecture](docs/ARCHITECTURE.md)** - Technical architecture and design
-- **[Project Context](PROJECT_CONTEXT.md)** - Complete project information
+- **[Project Context](docs/PROJECT_CONTEXT.md)** - Complete project information
 - **[Repository File Inventory](files.md)** - Current file and folder map
 
 ## 📄 License

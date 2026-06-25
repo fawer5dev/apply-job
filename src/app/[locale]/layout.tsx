@@ -52,6 +52,9 @@ export const metadata: Metadata = {
     },
   ],
   creator: 'Your Name',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export function generateStaticParams() {
