@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { parseCV } from '@/lib/cv/parser';
 import { prisma } from '@/lib/db/prisma';
 import { requireAuthApi } from '@/lib/auth/server-session';
+import { baseCVSchema } from '@/lib/utils/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,9 +35,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse CV using OpenAI
+    // Parse CV using AI
     console.log('Parsing CV...');
     const parsedCV = await parseCV(file);
+
+    // Validate parsed data before saving so incomplete AI responses
+    // surface clear errors instead of corrupt DB records.
+    const validation = baseCVSchema.safeParse({
+      title,
+      ...parsedCV,
+    });
+
+    if (!validation.success) {
+      console.error('Invalid parsed CV data:', validation.error.flatten());
+      return NextResponse.json(
+        {
+          error: 'AI parsed CV is incomplete or invalid',
+          details: validation.error.flatten(),
+        },
+        { status: 422 }
+      );
+    }
 
     // Save to database
     const baseCVId = `cv_${Date.now()}_${Math.random().toString(36).substring(7)}`;

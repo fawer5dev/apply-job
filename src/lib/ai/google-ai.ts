@@ -60,6 +60,8 @@ export async function generateContent(
     generationConfig: {
       temperature: config?.temperature ?? AI_CONFIG.temperature,
       maxOutputTokens: config?.maxTokens ?? AI_CONFIG.maxTokens,
+      responseMimeType:
+        config?.responseFormat === 'json' ? 'application/json' : undefined,
     },
   });
 

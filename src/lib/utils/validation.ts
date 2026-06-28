@@ -1,68 +1,97 @@
 import { z } from 'zod';
 
+// The AI parser returns `null` for missing optional fields, so the schema must
+// accept `null` in addition to `undefined` and coerce everything to clean
+// string/array values that the form and database expect.
+const optionalString = z
+  .string()
+  .nullish()
+  .transform((value) => value ?? '');
+const optionalUrl = z
+  .string()
+  .url()
+  .or(z.literal(''))
+  .nullish()
+  .transform((value) => value ?? '');
+const optionalStringArray = z
+  .array(z.string())
+  .nullish()
+  .transform((value) => value ?? []);
+
 // Base CV validation
 export const baseCVSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   personalInfo: z.object({
     name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email'),
-    phone: z.string().optional(),
-    location: z.string().optional(),
-    linkedin: z.string().url().optional().or(z.literal('')),
-    github: z.string().url().optional().or(z.literal('')),
-    website: z.string().url().optional().or(z.literal('')),
+    phone: optionalString,
+    location: optionalString,
+    linkedin: optionalUrl,
+    github: optionalUrl,
+    website: optionalUrl,
   }),
-  summary: z.string().optional(),
-  experience: z.array(
-    z.object({
-      title: z.string().min(1, 'Title is required'),
-      company: z.string().min(1, 'Company is required'),
-      location: z.string().optional(),
-      startDate: z.string().min(1, 'Start date is required'),
-      endDate: z.string().optional(),
-      current: z.boolean().optional(),
-      description: z.string().optional(),
-      achievements: z.array(z.string()),
-    })
-  ),
-  education: z.array(
-    z.object({
-      degree: z.string().min(1, 'Degree is required'),
-      institution: z.string().min(1, 'Institution is required'),
-      location: z.string().optional(),
-      graduationDate: z.string().min(1, 'Graduation date is required'),
-      gpa: z.string().optional(),
-      description: z.string().optional(),
-    })
-  ),
-  skills: z.array(
-    z.object({
-      category: z.string(),
-      items: z.array(z.string()),
-    })
-  ),
+  summary: optionalString,
+  experience: z
+    .array(
+      z.object({
+        title: z.string().min(1, 'Title is required'),
+        company: z.string().min(1, 'Company is required'),
+        location: optionalString,
+        startDate: z.string().min(1, 'Start date is required'),
+        endDate: optionalString,
+        current: z.boolean().optional(),
+        description: optionalString,
+        achievements: optionalStringArray,
+      })
+    )
+    .nullish()
+    .transform((value) => value ?? []),
+  education: z
+    .array(
+      z.object({
+        degree: z.string().min(1, 'Degree is required'),
+        institution: z.string().min(1, 'Institution is required'),
+        location: optionalString,
+        graduationDate: z.string().min(1, 'Graduation date is required'),
+        gpa: optionalString,
+        description: optionalString,
+      })
+    )
+    .nullish()
+    .transform((value) => value ?? []),
+  skills: z
+    .array(
+      z.object({
+        category: z.string(),
+        items: optionalStringArray,
+      })
+    )
+    .nullish()
+    .transform((value) => value ?? []),
   projects: z
     .array(
       z.object({
-        name: z.string(),
-        description: z.string(),
-        technologies: z.array(z.string()),
-        url: z.string().url().optional().or(z.literal('')),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
+        name: optionalString,
+        description: optionalString,
+        technologies: optionalStringArray,
+        url: optionalUrl,
+        startDate: optionalString,
+        endDate: optionalString,
       })
     )
-    .optional(),
+    .nullish()
+    .transform((value) => value ?? []),
   certifications: z
     .array(
       z.object({
         name: z.string(),
         issuer: z.string(),
         date: z.string(),
-        url: z.string().url().optional().or(z.literal('')),
+        url: optionalUrl,
       })
     )
-    .optional(),
+    .nullish()
+    .transform((value) => value ?? []),
 });
 
 export type BaseCVInput = z.infer<typeof baseCVSchema>;

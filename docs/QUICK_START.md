@@ -1,6 +1,6 @@
-# 🚀 Authentication System - Quick Start Guide
+# 🚀 Quick Start Guide
 
-Get your authentication system up and running in 5 minutes!
+Get the Apply Job application up and running quickly.
 
 ---
 
@@ -23,8 +23,6 @@ Copy the output - you'll need it in the next step.
 ---
 
 ## Step 2: Create .env.local File
-
-Create a `.env.local` file in your project root:
 
 ```bash
 cp .env.example .env.local
@@ -66,32 +64,49 @@ GOOGLE_AI_API_KEY="your-google-ai-api-key"
 
 ---
 
-## Step 3: Run Database Migration
-
-Apply the authentication schema to your database:
+## Step 3: Install Dependencies
 
 ```bash
-npm run db:push
+pnpm install
 ```
 
-This creates 5 new tables:
-- Session
-- Account  
-- VerificationToken
-- AuditLog
-- RateLimit
+This also runs `prisma generate` automatically via `postinstall`.
 
 ---
 
-## Step 4: Start Development Server
+## Step 4: Run Database Migration
+
+Apply the schema to your database:
 
 ```bash
-npm run dev
+pnpm db:push
+```
+
+This creates all tables including the authentication tables:
+
+- `accounts`
+- `applications`
+- `audit_logs`
+- `base_cvs`
+- `cover_letters`
+- `cv_templates`
+- `job_listings`
+- `rate_limits`
+- `sessions`
+- `users`
+- `verification_tokens`
+
+---
+
+## Step 5: Start Development Server
+
+```bash
+pnpm dev
 ```
 
 ---
 
-## Step 5: Test It Out!
+## Step 6: Test It Out!
 
 ### Test Registration Flow
 
@@ -106,7 +121,7 @@ npm run dev
 
 ### Check Console for Verification Email
 
-In development mode (when `SMTP_USER` is not set), emails are logged to the console. Look for:
+In development mode, if `SMTP_USER` is not configured, emails are logged to the console. Look for:
 
 ```
 📧 Email would be sent to: test@example.com
@@ -115,12 +130,14 @@ In development mode (when `SMTP_USER` is not set), emails are logged to the cons
 ```
 
 If `SMTP_USER` is configured, the app will attempt to send a real email and log:
+
 ```
 ℹ️ SMTP transporter verified.
 ✅ Email sent successfully to test@example.com
 ```
 
 Or on failure:
+
 ```
 ❌ SMTP transporter verification failed: ...
 ❌ Error sending email: ...
@@ -152,28 +169,37 @@ Your authentication system is now running!
 ## Common Issues & Fixes
 
 ### Issue: "Session secret is required"
+
 **Fix**: Make sure `SESSION_SECRET` is set in `.env.local` and is 64 characters long (32 bytes in hex)
 
 ### Issue: "SMTP connection failed" or "Bad sender address syntax"
-**Fix**: 
+
+**Fix**:
+
 - Check Gmail credentials and make sure you're using an App Password
 - `Bad sender address syntax` means `EMAIL_FROM` is malformed or empty — use `Apply Job <your.email@gmail.com>` and ensure it matches `SMTP_USER` for Gmail
 - Enable "2FA + App Password" — regular passwords are blocked by Gmail
 
 ### Issue: "Database connection failed"
-**Fix**: 
+
+**Fix**:
+
 - Check `DATABASE_URL` is correct
 - Make sure PostgreSQL is running
-- Run `npm run db:push` to ensure tables exist
+- Run `pnpm db:push` to ensure tables exist
 
 ### Issue: "Emails not sending"
-**Fix**: 
+
+**Fix**:
+
 - Check console logs in development mode
 - Verify SMTP credentials
 - Check spam folder for test emails
 
 ### Issue: "Middleware redirecting to login constantly"
-**Fix**: 
+
+**Fix**:
+
 - Clear browser cookies
 - Check session cookie is being set
 - Verify `SESSION_SECRET` is set correctly
@@ -194,7 +220,7 @@ Your authentication system is now running!
 ### Test 2FA (Optional)
 
 1. Login to your account
-2. Go to Settings (you'll need to create this page)
+2. Go to **Dashboard** → **Profile**
 3. Enable 2FA
 4. Scan QR code with Google Authenticator or Authy
 5. Enter 6-digit code
@@ -226,11 +252,14 @@ Before deploying to production:
 ## Need Help?
 
 ### Documentation
-- Full docs: `docs/AUTH_FINAL_COMPLETE.md`
+
+- Full docs: `docs/SETUP.md`
 - Environment guide: `docs/ENV_VARIABLES.md`
-- API reference: Check individual route files in `src/app/api/auth/`
+- Architecture: `docs/ARCHITECTURE.md`
+- API reference: Check individual route files in `src/app/api/`
 
 ### Troubleshooting
+
 1. Check console logs for errors
 2. Verify all environment variables are set
 3. Test database connection
@@ -243,56 +272,15 @@ Before deploying to production:
 
 Now that authentication is working, you can:
 
-1. **Wrap your app with AuthProvider**
-   ```tsx
-   // src/app/[locale]/layout.tsx
-   import { AuthProvider } from '@/hooks/use-auth';
-   
-   export default function RootLayout({ children }) {
-     return (
-       <html>
-         <body>
-           <AuthProvider>
-             {children}
-           </AuthProvider>
-         </body>
-       </html>
-     );
-   }
-   ```
-
-2. **Protect your dashboard**
-   ```tsx
-   // src/app/[locale]/dashboard/page.tsx
-   import { requireAuth } from '@/lib/auth/server-session';
-   
-   export default async function DashboardPage() {
-     const { user } = await requireAuth();
-     return <div>Welcome, {user.name}!</div>;
-   }
-   ```
-
-3. **Use auth in components**
-   ```tsx
-   'use client';
-   import { useAuth } from '@/hooks/use-auth';
-   
-   export function MyComponent() {
-     const { user, logout } = useAuth();
-     return <button onClick={logout}>Logout</button>;
-   }
-   ```
-
-4. **Build user settings page** for:
-   - Password change
-   - 2FA setup
-   - Session management
-   - Profile updates
+1. **Upload your base resume** at `/es/dashboard/cv` or `/en/dashboard/cv`
+2. **Create a new application** at `/es/dashboard/applications/new`
+3. **Generate a tailored CV and cover letter**
+4. **Download PDFs**
 
 ---
 
-**Time to Complete**: 5-10 minutes  
-**Difficulty**: ⭐⭐☆☆☆ Easy  
-**Prerequisites**: PostgreSQL running, Node.js installed
+**Time to Complete**: 5-10 minutes
+**Difficulty**: ⭐⭐☆☆☆ Easy
+**Prerequisites**: PostgreSQL running, Node.js >= 20, pnpm installed
 
-🎉 **Enjoy your new authentication system!**
+🎉 **Enjoy Apply Job!**

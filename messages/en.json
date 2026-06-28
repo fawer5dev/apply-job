@@ -64,9 +64,13 @@
     }
   },
   "NewCV": {
-    "title": "Upload Base CV",
-    "subtitle": "Upload your main CV and we'll analyze it automatically with AI",
+    "title": "Create Base CV",
+    "subtitle": "Upload your CV for AI analysis or enter your details manually",
     "backToDashboard": "Back to Dashboard",
+    "tabs": {
+      "upload": "Upload File",
+      "manual": "Manual Entry"
+    },
     "form": {
       "title": "CV Title",
       "titlePlaceholder": "Ex: Software Engineer CV 2024",
@@ -74,16 +78,93 @@
       "uploadPrompt": "Click to upload or drag the file",
       "uploadHint": "PDF, DOCX or TXT (max. 10MB)",
       "uploading": "Processing...",
+      "parsing": "Analyzing with AI...",
       "submit": "Upload and Analyze",
+      "parse": "Analyze and Review",
+      "save": "Save CV",
+      "saving": "Saving...",
       "cancel": "Cancel"
     },
     "errors": {
       "missingFields": "Please complete all fields",
-      "uploadFailed": "Error uploading CV"
+      "uploadFailed": "Error uploading CV",
+      "parseFailed": "Error analyzing CV. Please try again or use manual entry.",
+      "saveFailed": "Error saving CV"
     },
     "success": {
-      "title": "CV Uploaded Successfully!",
-      "message": "Redirecting to dashboard..."
+      "title": "CV Saved Successfully!",
+      "message": "Redirecting to your CVs..."
+    },
+    "review": {
+      "title": "Review Your CV",
+      "subtitle": "Check and edit the extracted information before saving",
+      "uploadAnother": "Upload another file"
+    },
+    "cvForm": {
+      "sections": {
+        "personalInfo": "Personal Information",
+        "summary": "Professional Summary",
+        "experience": "Work Experience",
+        "education": "Education",
+        "skills": "Skills"
+      },
+      "fields": {
+        "name": "Full Name",
+        "email": "Email",
+        "phone": "Phone",
+        "location": "Location",
+        "linkedin": "LinkedIn URL",
+        "website": "Website URL",
+        "jobTitle": "Job Title",
+        "company": "Company",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "current": "I currently work here",
+        "description": "Description",
+        "achievements": "Key Achievements / Responsibilities",
+        "degree": "Degree",
+        "institution": "Institution",
+        "graduationDate": "Graduation Date",
+        "gpa": "GPA",
+        "category": "Category",
+        "skills": "Skills"
+      },
+      "placeholders": {
+        "name": "Your full name",
+        "email": "you@example.com",
+        "phone": "+1 234 567 890",
+        "location": "City, Country",
+        "linkedin": "https://linkedin.com/in/yourprofile",
+        "website": "https://yourwebsite.com",
+        "summary": "Brief overview of your professional background...",
+        "jobTitle": "e.g. Senior Software Engineer",
+        "company": "e.g. Acme Inc.",
+        "workLocation": "City, Country",
+        "startDate": "e.g. Jan 2020",
+        "endDate": "e.g. Dec 2022",
+        "jobDescription": "Describe your role and responsibilities...",
+        "achievements": "One achievement per line",
+        "degree": "e.g. Bachelor of Science in Computer Science",
+        "institution": "e.g. University of Technology",
+        "schoolLocation": "City, Country",
+        "graduationDate": "e.g. 2018 - 2022",
+        "gpa": "e.g. 3.8 / 4.0",
+        "educationDescription": "Additional details...",
+        "skillCategory": "e.g. Technical Skills",
+        "skills": "e.g. React, TypeScript, Node.js"
+      },
+      "actions": {
+        "addExperience": "Add Experience",
+        "removeExperience": "Remove experience",
+        "addEducation": "Add Education",
+        "removeEducation": "Remove education",
+        "addSkillCategory": "Add Skill Category",
+        "removeSkillCategory": "Remove skill category"
+      },
+      "hints": {
+        "onePerLine": "One item per line",
+        "onePerLineOrComma": "One item per line or separated by commas"
+      }
     },
     "info": {
       "title": "What will we do with your CV?",
@@ -161,6 +242,7 @@
     "subtitle": "View, edit, and organize your base CVs",
     "section": "My CVs",
     "backToDashboard": "Back to Dashboard",
+    "createNew": "Create Base CV",
     "uploadNew": "Upload New CV",
     "uploadFirst": "Upload Your First CV",
     "loading": "Loading CVs...",
@@ -199,6 +281,13 @@
     }
   },
   "Applications": {
+    "title": "My Applications",
+    "description": "Track all your job applications in one place",
+    "emptyState": {
+      "title": "No applications yet",
+      "description": "Create your first application to get started",
+      "action": "Create Application"
+    },
     "status": {
       "DRAFT": "Draft",
       "READY": "Ready",

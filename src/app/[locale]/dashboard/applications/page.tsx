@@ -77,10 +77,8 @@ export default function ApplicationsPage() {
     <div className="flex flex-col">
       <main className="container flex-1 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">My Applications</h1>
-          <p className="mt-2 text-muted-foreground">
-            Track all your job applications in one place
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="mt-2 text-muted-foreground">{t('description')}</p>
         </div>
 
         {loading ? (
@@ -94,16 +92,18 @@ export default function ApplicationsPage() {
         ) : applications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Briefcase className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">No applications yet</h3>
+            <h3 className="mb-2 text-lg font-semibold">
+              {t('emptyState.title')}
+            </h3>
             <p className="mb-6 text-muted-foreground">
-              Create your first application to get started
+              {t('emptyState.description')}
             </p>
             <Link
               href="/dashboard/applications/new"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground"
             >
               <Plus className="h-4 w-4" />
-              Create Application
+              {t('emptyState.action')}
             </Link>
           </div>
         ) : (

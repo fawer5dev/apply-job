@@ -5,13 +5,21 @@ import { useRouter } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Upload, FileText, Loader2, CheckCircle } from '@/lib/icons';
+import CVForm from '@/components/cv/cv-form';
+import type { CV } from '@/types';
+
+type Tab = 'upload' | 'manual';
 
 export default function NewCVPage() {
   const t = useTranslations('NewCV');
   const router = useRouter();
+
+  const [activeTab, setActiveTab] = useState<Tab>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parsedCV, setParsedCV] = useState<CV | null>(null);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -28,23 +36,21 @@ export default function NewCVPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleParse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title) {
       setError(t('errors.missingFields'));
       return;
     }
 
-    setUploading(true);
+    setParsing(true);
     setError('');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('title', title);
-      formData.append('userId', 'temp-user'); // Temporary
 
-      const response = await fetch('/api/cv/upload', {
+      const response = await fetch('/api/cv/parse', {
         method: 'POST',
         body: formData,
       });
@@ -52,19 +58,122 @@ export default function NewCVPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || t('errors.uploadFailed'));
+        throw new Error(data.error || t('errors.parseFailed'));
+      }
+
+      setParsedCV(data.cv);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('errors.parseFailed'));
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const handleSave = async (cv: CV) => {
+    if (!title) {
+      setError(t('errors.missingFields'));
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/cv/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, ...cv }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || t('errors.saveFailed'));
       }
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/dashboard/cv');
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('errors.uploadFailed'));
+      setError(err instanceof Error ? err.message : t('errors.saveFailed'));
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   };
+
+  const resetUpload = () => {
+    setParsedCV(null);
+    setFile(null);
+    setError('');
+  };
+
+  const TabButton = ({
+    tab,
+    label,
+  }: {
+    tab: Tab;
+    label: string;
+  }) => (
+    <button
+      type="button"
+      onClick={() => {
+        setActiveTab(tab);
+        setError('');
+      }}
+      className={`relative px-4 py-3 font-body text-xs font-bold uppercase tracking-wider transition-colors ${
+        activeTab === tab
+          ? 'text-primary'
+          : 'text-muted-foreground hover:text-foreground'
+      }`}
+    >
+      {label}
+      {activeTab === tab && (
+        <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />
+      )}
+    </button>
+  );
+
+  if (success) {
+    return (
+      <div className="flex flex-col">
+        <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
+          <div className="container flex h-16 items-center">
+            <Link
+              href="/dashboard/cv"
+              className="group flex items-center space-x-2 transition-transform hover:scale-105"
+            >
+              <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+                ← {t('backToDashboard')}
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <main className="container flex-1 py-12 md:py-16">
+          <div className="mx-auto max-w-3xl">
+            <div className="relative animate-scale-in overflow-hidden border-2 border-green-500/50 bg-green-50 p-8 dark:bg-green-950/30">
+              <div className="absolute left-0 top-0 h-full w-2 bg-green-500" />
+              <div className="flex items-start gap-4 pl-4">
+                <CheckCircle
+                  className="mt-1 h-8 w-8 flex-shrink-0 text-green-600"
+                  strokeWidth={2}
+                />
+                <div>
+                  <h3 className="mb-2 font-display text-2xl font-bold text-green-900 dark:text-green-100">
+                    {t('success.title')}
+                  </h3>
+                  <p className="font-body text-sm text-green-700 dark:text-green-300">
+                    {t('success.message')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">
@@ -84,7 +193,7 @@ export default function NewCVPage() {
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-3xl">
           {/* Page header */}
-          <div className="mb-12 animate-fade-in-up">
+          <div className="mb-8 animate-fade-in-up">
             <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
               New CV
             </span>
@@ -96,27 +205,15 @@ export default function NewCVPage() {
             </p>
           </div>
 
-          {success ? (
-            <div className="relative animate-scale-in overflow-hidden border-2 border-green-500/50 bg-green-50 p-8 dark:bg-green-950/30">
-              <div className="absolute left-0 top-0 h-full w-2 bg-green-500" />
-              <div className="flex items-start gap-4 pl-4">
-                <CheckCircle
-                  className="mt-1 h-8 w-8 flex-shrink-0 text-green-600"
-                  strokeWidth={2}
-                />
-                <div>
-                  <h3 className="mb-2 font-display text-2xl font-bold text-green-900 dark:text-green-100">
-                    {t('success.title')}
-                  </h3>
-                  <p className="font-body text-sm text-green-700 dark:text-green-300">
-                    {t('success.message')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
+          {/* Tabs */}
+          <div className="mb-8 flex border-b-2 border-foreground/10">
+            <TabButton tab="upload" label={t('tabs.upload')} />
+            <TabButton tab="manual" label={t('tabs.manual')} />
+          </div>
+
+          {activeTab === 'upload' && !parsedCV && (
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleParse}
               className="animate-fade-in-up space-y-8"
               style={{ animationDelay: '0.1s' }}
             >
@@ -208,16 +305,16 @@ export default function NewCVPage() {
               <div className="flex flex-col gap-4 pt-4 sm:flex-row">
                 <button
                   type="submit"
-                  disabled={uploading || !file || !title}
+                  disabled={parsing || !file || !title}
                   className="group relative inline-flex h-14 flex-1 items-center justify-center gap-2 overflow-hidden bg-primary px-8 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                 >
-                  {uploading ? (
+                  {parsing ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      {t('form.uploading')}
+                      {t('form.parsing')}
                     </>
                   ) : (
-                    t('form.submit')
+                    t('form.parse')
                   )}
                   <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-primary-foreground/50 transition-all duration-500 group-hover:w-full" />
                 </button>
@@ -229,6 +326,57 @@ export default function NewCVPage() {
                 </Link>
               </div>
             </form>
+          )}
+
+          {activeTab === 'upload' && parsedCV && (
+            <div className="animate-fade-in-up space-y-6">
+              <div className="flex items-start justify-between border-2 border-primary/20 bg-primary/5 p-4">
+                <div>
+                  <h2 className="font-display text-xl font-bold">
+                    {t('review.title')}
+                  </h2>
+                  <p className="font-body text-sm text-muted-foreground">
+                    {t('review.subtitle')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetUpload}
+                  className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+                >
+                  {t('review.uploadAnother')}
+                </button>
+              </div>
+
+              <CVForm
+                initialData={parsedCV}
+                title={title}
+                onTitleChange={setTitle}
+                onSubmit={handleSave}
+                onCancel={() => router.push('/dashboard/cv')}
+                isSubmitting={saving}
+                submitLabel={t('form.save')}
+                cancelLabel={t('form.cancel')}
+                error={error}
+                t={t}
+              />
+            </div>
+          )}
+
+          {activeTab === 'manual' && (
+            <div className="animate-fade-in-up">
+              <CVForm
+                title={title}
+                onTitleChange={setTitle}
+                onSubmit={handleSave}
+                onCancel={() => router.push('/dashboard/cv')}
+                isSubmitting={saving}
+                submitLabel={t('form.save')}
+                cancelLabel={t('form.cancel')}
+                error={error}
+                t={t}
+              />
+            </div>
           )}
 
           {/* Info Box */}

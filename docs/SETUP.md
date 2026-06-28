@@ -1,12 +1,20 @@
-# Quick Start Guide
+# Setup Guide
+
+Complete installation and local setup guide for Apply Job.
+
+---
 
 ## 🚀 Installation
 
 ### 1. Install Dependencies
 
+This project uses **pnpm** as the package manager.
+
 ```bash
 pnpm install
 ```
+
+`postinstall` automatically runs `prisma generate`.
 
 ### 2. Configure Database
 
@@ -38,22 +46,31 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```env
-# Database (get this URL from Neon/Supabase)
+# Database (get this URL from Neon/Supabase or use local PostgreSQL)
 DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
 
+# Session Security (generate with: openssl rand -hex 32)
+SESSION_SECRET="your-random-32-byte-hex-string-here"
+
+# SMTP Email Configuration (Gmail example)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-gmail-app-password"
+EMAIL_FROM="Apply Job <your-email@gmail.com>"
+
 # Google AI API Key (Recommended - cost-effective)
-# Get at https://aistudio.google.com/apikey
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 
 # OpenAI API Key (Optional - higher quality, higher cost)
-# Get at https://platform.openai.com/api-keys
 # OPENAI_API_KEY="sk-..."
-
-# Note: At least one AI provider is required
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
+
+**Note:** At least one AI provider is required.
 
 ### 4. Initialize Database
 
@@ -74,7 +91,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser. The default locale is Spanish (`/es`); you can switch to English at `/en`.
 
 ---
 
@@ -82,14 +99,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 1. Create Your Base Resume
 
-1. Go to **Dashboard** → **Create Base Resume**
-2. Upload your current resume (PDF, DOCX or TXT)
+1. Go to **Dashboard** → **CVs**
+2. Upload your current resume (PDF, DOCX or TXT) or create one manually
 3. Review and edit the extracted information
 4. Save your base resume
 
 ### 2. Generate Custom Resume
 
-1. Go to **New Application**
+1. Go to **Dashboard** → **Applications** → **New Application**
 2. Select your base resume
 3. Paste the job description
 4. Click **Analyze and Generate**
@@ -110,13 +127,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 apply-job/
-├── prisma/              # Database schema
+├── prisma/              # Database schema and seed
 ├── public/              # Static files
-├── messages/            # 🌍 Translation files (en.json, es.json)
+├── messages/            # Translation files (en.json, es.json); default locale is es
 ├── files/               # User uploaded CVs
+├── scripts/             # Build and utility scripts
+├── templates/           # HTML templates for PDFs
 ├── src/
 │   ├── app/
-│   │   ├── [locale]/   # 🌍 Internationalized routes
+│   │   ├── [locale]/   # Internationalized routes
 │   │   │   ├── dashboard/  # Dashboard pages
 │   │   │   └── page.tsx    # Landing page
 │   │   └── api/        # API endpoints
@@ -124,14 +143,16 @@ apply-job/
 │   │   └── ui/         # Base UI components
 │   ├── lib/            # Business logic
 │   │   ├── ai/         # AI services (Google Gemini, OpenAI)
+│   │   ├── auth/       # Authentication services
 │   │   ├── cv/         # Resume parsing
+│   │   ├── db/         # Prisma client
+│   │   ├── email/      # SMTP email service
 │   │   ├── pdf/        # PDF generation
-│   │   └── db/         # Prisma client
-│   ├── i18n/           # 🌍 Internationalization config
+│   │   └── utils/      # Formatting and validation helpers
+│   ├── i18n/           # next-intl config
 │   ├── types/          # TypeScript types
-│   ├── config/         # Configuration
-│   └── middleware.ts   # 🌍 Locale detection
-└── templates/          # HTML templates for PDFs
+│   └── middleware.ts   # Locale detection + auth protection
+└── docs/               # Project documentation
 ```
 
 ---
@@ -141,14 +162,16 @@ apply-job/
 ### Required
 
 - `DATABASE_URL`: PostgreSQL connection URL
-- `GOOGLE_AI_API_KEY`: Google AI API key (recommended)
-- `OPENAI_API_KEY`: OpenAI API key (optional alternative)
-
-**Note**: At least one AI provider must be configured.
+- `SESSION_SECRET`: 64-character hex string (`openssl rand -hex 32`)
+- `NEXT_PUBLIC_APP_URL`: App URL (default: `http://localhost:3000`)
+- `GOOGLE_AI_API_KEY` or `OPENAI_API_KEY`: At least one AI provider key
 
 ### Optional
 
-- `NEXT_PUBLIC_APP_URL`: App URL (default: http://localhost:3000)
+- `SMTP_*` + `EMAIL_FROM`: Required for email verification and password reset
+- `OPENAI_API_KEY`: Optional AI fallback/alternative
+
+See [ENV_VARIABLES.md](ENV_VARIABLES.md) for the complete reference.
 
 ---
 
@@ -158,17 +181,23 @@ apply-job/
 # Development
 pnpm dev              # Run in development
 pnpm build            # Build for production
-pnpm start            # Run in production
+pnpm start            # Run production build
+
+# Code quality
+pnpm lint             # Linter
+pnpm type-check       # TypeScript check
 
 # Database
 pnpm db:generate      # Generate Prisma client
-pnpm db:push          # Sync schema with DB (no migrations)
-pnpm db:migrate       # Create migration
+pnpm db:push          # Sync schema with DB (dev only)
+pnpm db:migrate       # Create/run migrations
 pnpm db:studio        # Open Prisma Studio (GUI)
+pnpm db:seed          # Seed DB with sample data
 
-# Code
-pnpm lint             # Linter
-pnpm type-check       # Type checking
+# Testing
+pnpm test             # Run Jest tests
+pnpm test:watch       # Run tests in watch mode
+pnpm test:coverage    # Run tests with coverage
 ```
 
 ---
@@ -177,7 +206,7 @@ pnpm type-check       # Type checking
 
 ### Estimated Costs
 
-#### Google Gemini 2.0 Flash (Recommended)
+#### Google Gemini (Recommended)
 
 - **Job Analysis**: Minimal cost (~$0.001)
 - **Resume Generation**: Minimal cost (~$0.002)
@@ -202,9 +231,9 @@ For 50 applications per month: **$4-7/month**
 ### Cost Optimization
 
 - Use Google Gemini for cost-effective processing
-- Enable OpenAI only when higher quality is critical
+- Enable OpenAI only when higher quality is critical or Gemini is unavailable
 - Use result caching when possible
-- Implement rate limiting
+- Rate limiting is already implemented
 
 ---
 
@@ -215,15 +244,25 @@ For 50 applications per month: **$4-7/month**
 1. Push your code to GitHub
 2. Connect your repo at [vercel.com](https://vercel.com)
 3. Configure environment variables
-4. Automatic deployment on each push
+4. `pnpm build` automatically runs migrations when `DATABASE_URL` is set
+5. Automatic deployment on each push
 
-### Environment variables in Vercel
+### Required Vercel Environment Variables
 
-```
+```env
 DATABASE_URL=postgresql://...
-OPENAI_API_KEY=sk-...
+SESSION_SECRET=your-64-character-hex-string
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+GOOGLE_AI_API_KEY=your-google-ai-api-key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-gmail-app-password
+EMAIL_FROM=Apply Job <your-email@gmail.com>
 ```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment guide.
 
 ---
 
@@ -245,27 +284,31 @@ pnpm db:generate
 
 ### PDF generation fails
 
-→ On Vercel, ensure your plan supports Puppeteer or use an alternative like @react-pdf/renderer
+→ On Vercel, Puppeteer-core + `@sparticuz/chromium-min` downloads Chromium at runtime into `/tmp/`. Ensure `serverExternalPackages` is configured in `next.config.js`.
 
 ### Language not switching
 
-→ Clear browser cache and cookies, check middleware configuration
+→ Clear browser cache and cookies, check `src/i18n/routing.ts` configuration
+
+### Emails not sending
+
+→ Verify SMTP credentials and `EMAIL_FROM` format. In development, emails are logged to the console when SMTP is not configured.
 
 ---
 
 ## 📝 Next Steps
 
-1. **Implement Authentication**: NextAuth.js for multi-user
-2. **Improve Templates**: More professional designs for PDFs
-3. **Analytics**: Response rate tracking
-4. **Integrations**: LinkedIn, Indeed, etc.
-5. **Mobile App**: React Native or Progressive Web App
+1. Upload and parse your base resume
+2. Analyze a job description
+3. Generate a tailored CV and cover letter
+4. Download PDFs
+5. Track your applications
 
 ---
 
 ## 🤝 Contributing
 
-This is your personal project, but if you want to share it:
+This is a personal project, but if you want to share it:
 
 1. Fork the repository
 2. Create a branch (`git checkout -b feature/amazing`)
@@ -278,13 +321,3 @@ This is your personal project, but if you want to share it:
 ## 📄 License
 
 MIT
-
----
-
-## 🆘 Support
-
-If you encounter problems or have questions:
-
-1. Check the [Next.js documentation](https://nextjs.org/docs)
-2. Check the [Prisma documentation](https://www.prisma.io/docs)
-3. Check the [OpenAI documentation](https://platform.openai.com/docs)

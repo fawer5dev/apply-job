@@ -1,6 +1,6 @@
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: June 17, 2026
+> **Last updated**: June 28, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -10,14 +10,14 @@
 
 **Apply Job** is a full-stack web application that automates the job application process using artificial intelligence. It features:
 
-- **Complete authentication system** with 2FA, session management, and security features
+- **Complete custom authentication system** with 2FA, session management, and security features
 - Upload and parse base resumes (PDF, DOCX, TXT)
 - Analyze job descriptions and extract requirements
 - Generate customized resumes optimized for each job posting
 - Calculate ATS (Applicant Tracking System) scoring
 - Generate personalized cover letters with multiple tone options
 - Manage applications and track progress
-- Multi-language support (English and Spanish)
+- Multi-language support (English and Spanish, **Spanish default**)
 - Professional PDF generation with custom templates
 
 ---
@@ -26,11 +26,11 @@
 
 ### Frontend
 
-- **Framework**: Next.js 15.0.3 (App Router)
-- **React**: 18.3.1 (React 19 RC features)
-- **TypeScript**: Latest
+- **Framework**: Next.js 15.0.7 (App Router)
+- **React**: 18.3.1
+- **TypeScript**: 5.x
 - **Styling**:
-  - Tailwind CSS 3.x
+  - Tailwind CSS 3.4.1
   - PostCSS
   - CSS Modules
 - **UI Components**:
@@ -39,15 +39,16 @@
   - class-variance-authority
   - tailwind-merge
   - tailwindcss-animate
-- **Internationalization**: next-intl 4.11.0 (English, Spanish)
+- **Internationalization**: next-intl 4.11.0 (English, Spanish; default: Spanish)
 
 ### Backend
 
 - **Runtime**: Node.js 20+
-- **API**: Next.js API Routes (Route Handlers) - 27 endpoints total
+- **API**: Next.js API Routes (Route Handlers) - 30+ endpoints
 - **Database**: PostgreSQL 15+ with Prisma ORM 5.19.0
+- **Table Naming**: Prisma models use **plural table names** (`users`, `sessions`, `base_cvs`, etc.)
 - **Authentication**:
-  - Custom session-based authentication
+  - Custom session-based authentication (cookie name: `session-token`)
   - @node-rs/argon2 2.0.2 (Argon2id password hashing)
   - otpauth 9.5.1 (TOTP 2FA with QR codes via qrcode 1.5.4)
   - Multi-device session management
@@ -55,11 +56,12 @@
   - Comprehensive audit logging
 - **Email**: nodemailer 8.0.7 (SMTP)
 - **AI/ML**:
-  - Google Generative AI (Gemini 2.5 Flash) - Primary, cost-effective
-  - OpenAI GPT-4o (API v4.56.0) - Optional, higher quality
+  - Google Generative AI (`@google/generative-ai`) - Primary, cost-effective
+  - OpenAI GPT-4o (API v4.56.0) - Optional, higher quality fallback
   - ai SDK (Vercel AI SDK v3.3.0)
 - **PDF Processing**:
-  - Puppeteer 23.1.1 (PDF generation)
+  - puppeteer-core 25.1.0 (PDF generation)
+  - @sparticuz/chromium-min 149.0.0 (Chromium downloader for serverless)
   - pdf-parse 1.1.1 (text extraction)
   - mammoth 1.8.0 (DOCX parsing)
 
@@ -74,6 +76,8 @@
 - **Date Manipulation**: date-fns 3.6.0
 - **Markdown**: react-markdown 9.0.1
 - **Class Names**: clsx 2.1.1
+- **User Agent Parsing**: ua-parser-js 2.0.9
+- **OAuth Client**: arctic 3.7.0 (future use)
 
 ---
 
@@ -83,11 +87,11 @@
 
 - **Library**: next-intl 4.11.0
 - **Supported Languages**:
-  - English (en) - Default
-  - Spanish (es)
+  - English (en)
+  - Spanish (es) - **Default**
 - **Translation Files**: `messages/en.json`, `messages/es.json`
 - **Routing**: All user-facing pages under `[locale]` dynamic segment
-- **Middleware**: Automatic locale detection and routing (`src/middleware.ts`)
+- **Middleware**: Automatic locale detection and auth protection (`src/middleware.ts`)
 - **Language Switcher**: `LanguageSwitcher` component for user selection
 
 ### Architecture
@@ -95,9 +99,9 @@
 ```
 User Request
     ↓
-Middleware detects/validates locale
+Middleware detects/validates locale + auth
     ↓
-Routes to /[locale]/... (e.g., /en/dashboard or /es/dashboard)
+Routes to /[locale]/... (e.g., /es/dashboard or /en/dashboard)
     ↓
 Pages load translations from messages/{locale}.json
     ↓
@@ -113,9 +117,9 @@ messages/
 
 src/
 ├── i18n/
-│   ├── routing.ts    # Locale configuration
+│   ├── routing.ts    # Locale configuration (default: es)
 │   └── request.ts    # Server-side i18n
-├── middleware.ts     # Locale detection
+├── middleware.ts     # Locale detection + auth protection
 └── app/
     └── [locale]/     # Localized routes
 ```
@@ -126,109 +130,119 @@ src/
 
 ### Prisma Models (11 Total)
 
+Models use **plural table names** as configured in `prisma/schema.prisma`.
+
 #### Authentication Models (5)
 
-##### 1. **User** - System user with authentication
+##### 1. **users**
 
 ```prisma
-- id: String (cuid)
-- email: String (unique)
+- id: String @id
+- email: String @unique
 - name: String?
-- passwordHash: String
+- passwordHash: String?
 - emailVerified: DateTime?
 - image: String?
-- twoFactorSecret: String? (encrypted TOTP secret)
-- twoFactorEnabled: Boolean (default: false)
-- backupCodes: String? (JSON array of hashed codes)
-- failedLoginAttempts: Int (default: 0)
-- lockedUntil: DateTime? (account lockout timestamp)
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
+- backupCodes: Json?
+- failedLoginAttempts: Int @default(0)
+- isActive: Boolean @default(true)
+- isSuspended: Boolean @default(false)
 - lastLoginAt: DateTime?
 - lastLoginIp: String?
-- createdAt, updatedAt
+- lockedUntil: DateTime?
+- twoFactorEnabled: Boolean @default(false)
+- twoFactorSecret: String?
 ```
 
-**Relationships**:
+**Relationships**: Has many `sessions`, `accounts`, `audit_logs`, `base_cvs`, `applications`, `cover_letters`, `verification_tokens`.
 
-- Has multiple `Session`
-- Has multiple `Account` (OAuth providers)
-- Has multiple `AuditLog`
-- Has multiple `BaseCV`
-- Has multiple `Application`
-- Has multiple `CoverLetter`
-
-##### 2. **Session** - User sessions
+##### 2. **sessions**
 
 ```prisma
-- id: String (cuid)
-- userId: String (FK)
-- token: String (unique, indexed)
-- expiresAt: DateTime (indexed)
+- id: String @id
+- userId: String
+- sessionToken: String @unique
+- expires: DateTime
+- createdAt: DateTime @default(now())
+- lastActive: DateTime @default(now())
 - userAgent: String?
 - ipAddress: String?
-- lastActivityAt: DateTime
-- createdAt
+- deviceId: String?
+- isValid: Boolean @default(true)
+- revokedAt: DateTime?
+- revokedReason: String?
 ```
 
-##### 3. **Account** - OAuth provider accounts
+##### 3. **accounts**
 
 ```prisma
-- id: String (cuid)
-- userId: String (FK)
-- provider: String ("github"/"google"/"linkedin")
+- id: String @id
+- userId: String
+- provider: String
 - providerAccountId: String
-- refreshToken: String?
+- type: String
 - accessToken: String?
+- refreshToken: String?
 - expiresAt: Int?
 - tokenType: String?
 - scope: String?
 - idToken: String?
-- sessionState: String?
-- createdAt, updatedAt
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
-##### 4. **VerificationToken** - Email verification and password reset
+##### 4. **verification_tokens**
 
 ```prisma
-- id: String (cuid)
-- email: String
-- token: String (unique)
-- type: String ("EMAIL_VERIFICATION"/"PASSWORD_RESET"/"TWO_FACTOR")
-- expiresAt: DateTime
-- createdAt
+- id: String @id
+- userId: String?
+- token: String @unique
+- type: TokenType (EMAIL_VERIFY | PASSWORD_RESET | TWO_FACTOR | MAGIC_LINK)
+- email: String?
+- expires: DateTime
+- usedAt: DateTime?
+- ipAddress: String?
+- attempts: Int @default(0)
+- createdAt: DateTime @default(now())
 ```
 
-##### 5. **AuditLog** - Security event tracking
+##### 5. **audit_logs**
 
 ```prisma
-- id: String (cuid)
-- userId: String? (FK, nullable for pre-auth events)
-- action: String (e.g., "LOGIN_SUCCESS", "PASSWORD_CHANGED")
+- id: String @id
+- userId: String?
+- action: String
+- details: Json?
 - ipAddress: String?
 - userAgent: String?
-- metadata: Json? (additional context)
+- location: String?
 - success: Boolean
-- createdAt
+- errorMessage: String?
+- createdAt: DateTime @default(now())
 ```
 
 #### Application Models (4)
 
-##### 6. **BaseCV** - User's base resume
+##### 6. **base_cvs**
 
 ```prisma
-- id: String (cuid)
-- userId: String (FK)
+- id: String @id
+- userId: String
 - title: String
-- isDefault: Boolean
+- isDefault: Boolean @default(false)
 - personalInfo: Json
-- summary: String
-- experience: Json (Array)
-- education: Json (Array)
-- skills: Json (Object)
-- projects: Json? (Optional array)
-- certifications: Json? (Optional array)
-- rawText: String? (original text)
-- fileUrl: String? (file URL)
-- createdAt, updatedAt
+- summary: String?
+- experience: Json
+- education: Json
+- skills: Json
+- projects: Json?
+- certifications: Json?
+- rawText: String?
+- fileUrl: String?
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
 **JSON field structure**:
@@ -265,27 +279,28 @@ skills: {
 }
 ```
 
-##### 7. **JobListing** - Analyzed job posting
+##### 7. **job_listings**
 
 ```prisma
-- id: String (cuid)
+- id: String @id
 - title: String
 - company: String
 - location: String?
-- workMode: String? ("remote"/"hybrid"/"onsite")
+- workMode: String?
 - salary: String?
-- description: String (Text)
-- requirements: Json (Array)
-- keywords: Json (Object)
+- description: String
+- requirements: Json
+- keywords: Json
 - url: String?
-- source: String? ("LinkedIn"/"Indeed"/"Manual")
-- createdAt, updatedAt
+- source: String?
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
 **JSON field structure**:
 
 ```typescript
-requirements: string[]; // List of extracted requirements
+requirements: string[];
 
 keywords: {
   technical: string[];
@@ -294,64 +309,68 @@ keywords: {
 }
 ```
 
-##### 8. **Application** - Customized resume for a job posting
+##### 8. **applications**
 
 ```prisma
-- id: String (cuid)
-- userId: String (FK)
-- baseCVId: String (FK)
-- jobListingId: String (FK)
-- status: String (enum)
-- customizedCV: Json
-- atsScore: Int?
-- suggestions: Json?
-- notes: String?
+- id: String @id
+- userId: String
+- baseCVId: String
+- jobListingId: String
+- customCV: Json
+- atsScore: Float?
+- atsAnalysis: Json?
+- matchScore: Float?
+- status: ApplicationStatus @default(DRAFT)
 - appliedAt: DateTime?
-- createdAt, updatedAt
+- cvPdfUrl: String?
+- coverLetterId: String? @unique
+- notes: String?
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
-**Status enum**: "draft", "ready", "applied", "interviewing", "rejected", "accepted"
+**Status enum**: `DRAFT`, `READY`, `APPLIED`, `INTERVIEWING`, `OFFERED`, `REJECTED`, `ACCEPTED`, `WITHDRAWN`
 
-##### 9. **CoverLetter** - Cover letter
+##### 9. **cover_letters**
 
 ```prisma
-- id: String (cuid)
-- userId: String (FK)
-- applicationId: String? (Optional FK)
-- jobTitle: String
-- companyName: String
-- content: String (Text)
-- tone: String? ("professional"/"enthusiastic"/"casual")
-- createdAt, updatedAt
+- id: String @id
+- userId: String
+- content: String
+- htmlContent: String?
+- pdfUrl: String?
+- tone: String?
+- template: String?
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
 #### Template Model (1)
 
-##### 10. **CVTemplate** - Design templates
+##### 10. **cv_templates**
 
 ```prisma
-- id: String (cuid)
+- id: String @id
 - name: String
 - description: String?
-- htmlTemplate: String (Text)
-- cssStyles: String? (Text)
-- isDefault: Boolean
-- previewUrl: String?
-- createdAt, updatedAt
+- htmlContent: String
+- thumbnail: String?
+- isPublic: Boolean @default(true)
+- createdAt: DateTime @default(now())
+- updatedAt: DateTime
 ```
 
 #### Utility Model (1)
 
-##### 11. **RateLimit** - API rate limiting
+##### 11. **rate_limits**
 
 ```prisma
-- id: String (cuid)
-- identifier: String (email or userId)
+- id: String @id
+- identifier: String
 - endpoint: String
-- attempts: Int
+- attempts: Int @default(1)
+- windowStart: DateTime @default(now())
 - blockedUntil: DateTime?
-- lastAttemptAt: DateTime
-- createdAt, updatedAt
 ```
 
 **Composite unique constraint**: `[identifier, endpoint]`
@@ -359,18 +378,19 @@ keywords: {
 ### Relationship Diagram
 
 ```
-User (1) ──┬──> (N) Session
-           ├──> (N) Account
-           ├──> (N) AuditLog
-           ├──> (N) BaseCV
-           ├──> (N) Application
-           └──> (N) CoverLetter
+users (1) ──┬──> (N) sessions
+            ├──> (N) accounts
+            ├──> (N) audit_logs
+            ├──> (N) base_cvs
+            ├──> (N) applications
+            ├──> (N) cover_letters
+            └──> (N) verification_tokens
 
-BaseCV (1) ────> (N) Application
+base_cvs (1) ────> (N) applications
 
-JobListing (1) ─> (N) Application
+job_listings (1) ─> (N) applications
 
-Application (1) ─> (1?) CoverLetter
+applications (1) ─> (1?) cover_letters
 ```
 
 ---
@@ -391,12 +411,19 @@ apply-job/
 │
 ├── files/                      # User uploaded files (CVs)
 │
+├── scripts/
+│   └── vercel-build.js         # Vercel build entry point
+│
+├── templates/                  # HTML templates for PDFs
+│   └── cv/
+│       └── modern.html
+│
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── globals.css        # Global styles
 │   │   ├── layout.tsx         # Root layout
 │   │   │
-│   │   ├── [locale]/          # 🌍 Internationalized routes
+│   │   ├── [locale]/          # 🌍 Internationalized routes (default: es)
 │   │   │   ├── page.tsx       # Landing page
 │   │   │   ├── login/
 │   │   │   │   └── page.tsx           # Login page
@@ -408,177 +435,163 @@ apply-job/
 │   │   │   │   └── page.tsx           # Password reset request
 │   │   │   ├── reset-password/
 │   │   │   │   └── page.tsx           # Password reset form
-│   │   │   ├── dashboard/
-│   │   │   │   ├── page.tsx           # Dashboard home
-│   │   │   │   ├── cv/
-│   │   │   │   │   ├── page.tsx       # CV list
-│   │   │   │   │   ├── new/page.tsx   # Upload CV
-│   │   │   │   │   └── [id]/page.tsx  # Edit CV
-│   │   │   │   └── applications/
-│   │   │   │       ├── page.tsx       # Applications list
-│   │   │   │       ├── new/page.tsx   # New application
-│   │   │   │       └── [id]/page.tsx  # View application
+│   │   │   └── dashboard/
+│   │   │       ├── layout.tsx         # Dashboard layout
+│   │   │       ├── page.tsx           # Dashboard home
+│   │   │       ├── cv/
+│   │   │       │   ├── page.tsx       # CV list
+│   │   │       │   ├── new/
+│   │   │       │   │   └── page.tsx   # Create new CV
+│   │   │       │   └── [id]/
+│   │   │       │       └── page.tsx   # Edit CV
+│   │   │       ├── applications/
+│   │   │       │   ├── page.tsx       # Applications list
+│   │   │       │   ├── new/
+│   │   │       │   │   └── page.tsx   # Create new application
+│   │   │       │   └── [id]/
+│   │   │       │       └── page.tsx   # View application
+│   │   │       └── profile/
+│   │   │           ├── page.tsx       # User profile / 2FA settings
+│   │   │           ├── change-password/
+│   │   │           │   └── page.tsx   # Change password
+│   │   │           └── 2fa/
+│   │   │               ├── setup/
+│   │   │               │   └── page.tsx # Set up 2FA
+│   │   │               └── disable/
+│   │   │                   └── page.tsx # Disable 2FA
 │   │   │
-│   │   └── api/               # API Routes (27 total, no locale prefix)
-│   │       ├── auth/          # 🔐 Authentication (17 endpoints)
-│   │       │   ├── register/
-│   │       │   │   └── route.ts       # POST /api/auth/register
-│   │       │   ├── login/
-│   │       │   │   └── route.ts       # POST /api/auth/login
-│   │       │   ├── logout/
-│   │       │   │   └── route.ts       # POST /api/auth/logout
-│   │       │   ├── logout-all/
-│   │       │   │   └── route.ts       # POST /api/auth/logout-all
-│   │       │   ├── verify-email/
-│   │       │   │   └── route.ts       # POST /api/auth/verify-email
-│   │       │   ├── resend-verification/
-│   │       │   │   └── route.ts       # POST /api/auth/resend-verification
-│   │       │   ├── forgot-password/
-│   │       │   │   └── route.ts       # POST /api/auth/forgot-password
-│   │       │   ├── reset-password/
-│   │       │   │   └── route.ts       # POST /api/auth/reset-password
-│   │       │   ├── change-password/
-│   │       │   │   └── route.ts       # POST /api/auth/change-password
-│   │       │   ├── 2fa/
-│   │       │   │   ├── enable/
-│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/enable
-│   │       │   │   ├── verify-setup/
-│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/verify-setup
-│   │       │   │   ├── verify/
-│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/verify
-│   │       │   │   ├── disable/
-│   │       │   │   │   └── route.ts   # POST /api/auth/2fa/disable
-│   │       │   │   └── backup-codes/
-│   │       │   │       └── route.ts   # POST /api/auth/2fa/backup-codes
-│   │       │   ├── session/
-│   │       │   │   └── route.ts       # GET /api/auth/session
-│   │       │   ├── sessions/
-│   │       │   │   ├── route.ts       # GET /api/auth/sessions
-│   │       │   │   └── [id]/
-│   │       │   │       └── route.ts   # DELETE /api/auth/sessions/[id]
-│   │       ├── application/
-│   │       │   ├── create/
-│   │       │   │   └── route.ts       # POST /api/application/create
+│   │   └── api/               # API Routes (no locale prefix)
+│   │       ├── auth/          # 🔐 Authentication (19 endpoints)
+│   │       │   ├── register/route.ts
+│   │       │   ├── login/route.ts
+│   │       │   ├── logout/route.ts
+│   │       │   ├── logout-all/route.ts
+│   │       │   ├── verify-email/route.ts
+│   │       │   ├── resend-verification/route.ts
+│   │       │   ├── forgot-password/route.ts
+│   │       │   ├── reset-password/route.ts
+│   │       │   ├── change-password/route.ts
+│   │       │   ├── session/route.ts
+│   │       │   ├── profile/route.ts
+│   │       │   ├── sessions/route.ts
+│   │       │   ├── sessions/[sessionId]/route.ts
+│   │       │   └── 2fa/
+│   │       │       ├── enable/route.ts
+│   │       │       ├── verify-setup/route.ts
+│   │       │       ├── verify/route.ts
+│   │       │       ├── disable/route.ts
+│   │       │       └── backup-codes/route.ts
+│   │       │
+│   │       ├── application/   # Application management
+│   │       │   ├── create/route.ts
 │   │       │   └── [id]/
-│   │       │       ├── route.ts       # GET/PUT/DELETE /api/application/[id]
-│   │       │       ├── download-cv/
-│   │       │       │   └── route.ts   # GET /api/application/[id]/download-cv
-│   │       │       └── download-cover-letter/
-│   │       │           └── route.ts   # GET /api/application/[id]/download-cover-letter
+│   │       │       ├── route.ts
+│   │       │       ├── download-cv/route.ts
+│   │       │       └── download-cover-letter/route.ts
+│   │       │
 │   │       ├── cover-letter/
-│   │       │   └── generate/
-│   │       │       └── route.ts       # POST /api/cover-letter/generate
-│   │       ├── cv/
-│   │       │   ├── upload/
-│   │       │   │   └── route.ts       # POST /api/cv/upload
-│   │       │   ├── generate/
-│   │       │   │   └── route.ts       # POST /api/cv/generate
-│   │       │   └── [id]/
-│   │       │       └── route.ts       # GET/PUT/DELETE /api/cv/[id]
+│   │       │   └── generate/route.ts
+│   │       │
+│   │       ├── cv/            # CV management
+│   │       │   ├── upload/route.ts
+│   │       │   ├── create/route.ts
+│   │       │   ├── parse/route.ts
+│   │       │   ├── generate/route.ts
+│   │       │   └── [id]/route.ts
+│   │       │
 │   │       ├── job/
-│   │       │   └── analyze/
-│   │       │       └── route.ts       # POST /api/job/analyze
+│   │       │   └── analyze/route.ts
+│   │       │
 │   │       └── pdf/
-│   │           └── generate/
-│   │               └── route.ts       # POST /api/pdf/generate
+│   │           └── generate/route.ts
 │   │
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui components
+│   │   │   ├── alert.tsx
+│   │   │   ├── avatar.tsx
 │   │   │   ├── button.tsx
-│   │   │   └── card.tsx
-│   │   └── LanguageSwitcher.tsx  # 🌍 Language selector
-│   │
-│   ├── config/
-│   │   ├── constants.ts       # Application constants
-│   │   └── site.ts            # Site configuration
-│   │
-│   ├── i18n/                  # 🌍 Internationalization config
-│   │   ├── routing.ts         # Locale routing configuration
-│   │   └── request.ts         # Server-side i18n
-│   │
-│   ├── lib/
-│   │   ├── auth/              # 🔐 Authentication services
-│   │   │   ├── session.ts           # Session management
-│   │   │   ├── password.ts          # Argon2id password hashing
-│   │   │   ├── totp.ts              # 2FA TOTP implementation
-│   │   │   ├── rate-limit.ts        # API rate limiting
-│   │   │   ├── account-lockout.ts   # Brute force protection
-│   │   │   ├── audit-log.ts         # Security event logging
-│   │   │   ├── email-verification.ts # Email verification
-│   │   │   └── password-reset.ts    # Password reset
-│   │   │
-│   │   ├── ai/                # AI services
-│   │   │   ├── google-ai.ts         # Google Gemini client
-│   │   │   ├── openai.ts            # OpenAI client (optional)
-│   │   │   ├── job-analyzer.ts      # Analyzes job descriptions
-│   │   │   ├── cv-generator.ts      # Generates custom resumes
-│   │   │   ├── cover-letter-generator.ts  # Generates cover letters
-│   │   │   ├── ats-scorer.ts        # Calculates ATS score
-│   │   │   └── prompts/
-│   │   │       └── index.ts         # AI prompts
-│   │   │
+│   │   │   ├── card.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── input.tsx
+│   │   │   └── label.tsx
 │   │   ├── cv/
-│   │   │   └── parser.ts      # Parses resumes (PDF, DOCX, TXT)
-│   │   │
-│   │   ├── db/
-│   │   │   └── prisma.ts      # Prisma singleton client
-│   │   │
-│   │   ├── email/
-│   │   │   └── service.ts     # SMTP email service (nodemailer)
-│   │   │
-│   │   ├── pdf/
-│   │   │   └── generator.ts   # Generates PDFs with Puppeteer
-│   │   │
-│   │   └── utils/
-│   │       ├── formatting.ts  # Format helpers
-│   │       └── validation.ts  # Validations with Zod
-│   │
-│   ├── components/
-│   │   ├── ui/                # shadcn/ui components
+│   │   │   └── cv-form.tsx
 │   │   ├── LanguageSwitcher.tsx
-│   │   └── UserMenu.tsx       # User dropdown menu
+│   │   └── UserMenu.tsx
 │   │
 │   ├── hooks/
 │   │   └── use-auth.tsx       # Authentication context & hooks
 │   │
-│   ├── types/
-│   │   ├── index.ts           # General types + re-exports
-│   │   ├── application.ts     # Application types
-│   │   ├── cv.ts              # CV types
-│   │   └── job.ts             # Job types
+│   ├── i18n/                  # 🌍 next-intl config
+│   │   ├── routing.ts         # Locale routing (default: es)
+│   │   └── request.ts         # Server-side i18n
 │   │
-│   └── middleware.ts          # 🌍 Locale detection & 🔐 Auth protection
-│
-├── templates/
-│   └── cv/
-│       └── modern.html        # HTML template for resume PDF
-│
-├── tests/                     # Test files and documentation
+│   ├── lib/                   # Business logic
+│   │   ├── ai/                # AI services
+│   │   │   ├── service.ts
+│   │   │   ├── errors.ts
+│   │   │   ├── google-ai.ts
+│   │   │   ├── openai.ts
+│   │   │   ├── job-analyzer.ts
+│   │   │   ├── cv-generator.ts
+│   │   │   ├── cover-letter-generator.ts
+│   │   │   ├── ats-scorer.ts
+│   │   │   └── prompts/
+│   │   │       └── index.ts
+│   │   │
+│   │   ├── auth/              # Authentication services
+│   │   │   ├── session.ts
+│   │   │   ├── password.ts
+│   │   │   ├── totp.ts
+│   │   │   ├── rate-limit.ts
+│   │   │   ├── account-lockout.ts
+│   │   │   ├── audit-log.ts
+│   │   │   ├── email-verification.ts
+│   │   │   ├── server-session.ts
+│   │   │   ├── edge-session.ts
+│   │   │   └── edge-crypto.ts
+│   │   │
+│   │   ├── cv/
+│   │   │   └── parser.ts
+│   │   │
+│   │   ├── db/
+│   │   │   └── prisma.ts      # Prisma singleton client (exported as any)
+│   │   │
+│   │   ├── email/
+│   │   │   └── sender.ts      # SMTP email service
+│   │   │
+│   │   ├── pdf/
+│   │   │   └── generator.ts   # Puppeteer PDF generation
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── formatting.ts
+│   │   │   └── validation.ts
+│   │   │
+│   │   └── icons.ts
+│   │
+│   ├── types/                 # TypeScript types
+│   └── middleware.ts          # 🌍 Locale detection + 🔐 Auth protection
 │
 ├── docs/                      # 📚 Project documentation
-│   ├── README.md              # Documentation index
-│   ├── ARCHITECTURE.md        # Technical architecture
-│   ├── SETUP.md               # Installation guide
-│   ├── TROUBLESHOOTING.md     # Common issues
-│   └── DOCUMENTATION-ORGANIZATION.md  # Documentation structure
-│
+├── tests/                     # Test files (gitignored)
 ├── .env.local                 # Environment variables (NOT in git)
+├── .env.example
 ├── .gitignore
 ├── next.config.js             # Next.js configuration
 ├── tailwind.config.ts         # Tailwind configuration
-├── tsconfig.json              # TypeScript configuration
 ├── postcss.config.mjs         # PostCSS configuration
+├── tsconfig.json              # TypeScript configuration
+├── jest.config.js             # Jest configuration
+├── vercel.json                # Vercel configuration
 ├── package.json
-│
-├── README.md                  # General documentation
-└── PROJECT_CONTEXT.md         # This file
+└── pnpm-lock.yaml
 ```
 
 ---
 
 ## 🔌 Implemented API Endpoints
 
-### Authentication Endpoints (17 total)
+### Authentication Endpoints (19 total)
 
 #### User Registration & Login
 
@@ -615,21 +628,31 @@ Login with credentials.
 {
   "email": "string",
   "password": "string",
-  "totpCode": "string?" // Required if 2FA enabled
+  "totpCode": "string?"
 }
 ```
 
-**Response**:
+**Response** (without 2FA):
 
 ```json
 {
   "success": true,
-  "requires2FA": false, // true if 2FA enabled
   "user": {
     "id": "string",
     "email": "string",
     "name": "string"
   }
+}
+```
+
+**Response** (with 2FA):
+
+```json
+{
+  "success": true,
+  "requires2FA": true,
+  "tempToken": "string",
+  "expiresIn": 300
 }
 ```
 
@@ -710,7 +733,7 @@ Generate 2FA secret and QR code.
 ```json
 {
   "secret": "string",
-  "qrCode": "string" // Data URL
+  "qrCode": "string"
 }
 ```
 
@@ -722,7 +745,7 @@ Verify and enable 2FA.
 
 ```json
 {
-  "code": "string" // 6-digit TOTP code
+  "code": "string"
 }
 ```
 
@@ -731,7 +754,7 @@ Verify and enable 2FA.
 ```json
 {
   "success": true,
-  "backupCodes": ["string"] // 10 backup codes
+  "backupCodes": ["string"]
 }
 ```
 
@@ -743,22 +766,15 @@ Verify 2FA code during login.
 
 ```json
 {
-  "email": "string",
-  "code": "string"
+  "tempToken": "string",
+  "code": "string",
+  "useBackupCode": false
 }
 ```
 
 ##### POST /api/auth/2fa/disable
 
 Disable 2FA for user.
-
-**Request**:
-
-```json
-{
-  "password": "string" // Confirmation
-}
-```
 
 ##### POST /api/auth/2fa/backup-codes
 
@@ -770,45 +786,21 @@ Regenerate backup codes.
 
 Get current session information.
 
-**Response**:
+##### GET /api/auth/profile
 
-```json
-{
-  "user": {
-    "id": "string",
-    "email": "string",
-    "name": "string",
-    "emailVerified": "DateTime",
-    "twoFactorEnabled": boolean
-  }
-}
-```
+Get current user profile.
 
 ##### GET /api/auth/sessions
 
 List all user sessions.
 
-**Response**:
-
-```json
-{
-  "sessions": [{
-    "id": "string",
-    "userAgent": "string",
-    "ipAddress": "string",
-    "lastActivityAt": "DateTime",
-    "isCurrent": boolean
-  }]
-}
-```
-
 ##### DELETE /api/auth/sessions/[id]
 
 Revoke specific session.
 
-### Core Application Endpoints (10 total)
+### Core Application Endpoints
 
-##### 1. **POST /api/job/analyze**
+##### POST /api/job/analyze
 
 Analyzes a job description and extracts structured information.
 
@@ -816,33 +808,12 @@ Analyzes a job description and extracts structured information.
 
 ```json
 {
-  "description": "string", // Job description text
-  "url": "string?" // Optional job URL
+  "description": "string",
+  "url": "string?"
 }
 ```
 
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "title": "string",
-    "company": "string",
-    "location": "string",
-    "workMode": "remote|hybrid|onsite",
-    "salary": "string",
-    "requirements": ["string"],
-    "keywords": {
-      "technical": ["string"],
-      "soft": ["string"],
-      "tools": ["string"]
-    }
-  }
-}
-```
-
-### 2. **POST /api/cv/generate**
+##### POST /api/cv/generate
 
 Generates a customized resume based on a base resume and a job posting.
 
@@ -855,22 +826,7 @@ Generates a customized resume based on a base resume and a job posting.
 }
 ```
 
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "customizedCV": {
-      /* CV object */
-    },
-    "atsScore": 85,
-    "suggestions": ["string"]
-  }
-}
-```
-
-### 3. **POST /api/cover-letter/generate**
+##### POST /api/cover-letter/generate
 
 Generates a personalized cover letter.
 
@@ -883,19 +839,7 @@ Generates a personalized cover letter.
 }
 ```
 
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "content": "string", // Markdown formatted
-    "wordCount": 300
-  }
-}
-```
-
-### 4. **POST /api/pdf/generate**
+##### POST /api/pdf/generate
 
 Generates a PDF from a resume or cover letter.
 
@@ -909,43 +853,25 @@ Generates a PDF from a resume or cover letter.
 }
 ```
 
-**Response**:
-
-```
-Content-Type: application/pdf
-Binary PDF data
-```
-
-### 5. **POST /api/cv/upload**
+##### POST /api/cv/upload
 
 Uploads and parses a CV file (PDF, DOCX, TXT).
 
 **Request**: `multipart/form-data` with file
 
-**Response**:
+##### POST /api/cv/create
 
-```json
-{
-  "success": true,
-  "data": {
-    "id": "string",
-    "personalInfo": {
-      /* ... */
-    },
-    "experience": [
-      /* ... */
-    ],
-    "education": [
-      /* ... */
-    ],
-    "skills": {
-      /* ... */
-    }
-  }
-}
-```
+Creates a base CV manually from structured data.
 
-### 6. **POST /api/application/create**
+##### POST /api/cv/parse
+
+Parses raw CV text without saving to database.
+
+##### GET/PUT/DELETE /api/cv/[id]
+
+Manage individual base CVs.
+
+##### POST /api/application/create
 
 Creates a new job application with customized CV.
 
@@ -954,52 +880,27 @@ Creates a new job application with customized CV.
 ```json
 {
   "baseCVId": "string",
-  "jobListingId": "string",
-  "userId": "string"
+  "jobListingId": "string"
 }
 ```
 
-**Response**:
+**Note**: Transaction timeout is extended to 15s (`maxWait: 15000, timeout: 15000`).
 
-```json
-{
-  "success": true,
-  "data": {
-    "id": "string",
-    "customCV": {
-      /* ... */
-    },
-    "atsScore": 85,
-    "atsAnalysis": {
-      /* ... */
-    }
-  }
-}
-```
+##### GET/PUT/DELETE /api/application/[id]
 
-### 7. **GET /api/application/[id]**
+Manage applications.
 
-Retrieves application details.
-
-### 8. **GET /api/application/[id]/download-cv**
+##### GET /api/application/[id]/download-cv
 
 Downloads the generated CV as PDF.
 
-**Response**: PDF file download  
-**Filename Format**: `User_Name_CV_[CompanyName].pdf`  
-**Example**: `John_Doe_CV_Google.pdf`
+**Filename Format**: `User_Name_CV_[CompanyName].pdf`
 
-### 9. **GET /api/application/[id]/download-cover-letter**
+##### GET /api/application/[id]/download-cover-letter
 
 Downloads the generated cover letter as PDF.
 
-**Response**: PDF file download  
-**Filename Format**: `User_Name_CL_[CompanyName].pdf`  
-**Example**: `John_Doe_CL_Meta_Platforms.pdf`
-
-### 10. **GET/PUT/DELETE /api/cv/[id]**
-
-Manage individual base CVs (get, update, delete).
+**Filename Format**: `User_Name_CL_[CompanyName].pdf`
 
 ---
 
@@ -1007,7 +908,7 @@ Manage individual base CVs (get, update, delete).
 
 ### `.env.local` file (required)
 
-```bash
+```env
 # ============================================
 # DATABASE
 # ============================================
@@ -1041,9 +942,17 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 
 # ============================================
-# OPENAI (Optional - Higher quality)
+# OPENAI (Optional - Higher quality fallback)
 # ============================================
 # OPENAI_API_KEY="sk-..."
+
+# ============================================
+# OPTIONAL: OAUTH (Future)
+# ============================================
+# GOOGLE_CLIENT_ID="..."
+# GOOGLE_CLIENT_SECRET="..."
+# GITHUB_CLIENT_ID="..."
+# GITHUB_CLIENT_SECRET="..."
 ```
 
 ### Recommended Database Providers
@@ -1058,7 +967,6 @@ GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 - Neon (https://neon.tech) - Recommended
 - Supabase (https://supabase.com)
 - Railway (https://railway.app)
-- Vercel Postgres
 
 ---
 
@@ -1068,49 +976,62 @@ GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Development mode (http://localhost:3000)
-npm run dev
+pnpm dev
 
 # Production build
-npm run build
+pnpm build
 
 # Run production build
-npm start
+pnpm start
 
 # Lint
-npm run lint
+pnpm lint
 
 # Type checking
-npm run type-check
+pnpm type-check
 ```
 
 ### Database
 
 ```bash
 # Generate Prisma client (after schema changes)
-npm run db:generate
+pnpm db:generate
 
 # Push schema to DB (quick development, no migrations)
-npm run db:push
+pnpm db:push
 
 # Create migration (production)
-npm run db:migrate
+pnpm db:migrate
 
 # Open Prisma Studio (GUI to view data)
-npm run db:studio
+pnpm db:studio
 
 # Seed DB with sample data
-npm run db:seed
+pnpm db:seed
+```
+
+### Testing
+
+```bash
+# Run Jest tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
 ```
 
 ### Prisma Workflow
 
 1. **Change schema** → Edit `prisma/schema.prisma`
-2. **Apply changes** → `npm run db:push` (dev) or `npm run db:migrate` (prod)
-3. **Generate client** → `npm run db:generate` (if not done automatically)
-4. **Verify** → `npm run db:studio` (view data)
+2. **Apply changes** → `pnpm db:push` (dev) or `pnpm db:migrate` (prod)
+3. **Generate client** → `pnpm db:generate` (if not done automatically)
+4. **Verify** → `pnpm db:studio` (view data)
 
 ---
 
@@ -1121,13 +1042,11 @@ npm run db:seed
 ```
 1. User uploads file (PDF/DOCX/TXT)
    ↓
-2. lib/cv/parser.ts → parseCV()
+2. src/lib/cv/parser.ts → parseCV()
    - Extracts text from file
-   - Identifies sections
    ↓
-3. lib/ai/openai.ts → structureCV()
-   - OpenAI GPT-4o structures data
-   - Returns JSON with BaseCV format
+3. src/lib/ai/service.ts / google-ai.ts
+   - AI structures data into BaseCV format
    ↓
 4. Save to DB (base_cvs table)
    ↓
@@ -1141,10 +1060,9 @@ npm run db:seed
    ↓
 2. POST /api/job/analyze
    ↓
-3. lib/ai/job-analyzer.ts → analyzeJob()
+3. src/lib/ai/job-analyzer.ts → analyzeJob()
    - Extracts: title, company, requirements
    - Identifies technical and soft skills keywords
-   - Classifies seniority level
    ↓
 4. Save to DB (job_listings table)
    ↓
@@ -1156,19 +1074,19 @@ npm run db:seed
 ```
 1. User selects BaseCV + JobListing
    ↓
-2. POST /api/cv/generate
+2. POST /api/application/create (or POST /api/cv/generate)
    ↓
-3. lib/ai/cv-generator.ts → generateCustomCV()
+3. src/lib/ai/cv-generator.ts → generateCustomCV()
    - Reads original BaseCV
    - Reads JobListing requirements
    - Adapts sections according to keywords
    - Optimizes bullets for ATS
    ↓
-4. lib/ai/ats-scorer.ts → calculateScore()
+4. src/lib/ai/ats-scorer.ts → calculateScore()
    - Calculates matching score (0-100)
    - Generates improvement suggestions
    ↓
-5. Save Application to DB
+5. Save Application to DB (applications table)
    ↓
 6. Display resume + Score + Suggestions
 ```
@@ -1180,14 +1098,14 @@ npm run db:seed
    ↓
 2. POST /api/cover-letter/generate
    ↓
-3. lib/ai/cover-letter-generator.ts → generateCoverLetter()
+3. src/lib/ai/cover-letter-generator.ts → generateCoverLetter()
    - Reads customized resume
    - Reads job listing
    - Generates letter with selected tone
    ↓
 4. Save to cover_letters table
    ↓
-5. Display cover letter (Markdown)
+5. Display cover letter (Markdown/HTML)
 ```
 
 ### Workflow 5: PDF Generation
@@ -1195,16 +1113,16 @@ npm run db:seed
 ```
 1. User downloads resume or Cover Letter
    ↓
-2. POST /api/pdf/generate
+2. GET /api/application/[id]/download-cv
+   or GET /api/application/[id]/download-cover-letter
+   or POST /api/pdf/generate
    ↓
-3. lib/pdf/generator.ts → generatePDF()
+3. src/lib/pdf/generator.ts → generatePDF()
    - Loads HTML template (templates/cv/modern.html)
    - Injects resume data
-   - Puppeteer renders HTML → PDF
+   - Puppeteer-core + chromium-min renders HTML → PDF
    ↓
-4. Return PDF as blob
-   ↓
-5. Browser downloads file
+4. Return PDF as download
 ```
 
 #### PDF Styling Details
@@ -1212,42 +1130,40 @@ npm run db:seed
 **CV PDF:**
 
 - Font: Arial/Helvetica (system fonts)
-- Size: 9pt
 - Layout: Single-column, minimalist black design
 - Margins: 12mm top/bottom, 15mm left/right
 - Filename: `User_Name_CV_[CompanyName].pdf`
 
 **Cover Letter PDF:**
 
-- Font: Libre Baskerville (Google Fonts) with fallbacks to Baskerville, Georgia, serif
+- Font: Libre Baskerville (Google Fonts) with fallbacks
 - Size: 12pt
 - Line Height: 1.7
-- Text Alignment: Justified (text-justify: inter-word)
-- Color: #1a1a1a (deep black)
+- Text Alignment: Justified
+- Color: #1a1a1a
 - Paragraph Spacing: 18px
 - Margins: 25mm top/bottom, 20mm left/right
-- Max Width: 170mm
-- Format Structure:
-  - Greeting: "Hi [Company Name] team,"
-  - Body: 2-3 paragraphs (200-300 words)
-  - Closing: "I look forward to discussing how I can contribute to [company]'s success."
-  - Signature: "Best regards,\n[Candidate Name]" (dynamically populated from CV)
-- Filename: `[Candidate_Name]_CL_[CompanyName].pdf` (e.g., John_Doe_CL_Google.pdf)
+- Greeting: "Hi [Company Name] team,"
+- Closing: "Best regards,\n[Candidate Name]"
+- Filename: `[Candidate_Name]_CL_[CompanyName].pdf`
 
 ---
 
 ## 🤖 AI System - Implementation Details
 
-### OpenAI Configuration
+### Providers
 
-```typescript
-// src/lib/ai/openai.ts
-const AI_CONFIG = {
-  model: 'gpt-4o', // Main model
-  temperature: 0.7, // Balance creativity/precision
-  maxTokens: 4000, // Token limit per response
-};
-```
+**Primary: Google Gemini**
+
+- Package: `@google/generative-ai`
+- Cost-effective, fast
+- Used for all generation tasks
+
+**Optional/Fallback: OpenAI GPT-4o**
+
+- Package: `openai`
+- Model: `gpt-4o`
+- Used when Google Gemini returns errors (503) or when configured
 
 ### Main Prompts
 
@@ -1258,29 +1174,12 @@ Prompts are in `src/lib/ai/prompts/index.ts`:
 3. **CV_GENERATOR_PROMPT**: Customizes resume for job posting
 4. **ATS_SCORER_PROMPT**: Calculates ATS score
 5. **COVER_LETTER_PROMPT**: Generates personalized cover letter
-   - Dynamic greeting: "Hi {companyName} team," (company name from job listing)
-   - Dynamic signature: "Best regards,\n{candidateName}" (candidate name from CV)
-   - Tone options: professional, creative, formal, friendly
-   - Length: 200-300 words (3 paragraphs)
-   - Output format: JSON with `content` (plain text) and `htmlContent` (formatted HTML)
-   - Structure:
-     - Paragraph 1: Introduction and motivation
-     - Paragraph 2: Relevant experience and qualifications
-     - Paragraph 3: Company-specific interest and enthusiasm
 
-### Token Strategy
+### Fallback Strategy
 
-- **Input prompts**: ~500-1000 tokens
-- **CV data**: ~1000-2000 tokens
-- **Job description**: ~500-1500 tokens
-- **Output**: ~2000-4000 tokens
-- **Total per request**: ~4000-8500 tokens
-
-**Estimated cost** (GPT-4o):
-
-- Input: $5/1M tokens
-- Output: $15/1M tokens
-- ~$0.05-0.10 per generated resume
+- The application attempts Google Gemini first
+- If Gemini returns a 503 or other error, it falls back to OpenAI if configured
+- User-friendly error messages are returned if both providers fail
 
 ---
 
@@ -1288,55 +1187,31 @@ Prompts are in `src/lib/ai/prompts/index.ts`:
 
 ### Current Template: Minimalist Black (Single Column)
 
-File: `src/lib/pdf/generator.ts`
+File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 
 **Features**:
 
-- Single-column vertical layout (NOT two-column)
-- Minimalist black text design (#000000)
+- Single-column vertical layout
+- Minimalist black text design
 - Professional and clean aesthetics
 - ATS-optimized (plain text, no complex formatting)
 - Fits on 1 page (A4 format)
 - Dynamic subtitle generation from job titles
 - Skills displayed inline with bullet separator (•)
-- Experience limited to 3 bullets per job for space efficiency
-- Responsive margins: 12-15mm
+- Experience limited to bullets per job for space efficiency
 
-**Design Specifications**:
-
-- **Font**: Arial, Helvetica (sans-serif)
-- **Font Sizes**:
-  - Name: 26pt (bold, uppercase)
-  - Section Headers: 11pt (bold, uppercase)
-  - Subtitle: 9.5pt (black)
-  - Body: 9pt
-  - Skills/Bullets: 8.5pt
-- **Line Height**: 1.3 (optimized for 1-page fit)
-- **Colors**:
-  - All text: #000000 (black)
-  - Section borders: 2px solid black
-- **Layout**:
-  - Header: Centered with name, subtitle, contact info
-  - Sections: Summary → Skills → Experience → Education
-  - Skills: Inline text with • separator (not badges)
-  - Experience: 3 bullets max per position
-
-**Dynamic Features**:
-
-- `generateSubtitle()` function extracts job roles from experience
-- Automatically formats: "IT Support | QA Automation | Software Development"
-- Skills grouped by category (Technical Skills, Soft Skills)
-
-### PDF Generation Settings
+**PDF Generation Settings**:
 
 ```typescript
-format: 'A4',
-printBackground: true,
-margin: {
-  top: '12mm',
-  right: '15mm',
-  bottom: '12mm',
-  left: '15mm',
+{
+  format: 'A4',
+  printBackground: true,
+  margin: {
+    top: '12mm',
+    right: '15mm',
+    bottom: '12mm',
+    left: '15mm',
+  }
 }
 ```
 
@@ -1350,160 +1225,121 @@ margin: {
 - [x] Next.js 15 + TypeScript setup
 - [x] Tailwind CSS + shadcn/ui configuration
 - [x] Prisma + PostgreSQL setup
-- [x] Complete database models
-- [x] Google Generative AI (Gemini 2.5 Flash) integration - Primary AI provider
-- [x] OpenAI GPT-4o integration - Optional alternative
-- [x] Multi-language support (English/Spanish) with next-intl
+- [x] Complete database models (11 models, plural table names)
+- [x] Google Generative AI integration (primary)
+- [x] OpenAI GPT-4o integration (optional fallback)
+- [x] Multi-language support (English/Spanish) with next-intl; default is Spanish
 - [x] Internationalization middleware and routing
 - [x] Language switcher component
 - [x] Resume parser (PDF, DOCX, TXT)
-- [x] API: CV upload and parsing
+- [x] API: CV upload, create, parse, generate
 - [x] API: Job description analysis
 - [x] API: Custom resume generation
 - [x] API: Cover letter generation
 - [x] API: PDF generation and download
 - [x] API: Application creation and management
 - [x] ATS scoring system
-- [x] Minimalist single-column PDF template (black text, 1-page)
-- [x] Dynamic subtitle generation from experience
-- [x] Optimized skills display (inline with bullets)
+- [x] Minimalist single-column PDF template
 - [x] TypeScript types structure
-- [x] Transaction timeout fixes for application creation
-- [x] Skills section repositioned (after Summary, before Experience)
-- [x] **Complete authentication system** (custom, session-based — no NextAuth)
-  - [x] Email/password registration with email verification flow
+- [x] Transaction timeout fixes for application creation (15s)
+- [x] **Complete custom authentication system** (session-based — no NextAuth)
+  - [x] Email/password registration with email verification
   - [x] Login with session cookie management
   - [x] Logout (single session and all sessions)
-  - [x] Password reset via email (forgot-password + reset-password)
+  - [x] Password reset via email
   - [x] Two-Factor Authentication (TOTP via `otpauth`)
-  - [x] Rate limiting and account lockout (brute force protection)
+  - [x] Rate limiting and account lockout
   - [x] Comprehensive audit logging
   - [x] Multi-device session management
 - [x] **SMTP email delivery** working in production (nodemailer)
   - [x] Email verification on registration
   - [x] Password reset email
-  - [x] Transporter verification + error logging for production diagnostics
-- [x] **Vercel production deployment** at `apply-job-self.vercel.app`
+- [x] **Dashboard UI** with CV, Applications, and Profile pages
+- [x] **Vercel production deployment**
   - [x] `scripts/vercel-build.js` — auto-runs migrations when `DATABASE_URL` is set
-  - [x] Neon PostgreSQL database (ap-southeast-2) connected
-  - [x] All environment variables configured in Vercel
+  - [x] Neon PostgreSQL database connected
 
 ### 🚧 In Development / Pending
 
-#### Frontend (UI/UX) — partially done
+#### Frontend (UI/UX)
 
-- [x] Login / Register / Verify Email pages
-- [x] Forgot Password / Reset Password pages
-- [x] Dashboard skeleton
-- [ ] Landing page polish (/)
+- [ ] Landing page polish
 - [ ] Dashboard stats cards (total apps, response rate, etc.)
 - [ ] Progress charts
-- [ ] Base resume editor (review/edit extracted info)
+- [ ] Base resume editor with full section editing
 - [ ] Generated resume view with ATS score visualization
-- [ ] Cover letter editor with live preview and tone selector
+- [ ] Cover letter editor with live preview
 - [ ] Application tracking: filters, states, notes, event timeline
-- [ ] User settings page (password change, 2FA setup, session management)
+- [ ] Advanced user settings
 
 #### Additional APIs
 
-- [ ] BaseCVs CRUD
-  - [ ] GET /api/cv/base (list)
-  - [ ] GET /api/cv/base/[id]
-  - [ ] POST /api/cv/base (create)
-  - [ ] PATCH /api/cv/base/[id] (edit)
-  - [ ] DELETE /api/cv/base/[id]
-- [ ] Applications CRUD
-  - [ ] GET /api/applications
-  - [ ] GET /api/applications/[id]
-  - [ ] PATCH /api/applications/[id]
-  - [ ] DELETE /api/applications/[id]
-- [ ] File upload
-  - [ ] POST /api/upload (Vercel Blob or S3)
+- [ ] GET /api/applications (list all user applications)
+- [ ] File upload to cloud storage (S3/Vercel Blob)
 
 #### AI Improvements
 
-- [ ] Response streaming (Vercel AI SDK)
-- [ ] Cache similar job analysis (avoid reprocessing)
+- [ ] Response streaming
+- [ ] Cache similar job analysis
 - [ ] Prompt fine-tuning
-- [ ] Feedback system (thumbs up/down)
-- [ ] Prompt A/B testing
+- [ ] Feedback system
 
 #### Advanced Features
 
 - [ ] Multiple resume templates
-- [ ] Visual resume editor (drag & drop sections)
-- [ ] Side-by-side comparison (base vs customized resume)
-- [ ] Real-time improvement suggestions
-- [ ] Extract keywords from base resume
-- [ ] Detailed match score by section
-- [ ] Export to LinkedIn profile
+- [ ] Visual resume editor
+- [ ] Side-by-side comparison
 - [ ] Job board integrations (LinkedIn, Indeed)
-- [ ] Auto-apply (fill forms)
-- [ ] Notifications (email/push)
-- [ ] Follow-up reminders
+- [ ] Notifications and follow-up reminders
 
 #### DevOps and Quality
 
-- [ ] Unit tests (Vitest)
-- [ ] Integration tests (Playwright)
+- [ ] More unit tests (Jest)
+- [ ] Integration/E2E tests
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Error tracking (Sentry)
 - [ ] Analytics (Vercel Analytics / PostHog)
-- [ ] OpenAI cost monitoring
-- [ ] API rate limiting
-- [ ] Caching strategy (Redis)
 
 ---
 
 ## 🐛 Known Issues and Considerations
 
-### 1. **Resume Parsing**
+### 1. Resume Parsing
 
 - **Issue**: Resumes can have very varied formats
-- **Current solution**: OpenAI structures extracted text
+- **Current solution**: AI structures extracted text
 - **Improvement**: Implement validations and fallbacks
 
-### 2. **OpenAI Token Limit**
+### 2. AI API Costs
 
-- **Issue**: Long resumes may exceed limit
-- **Solution**: Content chunking, summarize old sections
+- **Issue**: Each resume generation costs money
+- **Solution**: Use Gemini for cost-effective generation, cache results, rate limit per user
 
-### 3. **AI API Costs**
-
-- **Issue**: Each resume generation costs ~$0.05-0.10 (OpenAI) or minimal with Gemini
-- **Solution**: Implement cache, rate limiting per user, use Gemini for cost-effective generation
-
-### 4. **ATS Score Accuracy**
+### 3. ATS Score Accuracy
 
 - **Issue**: Scoring is an estimate, not a guarantee
 - **Solution**: Clear disclaimer, validate with real data
 
-### 5. **PDF Generation Performance**
+### 4. PDF Generation Performance
 
 - **Issue**: Puppeteer is slow (~2-5 seconds per PDF)
 - **Solution**: Move to queue/background job (BullMQ, Inngest)
 
-### 6. **File Upload Security**
+### 5. File Upload Security
 
 - **Issue**: File uploads can be attack vector
 - **Solution**: Validate types, scan malware, limit size
 
-### 7. **Database Migrations**
-
-- **Issue**: Schema changes in production
-- **Solution**: Use `prisma migrate` in prod, not `db:push`
-
-### 8. **Transaction Timeouts** ✅ FIXED
+### 6. Transaction Timeouts ✅ FIXED
 
 - **Issue**: Prisma transaction timeout during application creation (5s default too short)
 - **Solution**: Increased timeout to 15s in `/api/application/create` route
 - **Implementation**: `prisma.$transaction([], { maxWait: 15000, timeout: 15000 })`
 
-### 9. **Google AI Service Availability**
+### 7. Google AI Service Availability
 
 - **Issue**: 503 errors during high demand periods
-- **Current status**: Temporary service unavailability
-- **Solution**: Implement fallback to OpenAI, add retry logic, user-friendly error messages
+- **Solution**: Fallback to OpenAI when configured, retry logic, user-friendly error messages
 
 ---
 
@@ -1532,7 +1368,7 @@ margin: {
 
 ### Medium Priority
 
-5. **Template system** — 2-3 additional PDF designs
+5. **Template system** — additional PDF designs
 6. **Cover Letter UI** — Editor + Preview + Download
 7. **Application tracking** — States, Notes, Timeline
 
@@ -1543,25 +1379,21 @@ margin: {
 ### next.config.js
 
 ```javascript
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js 15 experimental features
   experimental: {
-    serverActions: true,
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
-
-  // For Puppeteer on Vercel
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push({
-        puppeteer: 'commonjs puppeteer',
-      });
-    }
-    return config;
-  },
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);
 ```
 
 ### tailwind.config.ts
@@ -1583,6 +1415,8 @@ const config: Config = {
   },
   plugins: [require('tailwindcss-animate')],
 };
+
+export default config;
 ```
 
 ### tsconfig.json
@@ -1621,23 +1455,18 @@ const config: Config = {
 ### Official Documentation
 
 - **Next.js 15**: https://nextjs.org/docs
-- **React 19**: https://react.dev
+- **React**: https://react.dev
 - **Prisma**: https://www.prisma.io/docs
 - **OpenAI API**: https://platform.openai.com/docs
+- **Google AI SDK**: https://ai.google.dev/
 - **Tailwind CSS**: https://tailwindcss.com/docs
 - **shadcn/ui**: https://ui.shadcn.com
+- **next-intl**: https://next-intl-docs.vercel.app/
 
 ### Development Tools
 
-- **Prisma Studio**: `npm run db:studio`
-- **OpenAI Playground**: https://platform.openai.com/playground
+- **Prisma Studio**: `pnpm db:studio`
 - **Vercel Dashboard**: https://vercel.com/dashboard
-
-### Community and Support
-
-- **Next.js Discord**: https://nextjs.org/discord
-- **Prisma Slack**: https://slack.prisma.io
-- **OpenAI Forum**: https://community.openai.com
 
 ---
 
@@ -1652,7 +1481,7 @@ const config: Config = {
 ### API Routes
 
 - ✅ Validate inputs with Zod
-- ✅ Rate limiting (coming soon)
+- ✅ Rate limiting implemented
 - ✅ Consistent error handling
 - ✅ Don't expose internal details in errors
 
@@ -1660,7 +1489,6 @@ const config: Config = {
 
 - ✅ Use connection pooling
 - ✅ Indexes on frequently searched fields
-- ✅ Soft deletes for important data
 - ✅ Automatic backups
 
 ### AI and Costs
@@ -1690,28 +1518,12 @@ const config: Config = {
 
 ---
 
-## 📞 Contact and Maintenance
-
-### Repository
-
-- **GitHub**: (add URL when uploaded)
-- **Issues**: For bugs and feature requests
-- **PRs**: Welcome with tests
-
-### Deploy
-
-- **Production**: Vercel (configure domain)
-- **Staging**: Branch preview on Vercel
-- **Logs**: Vercel Dashboard + Sentry
-
----
-
 ## 📋 Continuation Checklist
 
 When resuming the project, verify:
 
 - [ ] `pnpm install` executed without errors
-- [ ] `.env.local` configured correctly (DATABASE*URL, SESSION_SECRET, SMTP*\*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
+- [ ] `.env.local` configured correctly (DATABASE_URL, SESSION_SECRET, SMTP_*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
 - [ ] Database accessible (`pnpm db:studio`)
 - [ ] Prisma client generated (`pnpm db:generate`)
 - [ ] Valid AI API key (Google AI or OpenAI) configured
@@ -1728,41 +1540,25 @@ This project is in a solid technical foundation phase. The architecture is scala
 **What works**:
 
 - ✅ Dual AI provider support (Google Gemini + OpenAI)
-- ✅ Multi-language interface (English/Spanish)
-- ✅ AI APIs (job analysis, resume generation, cover letters)
-- ✅ Robust database system (Neon PostgreSQL in production)
+- ✅ Multi-language interface (English/Spanish, default Spanish)
+- ✅ AI APIs (job analysis, resume generation, cover letters, ATS scoring)
+- ✅ Robust database system (PostgreSQL with Prisma)
 - ✅ PDF generation and download
 - ✅ Resume parsing
-- ✅ Complete authentication system (registration, login, email verification, 2FA, password reset)
-- ✅ SMTP email delivery working in production
+- ✅ Complete custom authentication system
+- ✅ SMTP email delivery
+- ✅ Dashboard UI
 - ✅ Vercel production deployment
 
 **What's missing**:
 
-- 🚧 Dashboard UI polish
-- 🚧 User settings page (2FA setup, session list)
+- 🚧 Dashboard analytics and stats
 - 🚧 More PDF templates
+- 🚧 Cloud file storage
+- 🚧 More automated tests
 
 ---
 
-**Last updated**: June 17, 2026  
-**Version**: 0.3.0  
+**Last updated**: June 28, 2026
+**Version**: 0.1.0 (matches package.json)
 **Maintainer**: @fawer5dev
-
-## 📝 Recent Updates (June 2026)
-
-### Authentication System Live (June 17, 2026)
-
-- Full custom auth system deployed to production (no NextAuth — 100% custom)
-- Email verification on registration working end-to-end in production
-- SMTP delivery confirmed via nodemailer (Gmail SMTP with App Password)
-- Fixed SMTP auth field typo: `auth.users` → `auth.user` in `src/lib/email/sender.ts`
-- Added `transporter.verify()` + full stack trace logging for production SMTP diagnostics
-- Root cause of email failure identified and resolved: `EMAIL_FROM` must be a valid sender address accepted by the SMTP provider (`501 Bad sender address syntax` if malformed)
-- Password reset, 2FA, rate limiting, and audit logging all deployed
-
-### Vercel Build Improvements (June 2026)
-
-- Added `scripts/vercel-build.js`: auto-runs `prisma migrate deploy` when `DATABASE_URL` is present; skips migrations for preview builds without DB
-- `package.json` build command updated to `node ./scripts/vercel-build.js`
-- Resolved TypeScript build failures caused by Prisma model name mismatches between local and CI environments (pragmatic `any` annotations in `server-session.ts`, `prisma.ts`, and several API routes — to be cleaned up later)

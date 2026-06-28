@@ -64,9 +64,13 @@
     }
   },
   "NewCV": {
-    "title": "Subir CV Base",
-    "subtitle": "Sube tu CV principal y lo analizaremos automáticamente con IA",
+    "title": "Crear CV Base",
+    "subtitle": "Sube tu CV para análisis con IA o ingresa tus datos manualmente",
     "backToDashboard": "Volver al Dashboard",
+    "tabs": {
+      "upload": "Subir Archivo",
+      "manual": "Ingreso Manual"
+    },
     "form": {
       "title": "Título del CV",
       "titlePlaceholder": "Ej: CV Software Engineer 2024",
@@ -74,16 +78,93 @@
       "uploadPrompt": "Haz clic para subir o arrastra el archivo",
       "uploadHint": "PDF, DOCX o TXT (máx. 10MB)",
       "uploading": "Procesando...",
+      "parsing": "Analizando con IA...",
       "submit": "Subir y Analizar",
+      "parse": "Analizar y Revisar",
+      "save": "Guardar CV",
+      "saving": "Guardando...",
       "cancel": "Cancelar"
     },
     "errors": {
       "missingFields": "Por favor completa todos los campos",
-      "uploadFailed": "Error al subir el CV"
+      "uploadFailed": "Error al subir el CV",
+      "parseFailed": "Error al analizar el CV. Inténtalo de nuevo o usa el ingreso manual.",
+      "saveFailed": "Error al guardar el CV"
     },
     "success": {
-      "title": "¡CV Subido Exitosamente!",
-      "message": "Redirigiendo al dashboard..."
+      "title": "¡CV Guardado Exitosamente!",
+      "message": "Redirigiendo a tus CVs..."
+    },
+    "review": {
+      "title": "Revisa tu CV",
+      "subtitle": "Verifica y edita la información extraída antes de guardar",
+      "uploadAnother": "Subir otro archivo"
+    },
+    "cvForm": {
+      "sections": {
+        "personalInfo": "Información Personal",
+        "summary": "Resumen Profesional",
+        "experience": "Experiencia Laboral",
+        "education": "Educación",
+        "skills": "Habilidades"
+      },
+      "fields": {
+        "name": "Nombre Completo",
+        "email": "Correo Electrónico",
+        "phone": "Teléfono",
+        "location": "Ubicación",
+        "linkedin": "URL de LinkedIn",
+        "website": "URL del Sitio Web",
+        "jobTitle": "Cargo",
+        "company": "Empresa",
+        "startDate": "Fecha de Inicio",
+        "endDate": "Fecha de Fin",
+        "current": "Trabajo aquí actualmente",
+        "description": "Descripción",
+        "achievements": "Logros / Responsabilidades Clave",
+        "degree": "Título",
+        "institution": "Institución",
+        "graduationDate": "Fecha de Graduación",
+        "gpa": "GPA",
+        "category": "Categoría",
+        "skills": "Habilidades"
+      },
+      "placeholders": {
+        "name": "Tu nombre completo",
+        "email": "tu@ejemplo.com",
+        "phone": "+1 234 567 890",
+        "location": "Ciudad, País",
+        "linkedin": "https://linkedin.com/in/tuperfil",
+        "website": "https://tusitio.com",
+        "summary": "Breve resumen de tu experiencia profesional...",
+        "jobTitle": "Ej: Senior Software Engineer",
+        "company": "Ej: Acme Inc.",
+        "workLocation": "Ciudad, País",
+        "startDate": "Ej: Ene 2020",
+        "endDate": "Ej: Dic 2022",
+        "jobDescription": "Describe tu rol y responsabilidades...",
+        "achievements": "Un logro por línea",
+        "degree": "Ej: Licenciatura en Ciencias de la Computación",
+        "institution": "Ej: Universidad de Tecnología",
+        "schoolLocation": "Ciudad, País",
+        "graduationDate": "Ej: 2018 - 2022",
+        "gpa": "Ej: 3.8 / 4.0",
+        "educationDescription": "Detalles adicionales...",
+        "skillCategory": "Ej: Habilidades Técnicas",
+        "skills": "Ej: React, TypeScript, Node.js"
+      },
+      "actions": {
+        "addExperience": "Agregar Experiencia",
+        "removeExperience": "Eliminar experiencia",
+        "addEducation": "Agregar Educación",
+        "removeEducation": "Eliminar educación",
+        "addSkillCategory": "Agregar Categoría de Habilidades",
+        "removeSkillCategory": "Eliminar categoría de habilidades"
+      },
+      "hints": {
+        "onePerLine": "Un elemento por línea",
+        "onePerLineOrComma": "Un elemento por línea o separados por comas"
+      }
     },
     "info": {
       "title": "¿Qué haremos con tu CV?",
@@ -161,6 +242,7 @@
     "subtitle": "Ver, editar y organizar tus CVs base",
     "section": "Mis CVs",
     "backToDashboard": "Volver al Dashboard",
+    "createNew": "Crear CV Base",
     "uploadNew": "Subir Nuevo CV",
     "uploadFirst": "Sube tu Primer CV",
     "loading": "Cargando CVs...",
@@ -199,6 +281,13 @@
     }
   },
   "Applications": {
+    "title": "Mis Aplicaciones",
+    "description": "Haz seguimiento de todas tus aplicaciones de trabajo en un solo lugar",
+    "emptyState": {
+      "title": "Aún no hay aplicaciones",
+      "description": "Crea tu primera aplicación para comenzar",
+      "action": "Crear Aplicación"
+    },
     "status": {
       "DRAFT": "Borrador",
       "READY": "Lista",

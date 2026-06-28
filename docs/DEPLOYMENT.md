@@ -91,22 +91,25 @@ Choose a PostgreSQL provider that works well with Vercel:
    GOOGLE_AI_API_KEY=your-google-ai-api-key
    ```
 
-   **Email Configuration (Required for Auth):**
+    **Email Configuration (Required for Auth):**
 
-   ```env
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_SECURE=false
-   SMTP_USER=your.email@gmail.com
-   SMTP_PASS=your-gmail-app-password
-   EMAIL_FROM=Apply Job <noreply@your-domain.com>
-   ```
+    ```env
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_SECURE=false
+    SMTP_USER=your.email@gmail.com
+    SMTP_PASS=your-gmail-app-password
+    # Must match SMTP_USER for Gmail and be a valid address
+    EMAIL_FROM=Apply Job <your.email@gmail.com>
+    ```
 
-   **Optional (if using OpenAI):**
+    **AI Providers (at least one required):**
 
-   ```env
-   OPENAI_API_KEY=your-openai-api-key
-   ```
+    ```env
+    GOOGLE_AI_API_KEY=your-google-ai-api-key
+    # Optional fallback
+    # OPENAI_API_KEY=your-openai-api-key
+    ```
 
 4. **Deploy**
    - Click "Deploy"
@@ -148,10 +151,12 @@ If you need to run migrations manually (e.g. first-time setup or emergency fix):
 ### Step 5: Verify Deployment
 
 1. Visit your deployment URL (e.g., `https://your-app.vercel.app`)
-2. Test the registration flow: `/en/register`
+2. Test the registration flow: `/en/register` or `/es/register` (Spanish is the default locale)
 3. Check that emails are being sent
 4. Test login and authentication
 5. Upload a CV and create an application
+6. Run `pnpm type-check` and `pnpm test` locally before deploying
+7. Verify build logs show `prisma migrate deploy` ran successfully
 
 ---
 
@@ -196,6 +201,8 @@ For `SMTP_PASS`:
   }
 }
 ```
+
+Also run `pnpm db:generate` locally if needed.
 
 ### ❌ Error: "GOOGLE_AI_API_KEY is not configured"
 
@@ -258,7 +265,8 @@ After successful deployment:
 - [ ] Create a job application
 - [ ] Generate a cover letter
 - [ ] Check that PDFs download correctly
-- [ ] Test internationalization (switch to Spanish `/es/`)
+- [ ] Test internationalization (switch to Spanish `/es/` — default locale)
+- [ ] Test fallback to English `/en/`
 - [ ] Set up custom domain (optional)
 - [ ] Configure production email service (SendGrid, AWS SES)
 - [ ] Set up error monitoring (Sentry, LogRocket)
@@ -306,17 +314,19 @@ Vercel automatically deploys:
 
 ## Performance Optimization
 
-### Enable Vercel Edge Functions
+### Vercel Configuration
 
-Add to `vercel.json`:
+The project `vercel.json` is:
 
 ```json
 {
   "buildCommand": "pnpm build",
-  "framework": "nextjs",
-  "regions": ["iad1"]
+  "installCommand": "pnpm install",
+  "framework": "nextjs"
 }
 ```
+
+You can add `regions` if you need to pin a deployment region.
 
 ### Enable Caching
 
@@ -378,11 +388,11 @@ Already implemented in the application:
 
 ### File Storage
 
-For production, consider:
+Currently, user uploads are stored in the local `files/` directory. For production, consider:
 
 - AWS S3 for CV storage
-- Cloudinary for image optimization
 - Vercel Blob for simple file storage
+- Cloudinary for image optimization
 
 ---
 
@@ -493,8 +503,9 @@ For enterprise deployments, consider:
 
 ---
 
-**Last Updated**: June 2026  
+**Last Updated**: June 28, 2026  
 **Deployment Platform**: Vercel (recommended), Railway, Render  
 **Build Status**: ✅ All TypeScript/ESLint errors resolved — production deployed and working  
 **Database**: PostgreSQL 15+ with Prisma ORM  
+**PDF**: Puppeteer-core + @sparticuz/chromium-min  
 **Email**: ✅ Verified working in production (nodemailer SMTP)

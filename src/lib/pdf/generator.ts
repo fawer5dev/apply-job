@@ -232,6 +232,12 @@ function renderCVTemplate(cv: CV, template: string): string {
       margin-bottom: 3px;
       font-style: italic;
     }
+
+    .job-description {
+      font-size: 9pt;
+      color: #000000;
+      margin-bottom: 3px;
+    }
     
     ul {
       margin-left: 12px;
@@ -329,6 +335,12 @@ function renderCVTemplate(cv: CV, template: string): string {
         <h3>${exp.title}</h3>
         <p class="company">${exp.company}${exp.location ? ` | ${exp.location}` : ''}</p>
         <p class="dates">${exp.startDate} - ${exp.current ? 'Present' : exp.endDate || 'Present'}</p>
+        ${exp.description
+              ? `
+        <p class="job-description">${exp.description}</p>
+        `
+              : ''
+            }
         ${exp.achievements && exp.achievements.length > 0
               ? `
         <ul>

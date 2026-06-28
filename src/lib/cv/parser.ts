@@ -1,6 +1,52 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
-import type { ParsedCV } from '@/types';
+import type { Experience, ParsedCV } from '@/types';
+
+function normalizeExperience(experience: Experience[] = []): Experience[] {
+  return experience.map((exp) => {
+    const description = (exp.description ?? '').trim();
+    const achievements = (exp.achievements ?? [])
+      .map((a) => a.trim())
+      .filter(Boolean);
+
+    // If the AI dumped bullets/responsibilities into the description field,
+    // split them out so the form shows a short overview + structured bullets.
+    if (achievements.length === 0 && description) {
+      const bulletPattern = /(?:\r?\n|\r)\s*(?:[-•*–—]|\d+[.)])\s+/;
+
+      if (bulletPattern.test(description)) {
+        const parts = description
+          .split(bulletPattern)
+          .map((part) => part.trim())
+          .filter(Boolean);
+        if (parts.length > 1) {
+          const [overview, ...bullets] = parts;
+          return {
+            ...exp,
+            description: overview,
+            achievements: bullets,
+          };
+        }
+      }
+
+      // Fallback: plain multi-line responsibilities without bullet markers
+      const lines = description
+        .split(/\r?\n|\r/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (lines.length > 1) {
+        const [overview, ...rest] = lines;
+        return {
+          ...exp,
+          description: overview,
+          achievements: rest,
+        };
+      }
+    }
+
+    return { ...exp, description, achievements };
+  });
+}
 
 export async function parseCV(file: File): Promise<ParsedCV> {
   const fileType = file.type;
@@ -124,16 +170,20 @@ Return a JSON with the following exact structure:
   ]
 }
 
-IMPORTANT: 
+IMPORTANT:
 - Extract ALL available information from the CV
 - If a section is not present, use an empty array [] or null
 - For experience, set "current" to true if the person is still working there
 - For startDate/endDate, preserve the original format from the CV
 - Maintain the original chronological order
-- Achievements should be specific and quantifiable when possible
 - For skills, group them into logical categories (Technical Skills, Soft Skills, Languages, etc.)
-- Extract key achievements mentioned in the CV
-`;
+
+For each experience entry, split the role details as follows:
+- "description": a SHORT role overview or summary (1-2 sentences maximum). If the CV only has one paragraph, put the first sentence(s) here.
+- "achievements": an array of concrete responsibilities, actions, or achievements as separate bullet strings. If the CV lists bullets (starting with -, •, *, or numbers), put each bullet here. Keep them specific and quantifiable when possible.
+- Do NOT put the full responsibilities paragraph into "description" and leave "achievements" empty.
+- If the CV text is a single paragraph with no bullets, split it into sentences and use the first 1-2 sentences as "description" and the remaining sentences as "achievements".
+`
 
   try {
     console.log('Calling AI service to structure CV...');
@@ -143,9 +193,11 @@ IMPORTANT:
       systemPrompt,
       {
         temperature: 0.3,
-        maxTokens: 3000,
+        maxTokens: 8000,
       }
     );
+
+    parsed.experience = normalizeExperience(parsed.experience);
 
     console.log('Successfully parsed CV structure:', {
       hasPersonalInfo: !!parsed.personalInfo,

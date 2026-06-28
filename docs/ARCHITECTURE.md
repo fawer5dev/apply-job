@@ -8,77 +8,75 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
 
 ### Frontend
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 15.0.7 (App Router)
 - **UI Library**: React 18.3.1
 - **TypeScript**: 5.x (strict mode)
-- **Styling**: Tailwind CSS + shadcn/ui (Radix UI components)
-- **State Management**: Zustand 4.5.4 + React Query 5.51.1
+- **Styling**: Tailwind CSS 3.4 + shadcn/ui (Radix UI components)
+- **State Management**: Zustand 4.5.4 + TanStack React Query 5.51.1
 - **Forms**: React Hook Form 7.52.1 + Zod 3.23.8
-- **Internationalization**: next-intl 4.11.0 (English, Spanish)
+- **Internationalization**: next-intl 4.11.0 (English, Spanish; **default: Spanish**)
 
 ### Backend
 
 - **Runtime**: Node.js 20+
-- **API**: Next.js API Routes (Route Handlers)
-- **Database**: PostgreSQL 15+
-- **ORM**: Prisma 5.19.0
-- **Authentication**: 
-  - Custom implementation with session-based auth
-  - Argon2id password hashing (@node-rs/argon2)
-  - TOTP 2FA (otpauth with QR codes)
+- **API**: Next.js API Routes (Route Handlers) - 30+ endpoints
+- **Database**: PostgreSQL 15+ with Prisma ORM 5.19.0
+- **ORM**: Prisma with **plural table names** (`users`, `sessions`, `base_cvs`, etc.)
+- **Authentication**:
+  - Custom session-based authentication (cookie name: `session-token`)
+  - Argon2id password hashing (`@node-rs/argon2`)
+  - TOTP 2FA (`otpauth` with QR codes)
   - Multi-device session management
   - Rate limiting and account lockout
 - **Email**: Nodemailer 8.0.7 (SMTP)
-- **AI**: Google Gemini 2.5 Flash (primary), OpenAI GPT-4o (optional)
-- **PDF**: Puppeteer 23.1.1
+- **AI**: Google Gemini (primary), OpenAI GPT-4o (optional fallback)
+- **PDF**: Puppeteer-core 25.1.0 + `@sparticuz/chromium-min`
 - **Document Parsing**: pdf-parse 1.1.1, mammoth 1.8.0
 
 ### Infrastructure
 
 - **Hosting**: Vercel
-- **Database**: Neon / Supabase
-- **Storage**: Vercel Blob (future)
-- **Monitoring**: Sentry + Vercel Analytics
-
----
+- **Database**: Neon / Supabase / Railway
+- **Storage**: Local `files/` directory (production: consider S3/Vercel Blob)
+- **Monitoring**: Sentry + Vercel Analytics (recommended)
 
 ## 📊 Data Model
 
 ### Main Entities
 
-1. **User**: Application user with authentication details
-2. **Session**: User sessions with device/IP tracking
-3. **Account**: OAuth provider accounts (future use)
-4. **VerificationToken**: Email verification and password reset tokens
-5. **AuditLog**: Security event logging
-6. **RateLimit**: API rate limiting tracking
-7. **BaseCV**: User's base resume
-8. **JobListing**: Analyzed job posting
-9. **Application**: Customized resume for a specific job
-10. **CoverLetter**: Generated cover letter
-11. **CVTemplate**: Resume design template
+1. **users**: Application user with authentication details
+2. **sessions**: User sessions with device/IP tracking
+3. **accounts**: OAuth provider accounts (future use)
+4. **verification_tokens**: Email verification, password reset and 2FA tokens
+5. **audit_logs**: Security event logging
+6. **rate_limits**: API rate limiting tracking
+7. **base_cvs**: User's base resume
+8. **job_listings**: Analyzed job posting
+9. **applications**: Customized resume for a specific job
+10. **cover_letters**: Generated cover letter
+11. **cv_templates**: Resume design templates
 
 ### Relationships
 
 ```
-User
-├── Session[] (1:N) - User sessions
-├── Account[] (1:N) - OAuth accounts
-├── AuditLog[] (1:N) - Security events
-├── BaseCV[] (1:N)
-├── Application[] (1:N)
-└── CoverLetter[] (1:N)
+users
+├── sessions[] (1:N)
+├── accounts[] (1:N)
+├── audit_logs[] (1:N)
+├── base_cvs[] (1:N)
+├── applications[] (1:N)
+└── cover_letters[] (1:N)
 
-BaseCV
-└── Application[] (1:N)
+base_cvs
+└── applications[] (1:N)
 
-JobListing
-└── Application[] (1:N)
+job_listings
+└── applications[] (1:N)
 
-Application
-├── BaseCV (N:1)
-├── JobListing (N:1)
-└── CoverLetter (1:1 optional)
+applications
+├── base_cvs (N:1)
+├── job_listings (N:1)
+└── cover_letters (1:1 optional)
 ```
 
 ---
@@ -87,26 +85,25 @@ Application
 
 ### Overview
 
-The application implements a production-ready authentication system with session-based auth, 2FA, and comprehensive security features.
+The application implements a production-ready authentication system with session-based auth, 2FA, and comprehensive security features. It is **not** NextAuth — it is a custom implementation.
 
 ### Core Components
 
 #### 1. Session Management (`src/lib/auth/session.ts`)
 
 - **Database-backed sessions** (not JWT)
-- 7-day session duration with automatic refresh (24h threshold)
+- 7-day session duration
 - Multi-device support (max 5 sessions per user)
-- Session rotation on security-sensitive actions
+- Session tokens are SHA-256 hashed before storage
 - Device and IP tracking for security
-- Secure cookie handling (httpOnly, sameSite, secure in prod)
+- Secure cookie handling via route handlers (httpOnly, sameSite, secure in prod)
+- Cookie name: `session-token`
 
 #### 2. Password Security (`src/lib/auth/password.ts`)
 
 - **Argon2id hashing** (industry best practice)
-- Memory cost: 19456 KB
-- Time cost: 2 iterations
-- Parallelism: 1
 - Password strength validation (min 8 chars, uppercase, lowercase, number, special char)
+- Common password detection
 
 #### 3. Two-Factor Authentication (`src/lib/auth/totp.ts`)
 
@@ -119,14 +116,13 @@ The application implements a production-ready authentication system with session
 #### 4. Rate Limiting (`src/lib/auth/rate-limit.ts`)
 
 - Configurable per-endpoint rate limits
-- Tracked by IP + identifier (email/userId)
+- Tracked by identifier (email/userId) + endpoint
 - Automatic cleanup of old records
 - Prevents brute force attacks
 
 #### 5. Account Lockout (`src/lib/auth/account-lockout.ts`)
 
 - Configurable failed attempt threshold (default: 5)
-- Progressive lockout duration (5 min → 15 min → 1 hour)
 - Automatic unlock after lockout expiry
 - Audit trail of lockout events
 
@@ -140,17 +136,12 @@ The application implements a production-ready authentication system with session
 #### 7. Audit Logging (`src/lib/auth/audit-log.ts`)
 
 - Comprehensive security event tracking
-- Logs: IP address, user agent, action, success/failure
-- Events tracked:
-  - Login, logout, registration
-  - Password changes, resets
-  - 2FA setup, disable, verification
-  - Failed login attempts
-  - Session actions
+- Logs: IP address, user agent, action, success/failure, details
 
 ### Authentication Flow
 
 #### Registration Flow
+
 ```
 1. User submits registration form
    ↓
@@ -170,6 +161,7 @@ The application implements a production-ready authentication system with session
 ```
 
 #### Login Flow
+
 ```
 1. User submits credentials
    ↓
@@ -193,6 +185,7 @@ The application implements a production-ready authentication system with session
 ```
 
 #### 2FA Setup Flow
+
 ```
 1. User must be logged in
    ↓
@@ -214,6 +207,7 @@ The application implements a production-ready authentication system with session
 ```
 
 #### Password Reset Flow
+
 ```
 1. User requests password reset
    ↓
@@ -238,7 +232,8 @@ The application implements a production-ready authentication system with session
 
 ### API Endpoints
 
-#### Authentication (17 endpoints)
+#### Authentication (19 endpoints)
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login with credentials
 - `POST /api/auth/logout` - Logout current session
@@ -248,29 +243,36 @@ The application implements a production-ready authentication system with session
 - `POST /api/auth/forgot-password` - Request password reset
 - `POST /api/auth/reset-password` - Reset password with token
 - `POST /api/auth/change-password` - Change password (logged in)
-
-#### Two-Factor Authentication
+- `GET /api/auth/session` - Get current session
+- `GET /api/auth/profile` - Get current user profile
+- `GET /api/auth/sessions` - List all user sessions
+- `DELETE /api/auth/sessions/[id]` - Revoke specific session
 - `POST /api/auth/2fa/enable` - Generate 2FA secret and QR code
 - `POST /api/auth/2fa/verify-setup` - Verify and enable 2FA
 - `POST /api/auth/2fa/verify` - Verify 2FA code during login
 - `POST /api/auth/2fa/disable` - Disable 2FA
 - `POST /api/auth/2fa/backup-codes` - Regenerate backup codes
 
-#### Session Management
-- `GET /api/auth/session` - Get current session
-- `GET /api/auth/sessions` - List all user sessions
-- `DELETE /api/auth/sessions/[id]` - Revoke specific session
-
 ### Protected Routes
 
 The middleware (`src/middleware.ts`) protects routes requiring authentication:
 
 **Protected Routes:**
+
 - `/[locale]/dashboard` - Main user dashboard
-- `/[locale]/dashboard/cv` - CV management
+- `/[locale]/dashboard/cv` - CV list
+- `/[locale]/dashboard/cv/new` - Create new CV
+- `/[locale]/dashboard/cv/[id]` - Edit CV
 - `/[locale]/dashboard/applications` - Application tracking
+- `/[locale]/dashboard/applications/new` - Create new application
+- `/[locale]/dashboard/applications/[id]` - View application
+- `/[locale]/dashboard/profile` - User profile and 2FA settings
+- `/[locale]/dashboard/profile/change-password` - Change password
+- `/[locale]/dashboard/profile/2fa/setup` - Set up 2FA
+- `/[locale]/dashboard/profile/2fa/disable` - Disable 2FA
 
 **Public Routes:**
+
 - `/[locale]` - Landing page
 - `/[locale]/login` - Login page
 - `/[locale]/register` - Registration page
@@ -281,7 +283,7 @@ The middleware (`src/middleware.ts`) protects routes requiring authentication:
 ### Security Features
 
 1. **Password Security**
-   - Argon2id hashing (winner of Password Hashing Competition)
+   - Argon2id hashing
    - Strong password requirements
    - No plain text passwords stored
 
@@ -289,12 +291,11 @@ The middleware (`src/middleware.ts`) protects routes requiring authentication:
    - HttpOnly cookies (XSS protection)
    - SameSite=Lax (CSRF protection)
    - Secure flag in production (HTTPS only)
-   - Session rotation on privilege changes
+   - SHA-256 token hashing before storage
 
 3. **Brute Force Protection**
    - Rate limiting per endpoint
    - Account lockout after failed attempts
-   - Progressive lockout duration
 
 4. **Audit Trail**
    - All security events logged
@@ -303,14 +304,15 @@ The middleware (`src/middleware.ts`) protects routes requiring authentication:
 
 5. **Email Security**
    - Email verification required
-   - Secure token generation (crypto.randomBytes)
+   - Secure token generation
    - Token expiration (1 hour for reset, 24 hours for verification)
 
 ### Frontend Components
 
 - **`useAuth` hook** (`src/hooks/use-auth.tsx`) - Authentication context and hooks
 - **`UserMenu` component** (`src/components/UserMenu.tsx`) - User dropdown menu
-- **Auth pages** (`src/app/[locale]/login`, `/register`, etc.) - Authentication UI
+- **`LanguageSwitcher` component** (`src/components/LanguageSwitcher.tsx`) - Locale toggle
+- **Auth pages** (`src/app/[locale]/login`, `/register`, etc.)
 
 ### Environment Variables
 
@@ -321,15 +323,16 @@ SESSION_SECRET="64-character-hex-string"  # Generate with: openssl rand -hex 32
 # Email (SMTP)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
+SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-app-password"  # Use app password for Gmail
-EMAIL_FROM="noreply@yourdomain.com"
+SMTP_PASS="your-app-password"
+EMAIL_FROM="Apply Job <your-email@gmail.com>"
 
 # App
-NEXT_PUBLIC_APP_URL="http://localhost:3000"  # Used for email links
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-For complete documentation, see [AUTH_FINAL_COMPLETE.md](AUTH_FINAL_COMPLETE.md).
+For complete documentation, see [AUTH_FINAL_COMPLETE.md](AUTH_FINAL_COMPLETE.md) and [ENV_VARIABLES.md](ENV_VARIABLES.md).
 
 ---
 
@@ -341,8 +344,8 @@ The application uses **next-intl** for comprehensive internationalization suppor
 
 ### Supported Languages
 
-- **English (en)** - Default
-- **Spanish (es)**
+- **English (en)**
+- **Spanish (es)** - Default locale
 
 ### Implementation
 
@@ -350,13 +353,10 @@ The application uses **next-intl** for comprehensive internationalization suppor
 
 ```typescript
 // src/middleware.ts
-- Detects user's locale from:
-  1. URL path segment ([locale])
-  2. Cookie preference
-  3. Accept-Language header
-  4. Default fallback (en)
-- Redirects to appropriate locale route
-- Sets locale cookie for persistence
+- Detects user's locale from URL path segment ([locale])
+- Falls back to default locale (es)
+- Protects authenticated routes
+- Redirects unauthenticated users to login
 ```
 
 #### 2. Routing Pattern
@@ -364,8 +364,8 @@ The application uses **next-intl** for comprehensive internationalization suppor
 All user-facing pages use the `[locale]` dynamic segment:
 
 ```
-/[locale]/dashboard          → /en/dashboard or /es/dashboard
-/[locale]/dashboard/cv       → /en/dashboard/cv or /es/dashboard/cv
+/[locale]/dashboard          → /es/dashboard or /en/dashboard
+/[locale]/dashboard/cv       → /es/dashboard/cv or /en/dashboard/cv
 /[locale]/dashboard/applications → Localized route
 ```
 
@@ -375,28 +375,23 @@ All user-facing pages use the `[locale]` dynamic segment:
 
 ```
 messages/
-├── en.json    # English translations (~5.7 KB)
-└── es.json    # Spanish translations (~6.0 KB)
+├── en.json    # English translations
+└── es.json    # Spanish translations
 ```
-
-Translations organized by feature/page:
-
-- Common UI elements
-- Dashboard content
-- Form labels and validation messages
-- Error messages
 
 #### 4. Configuration
 
 ```typescript
 // src/i18n/routing.ts
-export const locales = ['en', 'es'];
-export const defaultLocale = 'en';
+export const routing = defineRouting({
+  locales: ['en', 'es'],
+  defaultLocale: 'es',
+});
 ```
 
 #### 5. Language Switcher
 
-`LanguageSwitcher` component allows users to toggle between languages with instant UI update.
+`LanguageSwitcher` component allows users to toggle between languages.
 
 ### Data Flow
 
@@ -414,11 +409,11 @@ User Request → Middleware detects locale → Route to /[locale]/...
 ```
 User uploads file
     ↓
-parseCV() extracts text
+parseCV() extracts text (pdf-parse / mammoth)
     ↓
-OpenAI structures data
+AI structures data into BaseCV format
     ↓
-Save to BaseCV table
+Save to base_cvs table
 ```
 
 ### 2. Job Description Analysis
@@ -426,14 +421,14 @@ Save to BaseCV table
 ```
 User pastes job description
     ↓
-analyzeJobDescription()
+POST /api/job/analyze
     ↓
-OpenAI extracts:
+AI extracts:
   - Keywords
   - Requirements
   - Seniority level
     ↓
-Save to JobListing table
+Save to job_listings table
 ```
 
 ### 3. Custom Resume Generation
@@ -441,30 +436,42 @@ Save to JobListing table
 ```
 Select BaseCV + JobListing
     ↓
-generateCustomCV()
+POST /api/cv/generate or POST /api/application/create
     ↓
-OpenAI adapts resume:
+AI adapts resume:
   - Reorders sections
   - Optimizes bullets
   - Adds keywords
     ↓
-scoreCV() evaluates ATS
+ATS scorer evaluates match
     ↓
-Save to Application table
+Save to applications table
 ```
 
-### 4. PDF Generation
+### 4. Cover Letter Generation
 
 ```
 Existing Application
     ↓
-Select template
+POST /api/cover-letter/generate
     ↓
-Render HTML with data
+AI generates personalized cover letter
     ↓
-Puppeteer generates PDF
+Save to cover_letters table
+```
+
+### 5. PDF Generation
+
+```
+Existing Application
     ↓
-Return/Upload file
+GET /api/application/[id]/download-cv
+or GET /api/application/[id]/download-cover-letter
+or POST /api/pdf/generate
+    ↓
+Puppeteer-core + chromium-min renders HTML → PDF
+    ↓
+Return PDF download
 ```
 
 ---
@@ -475,8 +482,8 @@ Return/Upload file
                   User Request
                        ↓
 ┌──────────────────────────────────────┐
-│     Middleware Layer (i18n)          │
-│  Locale detection & routing          │
+│     Middleware Layer                 │
+│  Locale detection & auth protection  │
 └───────────────┬──────────────────────┘
                 ↓
 ┌───────────────────────────────────────┐
@@ -486,7 +493,7 @@ Return/Upload file
                   │
 ┌─────────────────▼─────────────────────┐
 │          API Layer (Routes)           │
-│  /api/cv/*, /api/job/*, etc.          │
+│  /api/auth/*, /api/cv/*, etc.         │
 └─────────────────┬─────────────────────┘
                   │
 ┌─────────────────▼─────────────────────┐
@@ -510,20 +517,15 @@ Return/Upload file
 
 ## 🔌 API Endpoints
 
-### Authentication (17 endpoints)
+### Authentication (19 endpoints)
 
-See [Authentication Architecture](#-authentication-architecture) section above for complete details.
-
-- `POST /api/auth/register`, `/login`, `/logout`, `/logout-all`
-- `POST /api/auth/verify-email`, `/resend-verification`
-- `POST /api/auth/forgot-password`, `/reset-password`, `/change-password`
-- `POST /api/auth/2fa/enable`, `/2fa/verify-setup`, `/2fa/verify`, `/2fa/disable`, `/2fa/backup-codes`
-- `GET /api/auth/session`, `/sessions`
-- `DELETE /api/auth/sessions/[id]`
+See [Authentication Architecture](#-authentication-architecture) section above.
 
 ### CV Management
 
 - `POST /api/cv/upload` - Upload and parse resume file
+- `POST /api/cv/create` - Create base CV manually
+- `POST /api/cv/parse` - Parse raw CV text without saving
 - `POST /api/cv/generate` - Generate customized resume
 - `GET /api/cv/[id]` - Get specific base CV
 - `PUT /api/cv/[id]` - Update base CV
@@ -537,14 +539,10 @@ See [Authentication Architecture](#-authentication-architecture) section above f
 
 - `POST /api/application/create` - Create new application with custom CV
 - `GET /api/application/[id]` - Get application details
-- `PUT /api/application/[id]` - Update application status
+- `PUT /api/application/[id]` - Update application
 - `DELETE /api/application/[id]` - Delete application
 - `GET /api/application/[id]/download-cv` - Download CV as PDF
-  - Filename format: `User_Name_CV_[CompanyName].pdf`
-  - Example: `John_Doe_CV_Google.pdf`
 - `GET /api/application/[id]/download-cover-letter` - Download cover letter as PDF
-  - Filename format: `User_Name_CL_[CompanyName].pdf`
-  - Example: `John_Doe_CL_Meta_Platforms.pdf`
 
 ### Cover Letter
 
@@ -558,14 +556,13 @@ See [Authentication Architecture](#-authentication-architecture) section above f
 
 ## 🤖 AI Services
 
-### Primary Provider: Google Gemini 2.5 Flash
+### Primary Provider: Google Gemini
 
 **Cost-effective solution for high-volume processing**
 
-- Model: `gemini-2.0-flash-exp`
-- Significantly lower cost compared to OpenAI (10x reduction)
+- Uses `@google/generative-ai` SDK
 - Fast response times
-- 8000 token output limit
+- Large context window
 - Suitable for all generation tasks
 
 ### Optional Provider: OpenAI GPT-4o
@@ -575,7 +572,7 @@ See [Authentication Architecture](#-authentication-architecture) section above f
 - Model: `gpt-4o`
 - Superior output quality
 - Higher cost per request
-- Recommended for premium users
+- Used as fallback when Gemini returns errors
 
 ### Service Functions
 
@@ -599,38 +596,29 @@ See [Authentication Architecture](#-authentication-architecture) section above f
 
 #### 4. Cover Letter Generator
 
-**Prompt**: Generates personalized cover letter  
-**Input**: CV + JobListing + tone  
+**Prompt**: Generates personalized cover letter
+**Input**: CV + JobListing + tone
 **Output**: Cover letter text + HTML
 
 **Format Details:**
 
 - **Greeting**: "Hi {companyName} team," (dynamically inserted from job listing)
 - **Signature**: "Best regards,\n{candidateName}" (dynamically populated from CV)
-- **Tone Options**: professional, creative, formal, friendly
-- **Length**: 200-300 words (3 paragraphs)
-- **Structure**:
-  - Paragraph 1: Introduction and reason for applying
-  - Paragraph 2: Relevant experience matching job requirements
-  - Paragraph 3: Company-specific interest and enthusiasm
-  - Closing: "I look forward to discussing how I can contribute to {company}'s success."
+- **Tone Options**: professional, enthusiastic, casual
+- **Length**: ~200-300 words
 
 **PDF Styling:**
 
 - Font: Libre Baskerville 12pt (Google Fonts with fallbacks)
 - Text alignment: Justified
 - Line height: 1.7
-- Color: #1a1a1a (deep black)
-- Paragraph spacing: 18px
-- Download filename: `[Candidate_Name]_CL_[CompanyName].pdf` (e.g., John_Doe_CL_Google.pdf)
+- Download filename: `[Candidate_Name]_CL_[CompanyName].pdf`
 
 ---
 
 ## 🔒 Security Considerations
 
 ### Production-Ready Authentication
-
-The application now includes enterprise-grade authentication:
 
 - **Session-based authentication** with secure cookie handling
 - **Argon2id password hashing** (industry standard)
@@ -646,15 +634,15 @@ The application now includes enterprise-grade authentication:
 - **Input Validation**: All inputs validated with Zod schemas
 - **SQL Injection Prevention**: Prisma ORM parameterized queries
 - **XSS Prevention**: React automatic escaping + httpOnly cookies
-- **CSRF Prevention**: SameSite cookies + token validation
-- **Environment Variables**: Sensitive data in .env (never committed)
+- **CSRF Prevention**: SameSite cookies
+- **Environment Variables**: Sensitive data in `.env.local` (never committed)
 
 ### Future Enhancements
 
-- **OAuth Providers**: GitHub, Google login
+- **OAuth Providers**: GitHub, Google login (Account model exists)
 - **API Rate Limiting**: Per-user API quotas
 - **Data Encryption**: At-rest encryption for sensitive data
-- **Security Headers**: Helmet.js for additional headers
+- **Security Headers**: Additional security headers
 - **CAPTCHA**: Bot protection on registration/login
 
 ---
@@ -683,9 +671,9 @@ The application now includes enterprise-grade authentication:
    - Appropriate max_tokens limits
 
 2. **Provider Selection**
-   - Google Gemini 2.0 Flash (primary) - Minimal cost
-   - OpenAI GPT-4o (optional) - ~$0.08-0.14 per application
-   - Users can configure preferred provider
+   - Google Gemini (primary) - Minimal cost
+   - OpenAI GPT-4o (optional) - Higher quality
+   - Automatic fallback from Gemini to OpenAI
 
 3. **Result Caching**
    - Cache similar job analyses
@@ -697,17 +685,17 @@ The application now includes enterprise-grade authentication:
 
 ### Phase 1: MVP (Current)
 
-- Single user
+- Single user / small team
 - Vercel Free hosting
 - PostgreSQL free tier
-- ~$5-10/month on OpenAI
+- ~$0-5/month on AI
 
 ### Phase 2: Multi-User
 
-- NextAuth.js authentication
 - User subscriptions (Stripe)
 - Increased database tier
 - CDN for generated PDFs
+- Redis for sessions/rate limits
 
 ### Phase 3: SaaS
 
@@ -752,6 +740,13 @@ The application now includes enterprise-grade authentication:
 - Playwright for user flows
 - Critical test: Upload CV → Generate → Download PDF
 
+Run tests with:
+
+```bash
+pnpm test           # Jest
+pnpm test:coverage  # With coverage
+```
+
 ---
 
 ## 📈 Metrics and Monitoring
@@ -765,7 +760,7 @@ The application now includes enterprise-grade authentication:
 ### Technical Metrics
 
 - API response time
-- OpenAI API latency
+- AI API latency
 - PDF generation time
 - Error rates
 
@@ -799,8 +794,10 @@ The application now includes enterprise-grade authentication:
 ## 📚 Additional Documentation
 
 - `../README.md`: General project overview
+- `../AGENTS.md`: Agent-focused instructions and gotchas
 - `SETUP.md`: Installation guide
-- `TROUBLESHOOTING.md`: Common issues and solutions
+- `ENV_VARIABLES.md`: Environment variables
+- `DEPLOYMENT.md`: Deployment guide
 - `../PROJECT_CONTEXT.md`: Complete project context
 
 ---
@@ -816,7 +813,7 @@ The application now includes enterprise-grade authentication:
 - [x] Email verification and password reset
 - [x] Two-Factor Authentication (2FA)
 - [x] Session management
-- [ ] Complete frontend UI/UX
+- [x] Dashboard UI
 - [ ] Automated tests
 
 ### Q3 2026

@@ -96,16 +96,25 @@ export default function ManageCVPage() {
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-6xl">
           {/* Page header */}
-          <div className="mb-12 animate-fade-in-up">
-            <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
-              {t('section')}
-            </span>
-            <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
-              {t('title')}
-            </h1>
-            <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
-              {t('subtitle')}
-            </p>
+          <div className="mb-12 animate-fade-in-up flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+                {t('section')}
+              </span>
+              <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
+                {t('title')}
+              </h1>
+              <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
+                {t('subtitle')}
+              </p>
+            </div>
+            <Link
+              href="/dashboard/cv/new"
+              className="group inline-flex shrink-0 items-center gap-2 bg-primary px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              {t('createNew')}
+            </Link>
           </div>
 
           {loading ? (
