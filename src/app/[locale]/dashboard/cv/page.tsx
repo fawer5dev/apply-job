@@ -97,20 +97,20 @@ export default function ManageCVPage() {
         <div className="mx-auto max-w-6xl">
           {/* Page header */}
           <div className="mb-12 animate-fade-in-up flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
                 {t('section')}
               </span>
-              <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
+              <h1 className="mb-4 break-words font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                 {t('title')}
               </h1>
-              <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
+              <p className="max-w-2xl break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {t('subtitle')}
               </p>
             </div>
             <Link
               href="/dashboard/cv/new"
-              className="group inline-flex shrink-0 items-center gap-2 bg-primary px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              className="group inline-flex w-full shrink-0 items-center justify-center gap-2 bg-primary px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl sm:w-auto"
             >
               <Plus className="h-4 w-4" strokeWidth={2.5} />
               {t('createNew')}
@@ -211,7 +211,7 @@ export default function ManageCVPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Link
                       href={`/dashboard/cv/${cv.id}`}
                       className="flex-1 border-2 border-foreground/20 bg-background px-4 py-2 text-center font-body text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:border-primary hover:bg-primary/5"
@@ -221,7 +221,7 @@ export default function ManageCVPage() {
                     <button
                       onClick={() => handleDelete(cv.id)}
                       disabled={deletingId === cv.id}
-                      className="group/btn flex items-center justify-center border-2 border-red-500/20 bg-red-50 px-4 py-2 transition-all duration-300 hover:border-red-500 hover:bg-red-500 disabled:opacity-50 dark:bg-red-950/30"
+                      className="group/btn inline-flex items-center justify-center border-2 border-red-500/20 bg-red-50 px-4 py-2 transition-all duration-300 hover:border-red-500 hover:bg-red-500 disabled:opacity-50 dark:bg-red-950/30"
                       title={t('delete')}
                     >
                       {deletingId === cv.id ? (

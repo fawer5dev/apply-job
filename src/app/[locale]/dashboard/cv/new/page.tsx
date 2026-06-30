@@ -93,7 +93,7 @@ export default function NewCVPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard/cv');
+        router.push('/dashboard');
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.saveFailed'));
@@ -140,11 +140,12 @@ export default function NewCVPage() {
         <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
           <div className="container flex h-16 items-center">
             <Link
-              href="/dashboard/cv"
-              className="group flex items-center space-x-2 transition-transform hover:scale-105"
+              href="/dashboard"
+              className="group flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
             >
-              <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-                ← {t('backToDashboard')}
+              <span className="shrink-0">←</span>
+              <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+                {t('backToDashboard')}
               </span>
             </Link>
           </div>
@@ -179,28 +180,29 @@ export default function NewCVPage() {
     <div className="flex flex-col">
       <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center">
-          <Link
-            href="/dashboard/cv"
-            className="group flex items-center space-x-2 transition-transform hover:scale-105"
-          >
-            <span className="font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-              ← {t('backToDashboard')}
-            </span>
-          </Link>
+            <Link
+              href="/dashboard"
+              className="group flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
+            >
+              <span className="shrink-0">←</span>
+              <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+                {t('backToDashboard')}
+              </span>
+            </Link>
+          </div>
         </div>
-      </div>
 
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-3xl">
           {/* Page header */}
           <div className="mb-8 animate-fade-in-up">
             <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
-              New CV
+              {t('badge')}
             </span>
-            <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
+            <h1 className="mb-4 break-words font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               {t('title')}
             </h1>
-            <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
+            <p className="max-w-2xl break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg">
               {t('subtitle')}
             </p>
           </div>
@@ -247,15 +249,15 @@ export default function NewCVPage() {
                 <div className="flex flex-col gap-4">
                   <label
                     htmlFor="file"
-                    className="group relative flex cursor-pointer flex-col items-center justify-center border-2 border-dashed border-foreground/20 bg-background p-12 transition-all hover:border-primary hover:bg-primary/5"
+                    className="group relative flex cursor-pointer flex-col items-center justify-center border-2 border-dashed border-foreground/20 bg-background p-8 transition-all hover:border-primary hover:bg-primary/5 sm:p-12"
                   >
                     {file ? (
                       <div className="text-center">
                         <FileText
-                          className="mx-auto mb-4 h-16 w-16 text-primary"
+                          className="mx-auto mb-4 h-12 w-12 text-primary sm:h-16 sm:w-16"
                           strokeWidth={1.5}
                         />
-                        <p className="mb-1 font-display text-xl font-bold">
+                        <p className="mb-1 max-w-full break-words px-2 font-display text-lg font-bold sm:text-xl">
                           {file.name}
                         </p>
                         <p className="font-body text-xs uppercase tracking-wider text-muted-foreground">
@@ -265,13 +267,13 @@ export default function NewCVPage() {
                     ) : (
                       <div className="text-center">
                         <Upload
-                          className="mx-auto mb-4 h-16 w-16 text-muted-foreground transition-colors group-hover:text-primary"
+                          className="mx-auto mb-4 h-12 w-12 text-muted-foreground transition-colors group-hover:text-primary sm:h-16 sm:w-16"
                           strokeWidth={1.5}
                         />
-                        <p className="mb-2 font-display text-xl font-bold">
+                        <p className="mb-2 break-words font-display text-lg font-bold sm:text-xl">
                           {t('form.uploadPrompt')}
                         </p>
-                        <p className="font-body text-xs uppercase tracking-wider text-muted-foreground">
+                        <p className="break-words font-body text-xs uppercase tracking-wider text-muted-foreground">
                           {t('form.uploadHint')}
                         </p>
                       </div>
@@ -353,7 +355,7 @@ export default function NewCVPage() {
                 title={title}
                 onTitleChange={setTitle}
                 onSubmit={handleSave}
-                onCancel={() => router.push('/dashboard/cv')}
+                onCancel={() => router.push('/dashboard')}
                 isSubmitting={saving}
                 submitLabel={t('form.save')}
                 cancelLabel={t('form.cancel')}
@@ -369,7 +371,7 @@ export default function NewCVPage() {
                 title={title}
                 onTitleChange={setTitle}
                 onSubmit={handleSave}
-                onCancel={() => router.push('/dashboard/cv')}
+                onCancel={() => router.push('/dashboard')}
                 isSubmitting={saving}
                 submitLabel={t('form.save')}
                 cancelLabel={t('form.cancel')}

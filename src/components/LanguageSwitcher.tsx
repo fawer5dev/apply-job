@@ -20,7 +20,7 @@ function LanguageSwitcher() {
   return (
     <button
       onClick={switchLocale}
-      className="group inline-flex items-center gap-2 border-2 border-foreground/20 bg-background px-4 py-2 font-body text-xs font-bold uppercase tracking-wider shadow-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group inline-flex items-center gap-2 border-2 border-foreground/20 bg-background px-3 py-2 font-body text-xs font-bold uppercase tracking-wider shadow-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:px-4"
       aria-label="Switch language"
     >
       <Globe

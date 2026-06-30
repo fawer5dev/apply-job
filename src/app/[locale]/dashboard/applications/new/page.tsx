@@ -196,8 +196,11 @@ export default function NewApplicationPage() {
     <div className="flex flex-col">
       <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center">
-          <Link href="/dashboard/applications" className="mr-6 flex items-center space-x-2 transition-transform hover:scale-105">
-            <span className="font-display text-xl font-bold tracking-tight transition-colors hover:text-primary">← {t('backToDashboard')}</span>
+          <Link href="/dashboard" className="group mr-6 flex min-w-0 items-center gap-2 transition-transform hover:scale-105">
+            <span className="shrink-0">←</span>
+            <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+              {t('backToDashboard')}
+            </span>
           </Link>
         </div>
       </div>
@@ -205,32 +208,36 @@ export default function NewApplicationPage() {
       <main className="container flex-1 py-8">
         <div className="mx-auto max-w-3xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-            <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
+            <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">
+              {t('title')}
+            </h1>
+            <p className="mt-2 break-words text-sm text-muted-foreground sm:text-base">
+              {t('subtitle')}
+            </p>
           </div>
 
           {/* Steps Indicator */}
-          <div className="mb-8 flex items-center justify-center gap-4">
+          <div className="mb-8 flex flex-wrap items-center justify-center gap-4">
             <div
-              className={`flex items-center gap-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`flex min-w-0 items-center gap-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}
             >
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
               >
                 1
               </div>
-              <span className="text-sm font-medium">{t('steps.jobInfo')}</span>
+              <span className="truncate text-sm font-medium">{t('steps.jobInfo')}</span>
             </div>
-            <ArrowRight className="text-muted-foreground" />
+            <ArrowRight className="hidden shrink-0 text-muted-foreground sm:block" />
             <div
-              className={`flex items-center gap-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`flex min-w-0 items-center gap-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}
             >
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
               >
                 2
               </div>
-              <span className="text-sm font-medium">{t('steps.selectCV')}</span>
+              <span className="truncate text-sm font-medium">{t('steps.selectCV')}</span>
             </div>
           </div>
 
@@ -420,7 +427,7 @@ export default function NewApplicationPage() {
                     {base_cvs.map((cv) => (
                       <label
                         key={cv.id}
-                        className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${
+                        className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors sm:gap-4 sm:p-4 ${
                           selectedCVId === cv.id
                             ? 'border-primary bg-primary/5'
                             : 'hover:bg-accent'
@@ -432,11 +439,11 @@ export default function NewApplicationPage() {
                           value={cv.id}
                           checked={selectedCVId === cv.id}
                           onChange={(e) => setSelectedCVId(e.target.value)}
-                          className="h-4 w-4"
+                          className="h-4 w-4 shrink-0"
                         />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{cv.title}</h3>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="break-words font-medium">{cv.title}</h3>
+                          <p className="break-words text-sm text-muted-foreground">
                             {(cv.personalInfo as any)?.name || 'Sin nombre'}
                           </p>
                         </div>
@@ -447,7 +454,7 @@ export default function NewApplicationPage() {
 
                 {renderError(handleGenerateApplication, generatingApplication)}
 
-                <div className="mt-6 flex gap-4">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4">
                   <button
                     onClick={() => setStep(1)}
                     className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium"

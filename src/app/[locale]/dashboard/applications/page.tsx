@@ -75,10 +75,28 @@ export default function ApplicationsPage() {
 
   return (
     <div className="flex flex-col">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center">
+          <Link
+            href="/dashboard"
+            className="group flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
+          >
+            <span className="shrink-0">←</span>
+            <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+              {t('backToDashboard')}
+            </span>
+          </Link>
+        </div>
+      </div>
+
       <main className="container flex-1 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="mt-2 text-muted-foreground">{t('description')}</p>
+          <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">
+            {t('title')}
+          </h1>
+          <p className="mt-2 break-words text-sm text-muted-foreground sm:text-base">
+            {t('description')}
+          </p>
         </div>
 
         {loading ? (
@@ -114,31 +132,31 @@ export default function ApplicationsPage() {
                 href={`/dashboard/applications/${application.id}`}
                 className="block rounded-lg border bg-card p-6 transition-colors hover:bg-accent"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="mb-2 flex items-center gap-3">
-                      <h3 className="text-xl font-semibold">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                      <h3 className="break-words text-lg font-semibold sm:text-xl">
                         {application.job_listings.title}
                       </h3>
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(application.status)}`}
                       >
-                        {application.status}
+                        {t(`status.${application.status}`)}
                       </span>
                     </div>
 
-                    <p className="mb-3 text-muted-foreground">
+                    <p className="mb-3 break-words text-sm text-muted-foreground">
                       {application.job_listings.company}
                       {application.job_listings.location && (
                         <> · {application.job_listings.location}</>
                       )}
                     </p>
 
-                    <div className="flex items-center gap-6 text-sm">
+                    <div className="flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <span className="text-muted-foreground">
-                          ATS Score:{' '}
+                          {t('atsScore')}:{' '}
                         </span>
                         <span
                           className={`font-semibold ${getScoreColor(application.atsScore)}`}
@@ -148,8 +166,8 @@ export default function ApplicationsPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Match: </span>
+                        <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="text-muted-foreground">{t('matchScore')}: </span>
                         <span
                           className={`font-semibold ${getScoreColor(application.matchScore)}`}
                         >
@@ -158,8 +176,8 @@ export default function ApplicationsPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
+                        <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="break-words text-muted-foreground">
                           {new Date(application.createdAt).toLocaleDateString()}
                         </span>
                       </div>

@@ -138,8 +138,8 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Two-Factor Authentication</CardTitle>
-            <CardDescription>
+            <CardTitle className="break-words">Two-Factor Authentication</CardTitle>
+            <CardDescription className="break-words">
               Enter the 6-digit code from your authenticator app
             </CardDescription>
           </CardHeader>
@@ -147,7 +147,7 @@ export default function LoginPage() {
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription className="break-words">{error}</AlertDescription>
                 </Alert>
               )}
 
@@ -203,42 +203,42 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
+          <CardTitle className="break-words">Welcome Back</CardTitle>
+          <CardDescription className="break-words">
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {error}
-                  {requiresVerification && (
-                    <div className="mt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleResendVerification}
-                        disabled={resendingEmail}
-                        className="w-full"
-                      >
-                        {resendingEmail
-                          ? 'Sending...'
-                          : 'Resend Verification Email'}
-                      </Button>
-                    </div>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription className="break-words">
+                    {error}
+                    {requiresVerification && (
+                      <div className="mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleResendVerification}
+                          disabled={resendingEmail}
+                          className="w-full"
+                        >
+                          {resendingEmail
+                            ? 'Sending...'
+                            : 'Resend Verification Email'}
+                        </Button>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
 
             {resendSuccess && (
               <Alert variant="success">
-                <AlertDescription>
+                <AlertDescription className="break-words">
                   Verification email sent! Please check your inbox and spam
                   folder.
                 </AlertDescription>
@@ -247,7 +247,7 @@ export default function LoginPage() {
 
             {searchParams.get('verified') === 'true' && (
               <Alert variant="success">
-                <AlertDescription>
+                <AlertDescription className="break-words">
                   Email verified successfully! You can now log in.
                 </AlertDescription>
               </Alert>
@@ -255,7 +255,7 @@ export default function LoginPage() {
 
             {searchParams.get('reset') === 'true' && (
               <Alert variant="success">
-                <AlertDescription>
+                <AlertDescription className="break-words">
                   Password reset successfully! Please log in with your new
                   password.
                 </AlertDescription>
@@ -277,7 +277,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Label htmlFor="password">Password</Label>
                 <Link
                   href="/forgot-password"

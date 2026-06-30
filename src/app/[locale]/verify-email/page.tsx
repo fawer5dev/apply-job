@@ -63,8 +63,8 @@ export default function VerifyEmailPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Email Verification</CardTitle>
-          <CardDescription>
+          <CardTitle className="break-words">Email Verification</CardTitle>
+          <CardDescription className="break-words">
             {loading
               ? 'Verifying your email address...'
               : success
@@ -81,8 +81,8 @@ export default function VerifyEmailPage() {
 
           {success && (
             <Alert variant="success">
-              <AlertTitle>Success!</AlertTitle>
-              <AlertDescription>
+              <AlertTitle className="break-words">Success!</AlertTitle>
+              <AlertDescription className="break-words">
                 Your email has been verified successfully. You will be
                 redirected to the login page in a few seconds...
               </AlertDescription>
@@ -92,10 +92,10 @@ export default function VerifyEmailPage() {
           {error && (
             <>
               <Alert variant="destructive">
-                <AlertTitle>Verification Failed</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                <AlertTitle className="break-words">Verification Failed</AlertTitle>
+                <AlertDescription className="break-words">{error}</AlertDescription>
               </Alert>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-2 break-words text-sm text-muted-foreground">
                 <p>Common reasons for verification failure:</p>
                 <ul className="list-disc space-y-1 pl-5">
                   <li>The verification link has expired (valid for 24 hours)</li>

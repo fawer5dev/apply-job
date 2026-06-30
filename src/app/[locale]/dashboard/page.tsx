@@ -122,13 +122,13 @@ export default function DashboardPage() {
               <div className="animate-fade-in-up space-y-4 lg:col-span-8">
                 <div className="mb-2 inline-block">
                   <span className="border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
-                    Dashboard
+                    {t('title')}
                   </span>
                 </div>
-                <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight md:text-6xl lg:text-7xl">
+                <h1 className="break-words font-display text-4xl font-bold leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
                   {t('title')}
                 </h1>
-                <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
+                <p className="max-w-2xl break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg">
                   {t('subtitle')}
                 </p>
               </div>
@@ -175,9 +175,9 @@ export default function DashboardPage() {
                     style={{ animationDelay: `${index * 0.1 + 0.2}s` }}
                   >
                     {/* Card with layered design */}
-                    <div className="relative h-full border-2 border-foreground/10 bg-card p-8 transition-all duration-300 hover:border-primary/50">
+                    <div className="relative h-full border-2 border-foreground/10 bg-card p-6 transition-all duration-300 hover:border-primary/50 sm:p-8">
                       {/* Background number */}
-                      <span className="absolute right-4 top-4 font-display text-7xl font-bold leading-none text-primary/5">
+                      <span className="absolute right-2 top-2 font-display text-6xl font-bold leading-none text-primary/5 sm:right-4 sm:top-4 sm:text-7xl">
                         0{index + 1}
                       </span>
 
@@ -192,10 +192,10 @@ export default function DashboardPage() {
 
                         {/* Content */}
                         <div className="space-y-2">
-                          <h3 className="font-display text-2xl font-bold transition-colors group-hover:text-primary">
+                          <h3 className="break-words font-display text-xl font-bold transition-colors group-hover:text-primary sm:text-2xl">
                             {action.title}
                           </h3>
-                          <p className="font-body text-sm leading-relaxed text-muted-foreground">
+                          <p className="break-words font-body text-sm leading-relaxed text-muted-foreground">
                             {action.description}
                           </p>
                         </div>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                         {/* Arrow indicator */}
                         <div className="flex items-center gap-2 pt-2 font-body text-xs font-bold uppercase tracking-wider text-primary">
                           <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                            Start
+                            {t('startArrow')}
                           </span>
                           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </div>
@@ -222,41 +222,41 @@ export default function DashboardPage() {
               className="mt-4 grid animate-fade-in-up grid-cols-2 gap-4 lg:grid-cols-4"
               style={{ animationDelay: '0.5s' }}
             >
-              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">
+              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-4 transition-colors hover:border-primary/30 sm:p-6">
+                <div className="break-words font-display text-2xl font-bold sm:text-3xl">
                   {loading ? '...' : stats.base_cvs}
                 </div>
-                <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mt-2 break-words font-body text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   {t('stats.baseCVs')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />
               </div>
 
-              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">
+              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-4 transition-colors hover:border-primary/30 sm:p-6">
+                <div className="break-words font-display text-2xl font-bold sm:text-3xl">
                   {loading ? '...' : stats.applications}
                 </div>
-                <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mt-2 break-words font-body text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   {t('stats.applications')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />
               </div>
 
-              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">
+              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-4 transition-colors hover:border-primary/30 sm:p-6">
+                <div className="break-words font-display text-2xl font-bold sm:text-3xl">
                   {loading ? '...' : stats.inProgress}
                 </div>
-                <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mt-2 break-words font-body text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   {t('stats.inProgress')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />
               </div>
 
-              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-6 transition-colors hover:border-primary/30">
-                <div className="font-display text-3xl font-bold">
+              <div className="group relative border-2 border-foreground/10 bg-muted/30 p-4 transition-colors hover:border-primary/30 sm:p-6">
+                <div className="break-words font-display text-2xl font-bold sm:text-3xl">
                   {loading ? '...' : stats.responseRate}
                 </div>
-                <p className="mt-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="mt-2 break-words font-body text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   {t('stats.responseRate')}
                 </p>
                 <div className="absolute right-0 top-0 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-8" />

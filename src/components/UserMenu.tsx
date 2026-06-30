@@ -12,8 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { LogOut, Monitor, Smartphone, Clock, User, Settings, X, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { LogOut, Monitor, Smartphone, Clock, User, X, Loader2 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
 interface SessionInfo {
@@ -142,11 +141,11 @@ export default function UserMenu() {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] max-w-xs sm:w-80">
         {/* User info */}
         <div className="px-4 py-3">
-          <p className="font-body text-sm font-bold">{user.name || user.email}</p>
-          <p className="font-body text-xs text-muted-foreground">
+          <p className="break-words font-body text-sm font-bold">{user.name || user.email}</p>
+          <p className="break-all font-body text-xs text-muted-foreground">
             {user.email}
           </p>
         </div>
@@ -188,9 +187,9 @@ export default function UserMenu() {
                       <Monitor className="h-4 w-4" />
                     )}
                   </div>
-                  <div className="flex-1 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <p className="font-body text-xs font-bold">
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="break-words font-body text-xs font-bold">
                         {session.browser} • {session.deviceType}
                       </p>
                       {session.isCurrent && (
@@ -200,8 +199,8 @@ export default function UserMenu() {
                       )}
                     </div>
                     <p className="flex items-center gap-1 font-body text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {formatRelativeTime(session.lastActivityAt)}
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span className="break-words">{formatRelativeTime(session.lastActivityAt)}</span>
                     </p>
                   </div>
                   {!session.isCurrent && (

@@ -175,8 +175,9 @@ export default function ApplicationDetailPage() {
       const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
       const filename = filenameMatch ? filenameMatch[1] : 'CV.pdf';
 
-      // Create blob and download
-      const blob = await response.blob();
+      // Create blob with octet-stream to avoid OS-level PDF handler launch
+      const arrayBuffer = await response.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -205,8 +206,9 @@ export default function ApplicationDetailPage() {
       const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
       const filename = filenameMatch ? filenameMatch[1] : 'CoverLetter.pdf';
 
-      // Create blob and download
-      const blob = await response.blob();
+      // Create blob with octet-stream to avoid OS-level PDF handler launch
+      const arrayBuffer = await response.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -289,7 +291,7 @@ export default function ApplicationDetailPage() {
             className="group mb-8 inline-flex items-center space-x-2 transition-transform hover:scale-105"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="font-bold">Back to Applications</span>
+            <span className="font-bold">{t('backToApplications')}</span>
           </Link>
           <div className="rounded-lg border border-red-500 bg-red-50 p-6 dark:bg-red-950">
             <p className="text-sm text-red-800 dark:text-red-200">
@@ -340,7 +342,7 @@ export default function ApplicationDetailPage() {
             <p className="mb-6 text-sm font-medium text-muted-foreground">
               {t('actions.deleteWarning')}
             </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse justify-end gap-2 sm:flex-row">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
@@ -368,35 +370,40 @@ export default function ApplicationDetailPage() {
       )}
 
       <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between gap-4">
           <Link
             href="/dashboard/applications"
-            className="group flex items-center space-x-2 transition-transform hover:scale-105"
+            className="group flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
           >
-            <ArrowLeft className="h-4 w-4 transition-colors group-hover:text-primary" />
-            <span className="font-bold transition-colors group-hover:text-primary">Back to Applications</span>
+            <ArrowLeft className="h-4 w-4 shrink-0 transition-colors group-hover:text-primary" />
+            <span className="truncate font-bold transition-colors group-hover:text-primary">
+              {t('backToApplications')}
+            </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={handleDownloadCV}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:w-auto sm:px-4"
+              aria-label={t('downloadCV')}
             >
-              <Download className="h-4 w-4" />
-              Download CV
+              <Download className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t('downloadCV')}</span>
             </button>
             <button
               onClick={handleDownloadCoverLetter}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:w-auto sm:px-4"
+              aria-label={t('downloadCoverLetter')}
             >
-              <Download className="h-4 w-4" />
-              Download Cover Letter
+              <Download className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t('coverLetter')}</span>
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-red-500 bg-background px-4 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+              className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border border-red-500 bg-background text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950 sm:w-auto sm:px-4"
+              aria-label={t('actions.delete')}
             >
-              <Trash2 className="h-4 w-4" />
-              {t('actions.delete')}
+              <Trash2 className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t('actions.delete')}</span>
             </button>
           </div>
         </div>
@@ -405,40 +412,40 @@ export default function ApplicationDetailPage() {
       <main className="container flex-1 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="mb-4 flex items-start justify-between">
-            <div>
-              <div className="mb-2 flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">
                   {application.job_listings.title}
                 </h1>
                 <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(application.status)}`}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${getStatusColor(application.status)}`}
                 >
                   {t(`status.${application.status}`)}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  <span>{application.job_listings.company}</span>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Building2 className="h-4 w-4 shrink-0" />
+                  <span className="break-words">{application.job_listings.company}</span>
                 </div>
                 {application.job_listings.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>{application.job_listings.location}</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="break-words">{application.job_listings.location}</span>
                   </div>
                 )}
                 {application.job_listings.salary && (
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>{application.job_listings.salary}</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <DollarSign className="h-4 w-4 shrink-0" />
+                    <span className="break-words">{application.job_listings.salary}</span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Status Dropdown */}
-            <div className="min-w-[200px]">
+            <div className="w-full sm:min-w-[200px] sm:w-auto">
               <label className="mb-2 block text-sm font-medium text-muted-foreground">
                 {t('labels.currentStatus')}
               </label>
@@ -461,13 +468,13 @@ export default function ApplicationDetailPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border p-4">
               <div className="mb-2 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  ATS Score
+                  {t('atsScore')}
                 </span>
               </div>
               <p
-                className={`text-2xl font-bold ${getScoreColor(application.atsScore)}`}
+                className={`break-words text-2xl font-bold ${getScoreColor(application.atsScore)}`}
               >
                 {application.atsScore?.toFixed(0) || 'N/A'}%
               </p>
@@ -475,13 +482,13 @@ export default function ApplicationDetailPage() {
 
             <div className="rounded-lg border p-4">
               <div className="mb-2 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  Match Score
+                  {t('matchScore')}
                 </span>
               </div>
               <p
-                className={`text-2xl font-bold ${getScoreColor(application.matchScore)}`}
+                className={`break-words text-2xl font-bold ${getScoreColor(application.matchScore)}`}
               >
                 {application.matchScore?.toFixed(0) || 'N/A'}%
               </p>
@@ -489,12 +496,12 @@ export default function ApplicationDetailPage() {
 
             <div className="rounded-lg border p-4">
               <div className="mb-2 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  Created
+                  {t('created')}
                 </span>
               </div>
-              <p className="text-2xl font-bold">
+              <p className="break-words text-2xl font-bold">
                 {new Date(application.createdAt).toLocaleDateString()}
               </p>
             </div>
@@ -503,7 +510,7 @@ export default function ApplicationDetailPage() {
 
         {/* Tabs */}
         <div className="mb-4 border-b">
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
             <button
               onClick={() => setActiveTab('cv')}
               className={`border-b-2 px-1 pb-3 text-sm font-medium ${
@@ -512,7 +519,7 @@ export default function ApplicationDetailPage() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              Custom CV
+              {t('tabs.customCV')}
             </button>
             <button
               onClick={() => setActiveTab('cover-letter')}
@@ -522,7 +529,7 @@ export default function ApplicationDetailPage() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              Cover Letter
+              {t('tabs.coverLetter')}
             </button>
             <button
               onClick={() => setActiveTab('job')}
@@ -532,7 +539,7 @@ export default function ApplicationDetailPage() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              Job Description
+              {t('tabs.jobDescription')}
             </button>
           </div>
         </div>
@@ -541,12 +548,12 @@ export default function ApplicationDetailPage() {
         <div className="rounded-lg border p-6">
           {activeTab === 'cv' && (
             <div>
-              <h2 className="mb-4 text-xl font-semibold">Custom CV</h2>
+              <h2 className="mb-4 text-xl font-semibold">{t('detail.customCV')}</h2>
               {application.customCV ? (
                 <div className="space-y-6">
                   {/* Personal Info */}
                   <div>
-                    <h3 className="mb-2 font-semibold">Personal Information</h3>
+                    <h3 className="mb-2 font-semibold">{t('detail.personalInfo')}</h3>
                     <div className="text-sm text-muted-foreground">
                       <p>{application.customCV.personalInfo?.name}</p>
                       <p>{application.customCV.personalInfo?.email}</p>
@@ -556,7 +563,7 @@ export default function ApplicationDetailPage() {
                   {/* Summary */}
                   {application.customCV.summary && (
                     <div>
-                      <h3 className="mb-2 font-semibold">Summary</h3>
+                      <h3 className="mb-2 font-semibold">{t('detail.summary')}</h3>
                       <p className="text-sm text-muted-foreground">
                         {cleanMarkdown(application.customCV.summary)}
                       </p>
@@ -567,7 +574,7 @@ export default function ApplicationDetailPage() {
                   {application.customCV.skills &&
                     application.customCV.skills.length > 0 && (
                       <div>
-                        <h3 className="mb-3 font-semibold">Key Skills</h3>
+                        <h3 className="mb-3 font-semibold">{t('detail.keySkills')}</h3>
                         <div className="space-y-4">
                           {application.customCV.skills
                             .filter(
@@ -602,7 +609,7 @@ export default function ApplicationDetailPage() {
                   {application.customCV.experience &&
                     application.customCV.experience.length > 0 && (
                       <div>
-                        <h3 className="mb-2 font-semibold">Experience</h3>
+                        <h3 className="mb-2 font-semibold">{t('detail.experience')}</h3>
                         <div className="space-y-4">
                           {application.customCV.experience.map(
                             (exp: any, index: number) => (
@@ -614,7 +621,7 @@ export default function ApplicationDetailPage() {
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   {exp.startDate} -{' '}
-                                  {exp.current ? 'Present' : exp.endDate}
+                                  {exp.current ? t('detail.present') : exp.endDate}
                                 </p>
                                 {exp.achievements &&
                                   exp.achievements.length > 0 && (
@@ -637,7 +644,7 @@ export default function ApplicationDetailPage() {
                   {application.customCV.education &&
                     application.customCV.education.length > 0 && (
                       <div>
-                        <h3 className="mb-2 font-semibold">Education</h3>
+                        <h3 className="mb-2 font-semibold">{t('detail.education')}</h3>
                         <div className="space-y-4">
                           {application.customCV.education.map(
                             (edu: any, index: number) => (
@@ -669,7 +676,7 @@ export default function ApplicationDetailPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No CV data available
+                  {t('detail.noCVData')}
                 </p>
               )}
             </div>
@@ -677,7 +684,7 @@ export default function ApplicationDetailPage() {
 
           {activeTab === 'cover-letter' && (
             <div>
-              <h2 className="mb-4 text-xl font-semibold">Cover Letter</h2>
+              <h2 className="mb-4 text-xl font-semibold">{t('detail.coverLetter')}</h2>
               {application.cover_letters ? (
                 <div className="prose prose-sm max-w-none">
                   <pre className="whitespace-pre-wrap font-sans text-sm text-muted-foreground">
@@ -686,7 +693,7 @@ export default function ApplicationDetailPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No cover letter available
+                  {t('detail.noCoverLetter')}
                 </p>
               )}
             </div>
@@ -694,7 +701,7 @@ export default function ApplicationDetailPage() {
 
           {activeTab === 'job' && (
             <div>
-              <h2 className="mb-4 text-xl font-semibold">Job Description</h2>
+              <h2 className="mb-4 text-xl font-semibold">{t('detail.jobDescription')}</h2>
               <pre className="whitespace-pre-wrap font-sans text-sm text-muted-foreground">
                 {application.job_listings.description}
               </pre>

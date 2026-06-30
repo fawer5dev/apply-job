@@ -29,8 +29,8 @@ export default function HomePage() {
     },
     {
       icon: Mail,
-      title: t('features.cover_letterss.title'),
-      description: t('features.cover_letterss.description'),
+      title: t('features.coverLetters.title'),
+      description: t('features.coverLetters.description'),
       number: '03',
     },
     {
@@ -74,18 +74,18 @@ export default function HomePage() {
             <div className="animate-fade-in-up space-y-8 lg:col-span-7">
               <div className="inline-block">
                 <span className="inline-flex items-center gap-2 rounded-sm border-2 border-primary/20 bg-primary/5 px-4 py-2 font-body text-sm font-bold uppercase tracking-wide text-primary">
-                  Career Tools
+                  {t('badge')}
                 </span>
               </div>
 
-              <h1 className="font-display text-5xl font-bold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl xl:text-8xl">
+              <h1 className="break-words font-display text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
                 {t('title').split(' ').slice(0, 2).join(' ')}{' '}
                 <span className="mt-2 block text-primary">
                   {t('title').split(' ').slice(2).join(' ')}
                 </span>
               </h1>
 
-              <p className="max-w-[600px] font-body text-lg leading-relaxed text-muted-foreground md:text-xl">
+              <p className="max-w-[600px] break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
                 {t('subtitle')}
               </p>
 
@@ -115,50 +115,50 @@ export default function HomePage() {
                 {/* Decorative border frame */}
                 <div className="absolute -inset-4 border-2 border-primary/20" />
 
-                <div className="relative space-y-6 border-2 border-foreground/10 bg-card p-8">
+                <div className="relative space-y-6 border-2 border-foreground/10 bg-card p-6 sm:p-8">
                   <div className="space-y-4">
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-display text-7xl font-bold text-primary">
+                    <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
+                      <span className="font-display text-5xl font-bold text-primary sm:text-6xl md:text-7xl">
                         3
                       </span>
-                      <div>
-                        <p className="font-body text-sm font-bold uppercase tracking-wider">
-                          Minutes
+                      <div className="min-w-0">
+                        <p className="break-words font-body text-sm font-bold uppercase tracking-wider">
+                          {t('stats.time.title')}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          Average time to apply
+                        <p className="break-words text-xs text-muted-foreground">
+                          {t('stats.time.description')}
                         </p>
                       </div>
                     </div>
 
                     <div className="h-px bg-border" />
 
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-display text-7xl font-bold text-primary">
+                    <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
+                      <span className="font-display text-5xl font-bold text-primary sm:text-6xl md:text-7xl">
                         2x
                       </span>
-                      <div>
-                        <p className="font-body text-sm font-bold uppercase tracking-wider">
-                          Faster
+                      <div className="min-w-0">
+                        <p className="break-words font-body text-sm font-bold uppercase tracking-wider">
+                          {t('stats.faster.title')}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          Than traditional methods
+                        <p className="break-words text-xs text-muted-foreground">
+                          {t('stats.faster.description')}
                         </p>
                       </div>
                     </div>
 
                     <div className="h-px bg-border" />
 
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-display text-7xl font-bold text-primary">
+                    <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
+                      <span className="font-display text-5xl font-bold text-primary sm:text-6xl md:text-7xl">
                         ∞
                       </span>
-                      <div>
-                        <p className="font-body text-sm font-bold uppercase tracking-wider">
-                          Applications
+                      <div className="min-w-0">
+                        <p className="break-words font-body text-sm font-bold uppercase tracking-wider">
+                          {t('stats.applications.title')}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          No limits on your potential
+                        <p className="break-words text-xs text-muted-foreground">
+                          {t('stats.applications.description')}
                         </p>
                       </div>
                     </div>
@@ -177,12 +177,12 @@ export default function HomePage() {
           {/* Section header */}
           <div className="mb-16 max-w-3xl animate-fade-in-up md:mb-24">
             <span className="mb-4 block font-display text-sm uppercase tracking-widest text-muted-foreground">
-              What We Offer
+              {t('whatWeOffer')}
             </span>
-            <h2 className="mb-6 font-display text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+            <h2 className="mb-6 break-words font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
               {t('featuresTitle')}
             </h2>
-            <p className="font-body text-lg leading-relaxed text-muted-foreground md:text-xl">
+            <p className="break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
               {t('featuresSubtitle')}
             </p>
           </div>
@@ -198,9 +198,9 @@ export default function HomePage() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Feature card */}
-                  <div className="relative h-full border-2 border-foreground/10 bg-card p-8 transition-colors duration-300 hover:border-primary/30">
+                  <div className="relative h-full border-2 border-foreground/10 bg-card p-6 transition-colors duration-300 hover:border-primary/30 sm:p-8">
                     {/* Number label */}
-                    <span className="absolute right-4 top-4 font-display text-8xl font-bold leading-none text-primary/5">
+                    <span className="absolute right-2 top-2 font-display text-6xl font-bold leading-none text-primary/5 sm:right-4 sm:top-4 sm:text-8xl">
                       {feature.number}
                     </span>
 
@@ -215,10 +215,10 @@ export default function HomePage() {
 
                       {/* Content */}
                       <div className="space-y-2">
-                        <h3 className="font-display text-xl font-bold transition-colors group-hover:text-primary">
+                        <h3 className="break-words font-display text-lg font-bold transition-colors group-hover:text-primary sm:text-xl">
                           {feature.title}
                         </h3>
-                        <p className="font-body text-sm leading-relaxed text-muted-foreground">
+                        <p className="break-words font-body text-sm leading-relaxed text-muted-foreground">
                           {feature.description}
                         </p>
                       </div>
@@ -238,14 +238,10 @@ export default function HomePage() {
       <footer className="border-t-2 border-foreground/10 bg-muted/30 py-8 md:py-12">
         <div className="container">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="font-body text-sm uppercase tracking-wide text-muted-foreground">
+            <p className="break-words text-center font-body text-sm uppercase tracking-wide text-muted-foreground md:text-left">
               {t('footer')}
             </p>
-            <div className="flex gap-8">
-              <span className="font-body text-xs text-muted-foreground">
-                Built with precision
-              </span>
-            </div>
+
           </div>
         </div>
       </footer>

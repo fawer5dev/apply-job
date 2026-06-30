@@ -32,7 +32,23 @@
         "description": "Intuitive interface and simplified process"
       }
     },
-    "footer": "Built with Next.js, OpenAI, and ❤️"
+    "badge": "Career Tools",
+    "stats": {
+      "time": {
+        "title": "Minutes",
+        "description": "Average time to apply"
+      },
+      "faster": {
+        "title": "Faster",
+        "description": "Than traditional methods"
+      },
+      "applications": {
+        "title": "Applications",
+        "description": "No limits on your potential"
+      }
+    },
+    "whatWeOffer": "What We Offer",
+    "footer": "Made for job seekers"
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -56,6 +72,7 @@
         "description": "View all your applications and their status"
       }
     },
+    "startArrow": "Start",
     "stats": {
       "baseCVs": "Base CVs",
       "applications": "Applications",
@@ -64,6 +81,7 @@
     }
   },
   "NewCV": {
+    "badge": "New CV",
     "title": "Create Base CV",
     "subtitle": "Upload your CV for AI analysis or enter your details manually",
     "backToDashboard": "Back to Dashboard",
@@ -281,6 +299,7 @@
     }
   },
   "Applications": {
+    "backToDashboard": "Back to Dashboard",
     "title": "My Applications",
     "description": "Track all your job applications in one place",
     "emptyState": {
@@ -318,6 +337,31 @@
       "statusError": "Error updating status",
       "deleted": "Application deleted successfully",
       "deleteError": "Error deleting application"
+    },
+    "backToApplications": "Back to Applications",
+    "downloadCV": "Download CV",
+    "downloadCoverLetter": "Download Cover Letter",
+    "coverLetter": "Cover Letter",
+    "atsScore": "ATS Score",
+    "matchScore": "Match Score",
+    "created": "Created",
+    "tabs": {
+      "customCV": "Custom CV",
+      "coverLetter": "Cover Letter",
+      "jobDescription": "Job Description"
+    },
+    "detail": {
+      "customCV": "Custom CV",
+      "coverLetter": "Cover Letter",
+      "jobDescription": "Job Description",
+      "personalInfo": "Personal Information",
+      "summary": "Summary",
+      "keySkills": "Key Skills",
+      "experience": "Experience",
+      "present": "Present",
+      "education": "Education",
+      "noCVData": "No CV data available",
+      "noCoverLetter": "No cover letter available"
     }
   },
   "ChangePassword": {

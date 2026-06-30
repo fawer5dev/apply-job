@@ -222,9 +222,9 @@ export default function CVForm({
     icon: React.ElementType;
     label: string;
   }) => (
-    <div className="mb-4 flex items-center gap-2 border-b-2 border-primary/20 pb-2">
-      <Icon className="h-5 w-5 text-primary" />
-      <h3 className="font-display text-lg font-bold">{label}</h3>
+    <div className="mb-4 flex flex-wrap items-center gap-2 border-b-2 border-primary/20 pb-2">
+      <Icon className="h-5 w-5 shrink-0 text-primary" />
+      <h3 className="break-words font-display text-lg font-bold">{label}</h3>
     </div>
   );
 
@@ -234,7 +234,7 @@ export default function CVForm({
     'w-full border-2 border-foreground/20 bg-background px-4 py-3 font-body text-sm transition-all focus-visible:border-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10';
 
   const labelClass =
-    'block font-body text-xs font-bold uppercase tracking-wider';
+    'block break-words font-body text-xs font-bold uppercase tracking-wider';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-10">

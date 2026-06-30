@@ -55,14 +55,14 @@ export default function ForgotPasswordPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Check Your Email</CardTitle>
-            <CardDescription>
+            <CardTitle className="break-words">Check Your Email</CardTitle>
+            <CardDescription className="break-words">
               Password reset instructions have been sent
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="success">
-              <AlertDescription>
+              <AlertDescription className="break-words">
                 If an account exists with the email address you provided, you
                 will receive password reset instructions shortly.
               </AlertDescription>
@@ -96,8 +96,8 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Forgot Password?</CardTitle>
-          <CardDescription>
+          <CardTitle className="break-words">Forgot Password?</CardTitle>
+          <CardDescription className="break-words">
             Enter your email address and we&apos;ll send you a reset link
           </CardDescription>
         </CardHeader>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="break-words">{error}</AlertDescription>
               </Alert>
             )}
 

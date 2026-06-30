@@ -80,14 +80,14 @@ export default function ResetPasswordPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Invalid Reset Link</CardTitle>
-            <CardDescription>
+            <CardTitle className="break-words">Invalid Reset Link</CardTitle>
+            <CardDescription className="break-words">
               The password reset link is missing or invalid
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Alert variant="destructive">
-              <AlertDescription>
+              <AlertDescription className="break-words">
                 This password reset link is invalid. Please request a new one.
               </AlertDescription>
             </Alert>
@@ -110,14 +110,14 @@ export default function ResetPasswordPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Password Reset Successful</CardTitle>
-            <CardDescription>
+            <CardTitle className="break-words">Password Reset Successful</CardTitle>
+            <CardDescription className="break-words">
               Your password has been changed
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="success">
-              <AlertDescription>
+              <AlertDescription className="break-words">
                 Your password has been reset successfully. You will be
                 redirected to the login page in a few seconds...
               </AlertDescription>
@@ -140,8 +140,8 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Reset Your Password</CardTitle>
-          <CardDescription>
+          <CardTitle className="break-words">Reset Your Password</CardTitle>
+          <CardDescription className="break-words">
             Enter your new password below
           </CardDescription>
         </CardHeader>
@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="break-words">{error}</AlertDescription>
               </Alert>
             )}
 

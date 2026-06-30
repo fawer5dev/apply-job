@@ -60,10 +60,10 @@ export default function ProfilePage() {
           <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
             Settings
           </span>
-          <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mb-4 break-words font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             {t('title')}
           </h1>
-          <p className="max-w-2xl font-body text-lg leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl break-words font-body text-base leading-relaxed text-muted-foreground sm:text-lg">
             {t('subtitle')}
           </p>
         </div>
@@ -73,22 +73,22 @@ export default function ProfilePage() {
           <div className="lg:col-span-8">
             <div className="space-y-8">
               {/* Personal Info Section */}
-              <section className="animate-fade-in-up border-2 border-foreground/10 bg-card p-8">
-                <div className="mb-8 flex items-center gap-3 border-b-2 border-primary pb-2">
-                  <User className="h-6 w-6 text-primary" />
-                  <h2 className="font-display text-2xl font-bold">
+              <section className="animate-fade-in-up border-2 border-foreground/10 bg-card p-6 sm:p-8">
+                <div className="mb-8 flex flex-wrap items-center gap-3 border-b-2 border-primary pb-2">
+                  <User className="h-6 w-6 shrink-0 text-primary" />
+                  <h2 className="break-words font-display text-2xl font-bold">
                     {t('personalInfo')}
                   </h2>
                 </div>
 
                 <form onSubmit={handleSave} className="space-y-6">
                   <div className="space-y-3">
-                    <label className="block font-body text-xs font-bold uppercase tracking-wider">
+                    <label className="block break-words font-body text-xs font-bold uppercase tracking-wider">
                       {t('email')}
                     </label>
                     <div className="flex items-center gap-3 border-2 border-foreground/5 bg-muted/30 px-4 py-3 text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <span className="font-body text-sm">{user.email}</span>
+                      <Mail className="h-4 w-4 shrink-0" />
+                      <span className="break-all font-body text-sm">{user.email}</span>
                     </div>
                     <p className="font-body text-[10px] uppercase tracking-wider text-muted-foreground">
                       {t('emailVerified') || 'Email is verified'}
@@ -140,10 +140,10 @@ export default function ProfilePage() {
               </section>
 
               {/* Security Section */}
-              <section className="animate-fade-in-up border-2 border-foreground/10 bg-card p-8" style={{ animationDelay: '0.1s' }}>
-                <div className="mb-8 flex items-center gap-3 border-b-2 border-primary pb-2">
-                  <Shield className="h-6 w-6 text-primary" />
-                  <h2 className="font-display text-2xl font-bold">
+              <section className="animate-fade-in-up border-2 border-foreground/10 bg-card p-6 sm:p-8" style={{ animationDelay: '0.1s' }}>
+                <div className="mb-8 flex flex-wrap items-center gap-3 border-b-2 border-primary pb-2">
+                  <Shield className="h-6 w-6 shrink-0 text-primary" />
+                  <h2 className="break-words font-display text-2xl font-bold">
                     {t('security')}
                   </h2>
                 </div>
@@ -163,14 +163,14 @@ export default function ProfilePage() {
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </Link>
 
-                  <div className="flex items-center justify-between border-2 border-foreground/10 bg-background p-4">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-body text-sm font-bold">{t('twoFactor')}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-foreground/10 bg-background p-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Shield className="h-5 w-5 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <p className="break-words font-body text-sm font-bold">{t('twoFactor')}</p>
                         <div className="flex items-center gap-2">
-                          <span className={`inline-block h-2 w-2 rounded-full ${user.twoFactorEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
-                          <p className="font-body text-xs text-muted-foreground">
+                          <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${user.twoFactorEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <p className="break-words font-body text-xs text-muted-foreground">
                             {user.twoFactorEnabled ? t('enabled') : t('disabled')}
                           </p>
                         </div>
@@ -178,7 +178,7 @@ export default function ProfilePage() {
                     </div>
                     <Link 
                       href={user.twoFactorEnabled ? "/dashboard/profile/2fa/disable" : "/dashboard/profile/2fa/setup"}
-                      className="font-body text-xs font-bold uppercase tracking-wider text-primary hover:underline"
+                      className="break-words font-body text-xs font-bold uppercase tracking-wider text-primary hover:underline"
                     >
                       {user.twoFactorEnabled ? t('disable') : t('enable')}
                     </Link>
@@ -191,21 +191,21 @@ export default function ProfilePage() {
           {/* Sidebar / Stats */}
           <div className="lg:col-span-4">
             <div className="sticky top-24 space-y-6">
-              <div className="border-2 border-foreground/10 bg-muted/30 p-8">
-                <h3 className="mb-4 font-display text-xl font-bold">
+              <div className="border-2 border-foreground/10 bg-muted/30 p-6 sm:p-8">
+                <h3 className="mb-4 break-words font-display text-xl font-bold">
                   Account Status
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <p className="font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Member Since</p>
-                    <p className="font-body text-sm">
+                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Member Since</p>
+                    <p className="break-words font-body text-sm">
                       {user.emailVerified ? new Date(user.emailVerified).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div className="h-px bg-foreground/10" />
                   <div>
-                    <p className="font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Account Type</p>
-                    <p className="font-body text-sm">Professional Plan</p>
+                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Account Type</p>
+                    <p className="break-words font-body text-sm">Professional Plan</p>
                   </div>
                 </div>
               </div>

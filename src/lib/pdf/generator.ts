@@ -9,11 +9,55 @@ const CHROMIUM_PACK_URL =
   `https://github.com/Sparticuz/chromium/releases/download/v149.0.0/` +
   `chromium-v149.0.0-pack.${process.arch === 'arm64' ? 'arm64' : 'x64'}.tar`;
 
-async function launchBrowser() {
-  const executablePath =
-    process.env.CHROME_EXECUTABLE_PATH ||
-    (await chromium.executablePath(CHROMIUM_PACK_URL));
+// Local Chrome installations on macOS/Linux dev environments. The Sparticuz
+// Chromium pack is a Linux binary built for Lambda/Vercel and cannot be
+// executed on macOS (spawn fails with "Unknown system error -8"), so we fall
+// back to the host's own Chrome/Chromium when running `pnpm dev` locally.
+const LOCAL_CHROME_CANDIDATES = [
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome For Testing',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+];
 
+function findLocalChrome(): string | null {
+  const fs = require('fs');
+  for (const candidate of LOCAL_CHROME_CANDIDATES) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
+async function launchBrowser() {
+  const localChrome =
+    process.env.CHROME_EXECUTABLE_PATH || findLocalChrome();
+
+  // Running locally (macOS/Linux dev): use the host's own Chrome. The
+  // Sparticuz chromium.args include --single-process / --no-zygote which make
+  // a real desktop Chrome hang, so we use a minimal arg set instead.
+  if (localChrome) {
+    return puppeteer.launch({
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--headless=new',
+        '--disable-dev-shm-usage',
+      ],
+      executablePath: localChrome,
+      headless: true,
+    });
+  }
+
+  // Serverless (Vercel/Lambda): download the Sparticuz Chromium pack and use
+  // its bundled args, which are tailored for that sandboxed environment.
+  const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
   return puppeteer.launch({
     args: chromium.args,
     executablePath,

@@ -16,7 +16,7 @@
         "description": "Scoring y sugerencias para pasar sistemas de tracking"
       },
       "coverLetters": {
-        "title": "Cover Letters",
+        "title": "Cartas de presentación",
         "description": "Cartas de presentación profesionales generadas automáticamente"
       },
       "jobAnalysis": {
@@ -24,7 +24,7 @@
         "description": "Extrae requisitos y keywords clave de las job descriptions"
       },
       "tracking": {
-        "title": "Tracking",
+        "title": "Seguimiento",
         "description": "Gestiona todas tus aplicaciones en un solo lugar"
       },
       "fastEasy": {
@@ -32,7 +32,23 @@
         "description": "Interfaz intuitiva y proceso simplificado"
       }
     },
-    "footer": "Built with Next.js, OpenAI, and ❤️"
+    "badge": "Herramientas de Carrera",
+    "stats": {
+      "time": {
+        "title": "Minutos",
+        "description": "Tiempo promedio para aplicar"
+      },
+      "faster": {
+        "title": "Más Rápido",
+        "description": "Que los métodos tradicionales"
+      },
+      "applications": {
+        "title": "Aplicaciones",
+        "description": "Sin límites en tu potencial"
+      }
+    },
+    "whatWeOffer": "Lo Que Ofrecemos",
+    "footer": "Hecho para quienes buscan empleo"
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -56,6 +72,7 @@
         "description": "Ver todas tus aplicaciones y su estado"
       }
     },
+    "startArrow": "Iniciar",
     "stats": {
       "baseCVs": "CVs Base",
       "applications": "Aplicaciones",
@@ -64,9 +81,10 @@
     }
   },
   "NewCV": {
+    "badge": "Nuevo CV",
     "title": "Crear CV Base",
     "subtitle": "Sube tu CV para análisis con IA o ingresa tus datos manualmente",
-    "backToDashboard": "Volver al Dashboard",
+    "backToDashboard": "Volver al Panel Principal",
     "tabs": {
       "upload": "Subir Archivo",
       "manual": "Ingreso Manual"
@@ -176,8 +194,8 @@
   },
   "NewApplication": {
     "title": "Nueva Aplicación",
-    "subtitle": "Crea un CV personalizado y cover letter para una oferta específica",
-    "backToDashboard": "Volver al Dashboard",
+    "subtitle": "Crea un CV personalizado y carta de presentación para una oferta específica",
+    "backToDashboard": "Volver al Panel Principal",
     "steps": {
       "jobInfo": "Info del Trabajo",
       "selectCV": "Seleccionar CV"
@@ -241,7 +259,7 @@
     "title": "Gestionar CVs",
     "subtitle": "Ver, editar y organizar tus CVs base",
     "section": "Mis CVs",
-    "backToDashboard": "Volver al Dashboard",
+    "backToDashboard": "Volver al Panel Principal",
     "createNew": "Crear CV Base",
     "uploadNew": "Subir Nuevo CV",
     "uploadFirst": "Sube tu Primer CV",
@@ -281,6 +299,7 @@
     }
   },
   "Applications": {
+    "backToDashboard": "Volver al Panel Principal",
     "title": "Mis Aplicaciones",
     "description": "Haz seguimiento de todas tus aplicaciones de trabajo en un solo lugar",
     "emptyState": {
@@ -318,6 +337,31 @@
       "statusError": "Error al actualizar el estado",
       "deleted": "Aplicación eliminada correctamente",
       "deleteError": "Error al eliminar la aplicación"
+    },
+    "backToApplications": "Volver a Aplicaciones",
+    "downloadCV": "Descargar CV",
+    "downloadCoverLetter": "Descargar Carta",
+    "coverLetter": "Carta de Presentación",
+    "atsScore": "Puntaje ATS",
+    "matchScore": "Nivel de Coincidencia",
+    "created": "Creado",
+    "tabs": {
+      "customCV": "CV Personalizado",
+      "coverLetter": "Carta de Presentación",
+      "jobDescription": "Descripción del Puesto"
+    },
+    "detail": {
+      "customCV": "CV Personalizado",
+      "coverLetter": "Carta de Presentación",
+      "jobDescription": "Descripción del Puesto",
+      "personalInfo": "Información Personal",
+      "summary": "Resumen",
+      "keySkills": "Habilidades Clave",
+      "experience": "Experiencia",
+      "present": "Presente",
+      "education": "Educación",
+      "noCVData": "No hay datos del CV disponibles",
+      "noCoverLetter": "No hay carta de presentación disponible"
     }
   },
   "ChangePassword": {

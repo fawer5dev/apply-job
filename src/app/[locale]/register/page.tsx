@@ -63,14 +63,14 @@ export default function RegisterPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Check Your Email</CardTitle>
-            <CardDescription>
+            <CardTitle className="break-words">Check Your Email</CardTitle>
+            <CardDescription className="break-words">
               We&apos;ve sent a verification link to your email address
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="success">
-              <AlertDescription>
+              <AlertDescription className="break-words">
                 Registration successful! Please check your email inbox and click
                 the verification link to activate your account.
               </AlertDescription>
@@ -104,8 +104,8 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create an Account</CardTitle>
-          <CardDescription>
+          <CardTitle className="break-words">Create an Account</CardTitle>
+          <CardDescription className="break-words">
             Enter your information to get started
           </CardDescription>
         </CardHeader>
@@ -113,7 +113,7 @@ export default function RegisterPage() {
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="break-words">{error}</AlertDescription>
               </Alert>
             )}
 
@@ -173,7 +173,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="break-words text-xs text-muted-foreground">
               By creating an account, you agree to our Terms of Service and
               Privacy Policy.
             </p>
