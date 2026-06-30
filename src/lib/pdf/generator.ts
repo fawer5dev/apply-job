@@ -1,3 +1,4 @@
+import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import type { CV, Experience } from '@/types';
@@ -23,7 +24,6 @@ const LOCAL_CHROME_CANDIDATES = [
 ];
 
 function findLocalChrome(): string | null {
-  const fs = require('fs');
   for (const candidate of LOCAL_CHROME_CANDIDATES) {
     try {
       if (fs.existsSync(candidate)) return candidate;
