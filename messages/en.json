@@ -381,6 +381,7 @@
     "subtitle": "Manage your personal information and account settings",
     "personalInfo": "Personal Information",
     "email": "Email Address",
+    "emailVerified": "Email Verified",
     "name": "Name",
     "namePlaceholder": "Your full name",
     "saveChanges": "Save Changes",
@@ -419,6 +420,25 @@
       "disabling": "Disabling...",
       "success": "Two-factor authentication disabled successfully",
       "error": "Failed to disable 2FA. Please check your password."
+    },
+    "dangerZone": "Danger Zone",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountDescription": "Permanently remove your account and all associated data.",
+    "deleteAccountBtn": "Delete Account",
+    "deleteAccount": {
+      "title": "Delete Account",
+      "subtitle": "This action permanently deletes your account and all of your data.",
+      "warning": "You are about to permanently delete your account.",
+      "cannotBeUndone": "This action cannot be undone.",
+      "dataLossWarning": "All your CVs, job applications, cover letters, sessions, and connected accounts will be permanently erased.",
+      "password": "Confirm Password",
+      "totpCode": "Authentication Code",
+      "confirm": "Delete My Account",
+      "deleting": "Deleting...",
+      "success": "Account deleted successfully",
+      "error": "Failed to delete account. Please check your credentials.",
+      "cancel": "Cancel",
+      "back": "Back to Profile"
     }
   },
   "UserMenu": {

@@ -33,6 +33,7 @@ const protectedApiRoutes = [
   '/api/auth/logout-all',
   '/api/auth/change-password',
   '/api/auth/2fa',
+  '/api/auth/delete-account',
   '/api/auth/session',
 ];
 

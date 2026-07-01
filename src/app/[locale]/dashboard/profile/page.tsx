@@ -11,7 +11,9 @@ import {
   Lock, 
   CheckCircle, 
   Loader2, 
-  ChevronRight 
+  ChevronRight,
+  AlertTriangle,
+  Trash2
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -183,6 +185,34 @@ export default function ProfilePage() {
                       {user.twoFactorEnabled ? t('disable') : t('enable')}
                     </Link>
                   </div>
+                </div>
+              </section>
+
+              {/* Danger Zone Section */}
+              <section className="animate-fade-in-up border-2 border-red-500/30 bg-card p-6 sm:p-8" style={{ animationDelay: '0.2s' }}>
+                <div className="mb-8 flex flex-wrap items-center gap-3 border-b-2 border-red-500/50 pb-2">
+                  <AlertTriangle className="h-6 w-6 shrink-0 text-red-600 dark:text-red-400" />
+                  <h2 className="break-words font-display text-2xl font-bold">
+                    {t('dangerZone')}
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-red-500/20 bg-red-50/50 p-4 dark:bg-red-950/10">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Trash2 className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+                    <div className="min-w-0">
+                      <p className="break-words font-body text-sm font-bold">{t('deleteAccountTitle')}</p>
+                      <p className="break-words font-body text-xs text-muted-foreground">
+                        {t('deleteAccountDescription')}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/dashboard/profile/delete-account"
+                    className="shrink-0 border-2 border-red-600 bg-transparent px-5 py-2.5 font-body text-xs font-bold uppercase tracking-wider text-red-600 transition-all hover:bg-red-600 hover:text-white dark:text-red-400 dark:border-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+                  >
+                    {t('deleteAccountBtn')}
+                  </Link>
                 </div>
               </section>
             </div>

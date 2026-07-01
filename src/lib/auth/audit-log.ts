@@ -18,7 +18,9 @@ export type AuditAction =
   | 'account_locked'
   | 'account_unlocked'
   | 'session_refreshed'
-  | 'oauth_connected';
+  | 'oauth_connected'
+  | 'account_deleted'
+  | 'account_deletion_failed';
 
 interface AuditLogOptions {
   userId?: string;

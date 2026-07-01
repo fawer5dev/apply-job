@@ -381,6 +381,7 @@
     "subtitle": "Gestiona tu información personal y configuración de cuenta",
     "personalInfo": "Información Personal",
     "email": "Correo Electrónico",
+    "emailVerified": "Correo Verificado",
     "name": "Nombre",
     "namePlaceholder": "Tu nombre completo",
     "saveChanges": "Guardar Cambios",
@@ -419,6 +420,25 @@
       "disabling": "Desactivando...",
       "success": "Autenticación de dos factores desactivada correctamente",
       "error": "Error al desactivar 2FA. Por favor verifica tu contraseña."
+    },
+    "dangerZone": "Zona de Peligro",
+    "deleteAccountTitle": "Eliminar Cuenta",
+    "deleteAccountDescription": "Elimina permanentemente tu cuenta y todos los datos asociados.",
+    "deleteAccountBtn": "Eliminar Cuenta",
+    "deleteAccount": {
+      "title": "Eliminar Cuenta",
+      "subtitle": "Esta acción elimina permanentemente tu cuenta y todos tus datos.",
+      "warning": "Estás a punto de eliminar permanentemente tu cuenta.",
+      "cannotBeUndone": "Esta acción no se puede deshacer.",
+      "dataLossWarning": "Todos tus CVs, solicitudes de empleo, cartas de presentación, sesiones y cuentas conectadas serán borrados permanentemente.",
+      "password": "Confirmar Contraseña",
+      "totpCode": "Código de Autenticación",
+      "confirm": "Eliminar Mi Cuenta",
+      "deleting": "Eliminando...",
+      "success": "Cuenta eliminada correctamente",
+      "error": "Error al eliminar la cuenta. Por favor verifica tus credenciales.",
+      "cancel": "Cancelar",
+      "back": "Volver al Perfil"
     }
   },
   "UserMenu": {
