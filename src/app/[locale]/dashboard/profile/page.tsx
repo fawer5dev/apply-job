@@ -56,11 +56,19 @@ export default function ProfilePage() {
 
   return (
     <div className="container py-12 md:py-16">
+      <Link
+        href="/dashboard"
+        className="group mb-6 flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
+      >
+        <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+          {t('backToDashboard')}
+        </span>
+      </Link>
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-12 animate-fade-in-up">
           <span className="mb-4 inline-block border-b-2 border-primary pb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
-            Settings
+            {t('settingsBadge')}
           </span>
           <h1 className="mb-4 break-words font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             {t('title')}
@@ -159,7 +167,7 @@ export default function ProfilePage() {
                       <Lock className="h-5 w-5 text-muted-foreground" />
                       <div>
                         <p className="font-body text-sm font-bold">{t('changePassword')}</p>
-                        <p className="font-body text-xs text-muted-foreground">Update your account password</p>
+                        <p className="font-body text-xs text-muted-foreground">{t('changePasswordSubtitle')}</p>
                       </div>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -223,19 +231,19 @@ export default function ProfilePage() {
             <div className="sticky top-24 space-y-6">
               <div className="border-2 border-foreground/10 bg-muted/30 p-6 sm:p-8">
                 <h3 className="mb-4 break-words font-display text-xl font-bold">
-                  Account Status
+                  {t('accountStatus')}
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Member Since</p>
+                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('memberSince')}</p>
                     <p className="break-words font-body text-sm">
                       {user.emailVerified ? new Date(user.emailVerified).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div className="h-px bg-foreground/10" />
                   <div>
-                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Account Type</p>
-                    <p className="break-words font-body text-sm">Professional Plan</p>
+                    <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('accountType')}</p>
+                    <p className="break-words font-body text-sm">{t('professionalPlan')}</p>
                   </div>
                 </div>
               </div>

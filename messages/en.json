@@ -377,8 +377,10 @@
     "back": "Back to Profile"
   },
   "Profile": {
+    "backToDashboard": "← Back to Dashboard",
     "title": "Your Profile",
     "subtitle": "Manage your personal information and account settings",
+    "settingsBadge": "Settings",
     "personalInfo": "Personal Information",
     "email": "Email Address",
     "emailVerified": "Email Verified",
@@ -390,6 +392,7 @@
     "error": "Error updating profile",
     "security": "Security",
     "changePassword": "Change Password",
+    "changePasswordSubtitle": "Update your account password",
     "twoFactor": "Two-Factor Authentication",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -421,6 +424,10 @@
       "success": "Two-factor authentication disabled successfully",
       "error": "Failed to disable 2FA. Please check your password."
     },
+    "accountStatus": "Account Status",
+    "memberSince": "Member Since",
+    "accountType": "Account Type",
+    "professionalPlan": "Professional Plan",
     "dangerZone": "Danger Zone",
     "deleteAccountTitle": "Delete Account",
     "deleteAccountDescription": "Permanently remove your account and all associated data.",

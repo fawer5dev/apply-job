@@ -377,8 +377,10 @@
     "back": "Volver al Perfil"
   },
   "Profile": {
+    "backToDashboard": "← Volver al Panel Principal",
     "title": "Tu Perfil",
     "subtitle": "Gestiona tu información personal y configuración de cuenta",
+    "settingsBadge": "Configuración",
     "personalInfo": "Información Personal",
     "email": "Correo Electrónico",
     "emailVerified": "Correo Verificado",
@@ -390,6 +392,7 @@
     "error": "Error al actualizar el perfil",
     "security": "Seguridad",
     "changePassword": "Cambiar Contraseña",
+    "changePasswordSubtitle": "Actualiza la contraseña de tu cuenta",
     "twoFactor": "Autenticación de Dos Factores",
     "enabled": "Activado",
     "disabled": "Desactivado",
@@ -421,6 +424,10 @@
       "success": "Autenticación de dos factores desactivada correctamente",
       "error": "Error al desactivar 2FA. Por favor verifica tu contraseña."
     },
+    "accountStatus": "Estado de Cuenta",
+    "memberSince": "Miembro Desde",
+    "accountType": "Tipo de Cuenta",
+    "professionalPlan": "Plan Profesional",
     "dangerZone": "Zona de Peligro",
     "deleteAccountTitle": "Eliminar Cuenta",
     "deleteAccountDescription": "Elimina permanentemente tu cuenta y todos los datos asociados.",
