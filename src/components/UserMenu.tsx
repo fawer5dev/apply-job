@@ -32,7 +32,6 @@ export default function UserMenu() {
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
-  // Fetch sessions when dropdown opens
   useEffect(() => {
     if (open && user) {
       fetchSessions();
@@ -86,7 +85,6 @@ export default function UserMenu() {
     }
   };
 
-  // Get user initials for avatar
   const getInitials = (name: string | null, email: string) => {
     if (name) {
       return name
@@ -99,7 +97,6 @@ export default function UserMenu() {
     return email.slice(0, 2).toUpperCase();
   };
 
-  // Format relative time
   const formatRelativeTime = (date: string) => {
     const now = new Date();
     const then = new Date(date);
@@ -122,19 +119,17 @@ export default function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex items-center gap-3 transition-all hover:opacity-80"
+          className="flex items-center gap-3 transition-opacity hover:opacity-80"
           onClick={() => setOpen(!open)}
         >
-          <Avatar className="h-9 w-9">
-            <AvatarFallback>
-              {getInitials(user.name, user.email)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-medium text-blue-700">
+            {getInitials(user.name, user.email)}
+          </div>
           <div className="hidden text-left lg:block">
-            <p className="font-body text-sm font-bold">
+            <p className="text-sm font-medium text-gray-900">
               {user.name || user.email}
             </p>
-            <p className="font-body text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500">
               {user.email}
             </p>
           </div>
@@ -142,31 +137,28 @@ export default function UserMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] max-w-xs sm:w-80">
-        {/* User info */}
         <div className="px-4 py-3">
-          <p className="break-words font-body text-sm font-bold">{user.name || user.email}</p>
-          <p className="break-all font-body text-xs text-muted-foreground">
+          <p className="break-words text-sm font-medium text-gray-900">{user.name || user.email}</p>
+          <p className="break-all text-xs text-gray-500">
             {user.email}
           </p>
         </div>
 
         <DropdownMenuSeparator />
 
-        {/* Profile links */}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/profile" className="flex w-full cursor-pointer items-center gap-3">
             <User className="h-4 w-4" />
-            <span className="font-body text-sm">{t('editProfile')}</span>
+            <span className="text-sm">{t('editProfile')}</span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        {/* Sessions info */}
         <DropdownMenuLabel>{t('activeSessions')}</DropdownMenuLabel>
         <div className="max-h-48 overflow-y-auto px-4 py-2">
           {sessionsLoading ? (
-            <p className="py-2 text-center font-body text-xs text-muted-foreground">
+            <p className="py-2 text-center text-xs text-gray-500">
               {t('loadingSessions')}
             </p>
           ) : sessions.length > 0 ? (
@@ -174,13 +166,13 @@ export default function UserMenu() {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`flex items-start gap-3 rounded border p-2 ${
+                  className={`flex items-start gap-3 rounded-lg border p-2 ${
                     session.isCurrent
-                      ? 'border-primary/30 bg-primary/5'
-                      : 'border-foreground/10'
+                      ? 'border-blue-100 bg-blue-50/50'
+                      : 'border-gray-100'
                   }`}
                 >
-                  <div className="mt-0.5 text-muted-foreground">
+                  <div className="mt-0.5 text-gray-400">
                     {session.deviceType === 'Mobile' ? (
                       <Smartphone className="h-4 w-4" />
                     ) : (
@@ -189,16 +181,16 @@ export default function UserMenu() {
                   </div>
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="break-words font-body text-xs font-bold">
+                      <p className="break-words text-xs font-medium text-gray-900">
                         {session.browser} • {session.deviceType}
                       </p>
                       {session.isCurrent && (
-                        <span className="rounded bg-primary px-1.5 py-0.5 font-body text-[10px] font-bold uppercase text-primary-foreground">
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
                           {t('currentDevice')}
                         </span>
                       )}
                     </div>
-                    <p className="flex items-center gap-1 font-body text-xs text-muted-foreground">
+                    <p className="flex items-center gap-1 text-xs text-gray-500">
                       <Clock className="h-3 w-3 shrink-0" />
                       <span className="break-words">{formatRelativeTime(session.lastActivityAt)}</span>
                     </p>
@@ -210,7 +202,7 @@ export default function UserMenu() {
                         handleRevokeSession(session.id);
                       }}
                       disabled={revokingId === session.id}
-                      className="text-muted-foreground transition-colors hover:text-red-500 disabled:opacity-50"
+                      className="text-gray-400 transition-colors hover:text-red-500 disabled:opacity-50"
                       title={t('revokeSession')}
                     >
                       {revokingId === session.id ? (
@@ -224,7 +216,7 @@ export default function UserMenu() {
               ))}
             </div>
           ) : (
-            <p className="py-2 text-center font-body text-xs text-muted-foreground">
+            <p className="py-2 text-center text-xs text-gray-500">
               {t('noSessions')}
             </p>
           )}
@@ -232,7 +224,7 @@ export default function UserMenu() {
 
         {sessions.length > 0 && (
           <div className="px-4 py-2">
-            <p className="font-body text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500">
               {t('sessionCount', { count: sessions.length })}
             </p>
           </div>
@@ -240,11 +232,10 @@ export default function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        {/* Logout actions */}
         <DropdownMenuItem onClick={handleLogout}>
           <div className="flex items-center gap-3">
             <LogOut className="h-4 w-4" />
-            <span className="font-body text-sm">{t('logout')}</span>
+            <span className="text-sm">{t('logout')}</span>
           </div>
         </DropdownMenuItem>
 
@@ -252,7 +243,7 @@ export default function UserMenu() {
           <DropdownMenuItem onClick={handleLogoutAll} destructive>
             <div className="flex items-center gap-3">
               <LogOut className="h-4 w-4" />
-              <span className="font-body text-sm">{t('logoutAll')}</span>
+              <span className="text-sm">{t('logoutAll')}</span>
             </div>
           </DropdownMenuItem>
         )}

@@ -21,11 +21,11 @@ function LanguageSwitcher() {
   return (
     <button
       onClick={switchLocale}
-      className="group inline-flex items-center gap-2 border-2 border-foreground/20 bg-background px-3 py-2 font-body text-xs font-bold uppercase tracking-wider shadow-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:px-4"
+      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       aria-label={`Switch to ${nextLocale === 'es' ? 'Spanish' : 'English'}`}
     >
-      <span className="text-lg leading-none">{flag}</span>
-      <span>{nextLocale}</span>
+      <span className="text-sm leading-none">{flag}</span>
+      <span>{nextLocale.toUpperCase()}</span>
     </button>
   );
 }

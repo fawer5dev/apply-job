@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { LogIn, ShieldCheck, ArrowLeft, Mail } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,16 +48,13 @@ export default function LoginPage() {
 
       if (result.success) {
         if (result.requires2FA && result.tempToken) {
-          // Show 2FA input
           setRequires2FA(true);
           setTempToken(result.tempToken);
         } else {
-          // Login successful, redirect
           router.push(redirectTo);
         }
       } else {
         setError(result.error || 'Login failed');
-        // Check if the error is about email verification
         if (
           result.error?.includes('verify your email') ||
           result.error?.includes('verification')
@@ -135,11 +133,14 @@ export default function LoginPage() {
 
   if (requires2FA) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle className="break-words">Two-Factor Authentication</CardTitle>
-            <CardDescription className="break-words">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+              <ShieldCheck className="h-5 w-5 text-blue-700" />
+            </div>
+            <CardTitle>Two-Factor Authentication</CardTitle>
+            <CardDescription>
               Enter the 6-digit code from your authenticator app
             </CardDescription>
           </CardHeader>
@@ -151,7 +152,7 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="twoFactorCode">Authentication Code</Label>
                 <Input
                   id="twoFactorCode"
@@ -167,11 +168,11 @@ export default function LoginPage() {
                 />
               </div>
 
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 Lost your device?{' '}
                 <button
                   type="button"
-                  className="text-primary hover:underline"
+                  className="text-blue-700 hover:underline"
                   onClick={() => setError('Please use a backup code instead')}
                 >
                   Use backup code
@@ -192,6 +193,7 @@ export default function LoginPage() {
                   setTwoFactorCode('');
                 }}
               >
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
                 Back to Login
               </Button>
             </CardFooter>
@@ -202,39 +204,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <CardTitle className="break-words">Welcome Back</CardTitle>
-          <CardDescription className="break-words">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+            <LogIn className="h-5 w-5 text-blue-700" />
+          </div>
+          <CardTitle>Welcome Back</CardTitle>
+          <CardDescription>
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription className="break-words">
-                    {error}
-                    {requiresVerification && (
-                      <div className="mt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleResendVerification}
-                          disabled={resendingEmail}
-                          className="w-full"
-                        >
-                          {resendingEmail
-                            ? 'Sending...'
-                            : 'Resend Verification Email'}
-                        </Button>
-                      </div>
-                    )}
-                  </AlertDescription>
-                </Alert>
-              )}
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription className="break-words">
+                  {error}
+                  {requiresVerification && (
+                    <div className="mt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResendVerification}
+                        disabled={resendingEmail}
+                        className="w-full"
+                      >
+                        <Mail className="mr-1.5 h-3.5 w-3.5" />
+                        {resendingEmail
+                          ? 'Sending...'
+                          : 'Resend Verification Email'}
+                      </Button>
+                    </div>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
 
             {resendSuccess && (
               <Alert variant="success">
@@ -262,7 +268,7 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -276,12 +282,12 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs text-blue-700 hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -301,9 +307,9 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-gray-500">
               Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-primary hover:underline">
+              <Link href="/register" className="text-blue-700 hover:underline">
                 Sign up
               </Link>
             </p>

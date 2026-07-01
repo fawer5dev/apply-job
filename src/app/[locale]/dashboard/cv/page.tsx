@@ -93,6 +93,20 @@ export default function ManageCVPage() {
 
   return (
     <div className="flex flex-col">
+      <div className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center">
+          <Link
+            href="/dashboard"
+            className="group flex min-w-0 items-center gap-2 transition-transform hover:scale-105"
+          >
+            <span className="shrink-0">←</span>
+            <span className="truncate font-display text-base font-bold tracking-tight transition-colors group-hover:text-primary sm:text-xl">
+              {t('backToDashboard')}
+            </span>
+          </Link>
+        </div>
+      </div>
+
       <main className="container flex-1 py-12 md:py-16">
         <div className="mx-auto max-w-6xl">
           {/* Page header */}

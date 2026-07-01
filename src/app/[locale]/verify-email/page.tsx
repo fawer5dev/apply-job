@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Mail, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -45,7 +46,6 @@ export default function VerifyEmailPage() {
 
       if (response.ok) {
         setSuccess(true);
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/login?verified=true');
         }, 3000);
@@ -60,11 +60,14 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <CardTitle className="break-words">Email Verification</CardTitle>
-          <CardDescription className="break-words">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+            <Mail className="h-5 w-5 text-blue-700" />
+          </div>
+          <CardTitle>Email Verification</CardTitle>
+          <CardDescription>
             {loading
               ? 'Verifying your email address...'
               : success
@@ -75,12 +78,13 @@ export default function VerifyEmailPage() {
         <CardContent className="space-y-4">
           {loading && (
             <div className="flex items-center justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-700 border-t-transparent" />
             </div>
           )}
 
           {success && (
             <Alert variant="success">
+              <CheckCircle className="h-4 w-4" />
               <AlertTitle className="break-words">Success!</AlertTitle>
               <AlertDescription className="break-words">
                 Your email has been verified successfully. You will be
@@ -92,10 +96,11 @@ export default function VerifyEmailPage() {
           {error && (
             <>
               <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
                 <AlertTitle className="break-words">Verification Failed</AlertTitle>
                 <AlertDescription className="break-words">{error}</AlertDescription>
               </Alert>
-              <div className="space-y-2 break-words text-sm text-muted-foreground">
+              <div className="space-y-2 break-words text-sm text-gray-500">
                 <p>Common reasons for verification failure:</p>
                 <ul className="list-disc space-y-1 pl-5">
                   <li>The verification link has expired (valid for 24 hours)</li>
@@ -127,8 +132,9 @@ export default function VerifyEmailPage() {
               )}
               <Link
                 href="/login"
-                className="text-sm text-muted-foreground hover:text-primary"
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900"
               >
+                <ArrowLeft className="h-3.5 w-3.5" />
                 Back to Login
               </Link>
             </>

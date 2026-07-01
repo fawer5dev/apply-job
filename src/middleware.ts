@@ -54,9 +54,11 @@ export default async function middleware(request: NextRequest) {
   const hasSessionToken = !!sessionToken;
 
   // Check if route is public (no locale prefix check needed for /api routes)
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.includes(route)
+  const isHomePage = new RegExp(`^/(${routing.locales.join('|')})?$`).test(
+    pathname
   );
+  const isPublicRoute =
+    publicRoutes.some((route) => pathname.includes(route)) || isHomePage;
   const isAuthRoute = authRoutes.some((route) => pathname.includes(route));
   const isProtectedApiRoute = protectedApiRoutes.some((route) =>
     pathname.startsWith(route)

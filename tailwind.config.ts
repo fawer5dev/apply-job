@@ -19,8 +19,7 @@ const config = {
     },
     extend: {
       fontFamily: {
-        display: ['var(--font-display)', 'Georgia', 'serif'],
-        body: ['var(--font-body)', 'Courier New', 'monospace'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -30,7 +29,7 @@ const config = {
         foreground: 'hsl(var(--foreground))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--foreground))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -71,48 +70,10 @@ const config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
-        'fade-in-up': {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(20px)',
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)',
-          },
-        },
-        'fade-in': {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        'slide-in-right': {
-          '0%': {
-            transform: 'translateX(-20px)',
-            opacity: '0',
-          },
-          '100%': {
-            transform: 'translateX(0)',
-            opacity: '1',
-          },
-        },
-        'scale-in': {
-          '0%': {
-            transform: 'scale(0.95)',
-            opacity: '0',
-          },
-          '100%': {
-            transform: 'scale(1)',
-            opacity: '1',
-          },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in-up': 'fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-        'fade-in': 'fade-in 0.4s ease-out',
-        'slide-in-right': 'slide-in-right 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-        'scale-in': 'scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },

@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { UserPlus, Mail, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -33,13 +34,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password length
     if (password.length < 12) {
       setError('Password must be at least 12 characters long');
       return;
@@ -60,11 +59,14 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle className="break-words">Check Your Email</CardTitle>
-            <CardDescription className="break-words">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
+              <Mail className="h-5 w-5 text-green-700" />
+            </div>
+            <CardTitle>Check Your Email</CardTitle>
+            <CardDescription>
               We&apos;ve sent a verification link to your email address
             </CardDescription>
           </CardHeader>
@@ -75,7 +77,7 @@ export default function RegisterPage() {
                 the verification link to activate your account.
               </AlertDescription>
             </Alert>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-gray-500">
               <p>Didn&apos;t receive the email?</p>
               <ul className="list-disc space-y-1 pl-5">
                 <li>Check your spam or junk folder</li>
@@ -92,6 +94,7 @@ export default function RegisterPage() {
               className="w-full"
               onClick={() => router.push('/login')}
             >
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
               Go to Login
             </Button>
           </CardFooter>
@@ -101,11 +104,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <CardTitle className="break-words">Create an Account</CardTitle>
-          <CardDescription className="break-words">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+            <UserPlus className="h-5 w-5 text-blue-700" />
+          </div>
+          <CardTitle>Create an Account</CardTitle>
+          <CardDescription>
             Enter your information to get started
           </CardDescription>
         </CardHeader>
@@ -117,7 +123,7 @@ export default function RegisterPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="name">Name (optional)</Label>
               <Input
                 id="name"
@@ -130,7 +136,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -143,7 +149,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -154,13 +160,13 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 Must be at least 12 characters with uppercase, lowercase,
                 number, and special character
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
@@ -173,7 +179,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <p className="break-words text-xs text-muted-foreground">
+            <p className="break-words text-xs text-gray-400">
               By creating an account, you agree to our Terms of Service and
               Privacy Policy.
             </p>
@@ -182,9 +188,9 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-gray-500">
               Already have an account?{' '}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-blue-700 hover:underline">
                 Sign in
               </Link>
             </p>

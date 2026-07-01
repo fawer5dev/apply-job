@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 interface User {
   id: string;
@@ -169,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         setUser(null);
         setSession(null);
-        router.push('/login');
+        router.push('/');
       } else {
         throw new Error('Logout failed');
       }
@@ -191,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         setUser(null);
         setSession(null);
-        router.push('/login');
+        router.push('/');
       } else {
         throw new Error('Logout all failed');
       }

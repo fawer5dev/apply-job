@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { KeyRound, Mail, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -52,11 +53,14 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle className="break-words">Check Your Email</CardTitle>
-            <CardDescription className="break-words">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
+              <Mail className="h-5 w-5 text-green-700" />
+            </div>
+            <CardTitle>Check Your Email</CardTitle>
+            <CardDescription>
               Password reset instructions have been sent
             </CardDescription>
           </CardHeader>
@@ -67,7 +71,7 @@ export default function ForgotPasswordPage() {
                 will receive password reset instructions shortly.
               </AlertDescription>
             </Alert>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-gray-500">
               <p>What to do next:</p>
               <ul className="list-disc space-y-1 pl-5">
                 <li>Check your email inbox for the reset link</li>
@@ -84,6 +88,7 @@ export default function ForgotPasswordPage() {
               className="w-full"
               onClick={() => router.push('/login')}
             >
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
               Back to Login
             </Button>
           </CardFooter>
@@ -93,11 +98,14 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <CardTitle className="break-words">Forgot Password?</CardTitle>
-          <CardDescription className="break-words">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+            <KeyRound className="h-5 w-5 text-blue-700" />
+          </div>
+          <CardTitle>Forgot Password?</CardTitle>
+          <CardDescription>
             Enter your email address and we&apos;ll send you a reset link
           </CardDescription>
         </CardHeader>
@@ -109,7 +117,7 @@ export default function ForgotPasswordPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
@@ -123,9 +131,9 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Remember your password?{' '}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-blue-700 hover:underline">
                 Sign in
               </Link>
             </p>

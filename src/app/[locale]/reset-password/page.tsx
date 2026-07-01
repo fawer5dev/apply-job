@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { KeyRound, CheckCircle, ArrowLeft } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -36,13 +37,11 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password length
     if (password.length < 12) {
       setError('Password must be at least 12 characters long');
       return;
@@ -61,7 +60,6 @@ export default function ResetPasswordPage() {
 
       if (response.ok) {
         setSuccess(true);
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/login?reset=true');
         }, 3000);
@@ -77,11 +75,14 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle className="break-words">Invalid Reset Link</CardTitle>
-            <CardDescription className="break-words">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
+              <KeyRound className="h-5 w-5 text-red-700" />
+            </div>
+            <CardTitle>Invalid Reset Link</CardTitle>
+            <CardDescription>
               The password reset link is missing or invalid
             </CardDescription>
           </CardHeader>
@@ -107,11 +108,14 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <CardTitle className="break-words">Password Reset Successful</CardTitle>
-            <CardDescription className="break-words">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
+              <CheckCircle className="h-5 w-5 text-green-700" />
+            </div>
+            <CardTitle>Password Reset Successful</CardTitle>
+            <CardDescription>
               Your password has been changed
             </CardDescription>
           </CardHeader>
@@ -137,11 +141,14 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <CardTitle className="break-words">Reset Your Password</CardTitle>
-          <CardDescription className="break-words">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+            <KeyRound className="h-5 w-5 text-blue-700" />
+          </div>
+          <CardTitle>Reset Your Password</CardTitle>
+          <CardDescription>
             Enter your new password below
           </CardDescription>
         </CardHeader>
@@ -153,7 +160,7 @@ export default function ResetPasswordPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="password">New Password</Label>
               <Input
                 id="password"
@@ -165,13 +172,13 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 Must be at least 12 characters with uppercase, lowercase,
                 number, and special character
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
               <Input
                 id="confirmPassword"
@@ -190,8 +197,9 @@ export default function ResetPasswordPage() {
             </Button>
             <Link
               href="/login"
-              className="text-sm text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900"
             >
+              <ArrowLeft className="h-3.5 w-3.5" />
               Back to Login
             </Link>
           </CardFooter>
