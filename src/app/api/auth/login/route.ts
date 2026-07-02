@@ -206,15 +206,18 @@ export async function POST(request: NextRequest) {
     // Check if 2FA is enabled
     if (user.twoFactorEnabled) {
       // Create temporary token for 2FA verification (valid for 5 minutes)
-      const tempToken = await createSession(user.id, {
-        ipAddress: ip,
-        userAgent,
-        deviceId,
-      });
+      const tempToken = await createSession(
+        user.id,
+        {
+          ipAddress: ip,
+          userAgent,
+          deviceId,
+        },
+        new Date(Date.now() + 5 * 60 * 1000)
+      );
 
       // This session will be revoked after 2FA verification and replaced with a real one
-      // Mark it as temporary (we'll use a convention in the database)
-      
+
       await createAuditLog({
         userId: user.id,
         action: 'login_success',

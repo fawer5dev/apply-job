@@ -4,7 +4,10 @@ import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 import { verifyTOTP } from '@/lib/auth/totp';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import { clearSessionCookie } from '@/lib/auth/server-session';
+import {
+  clearSessionCookie,
+  requireAuthApi,
+} from '@/lib/auth/server-session';
 
 const deleteSchema = z.object({
   password: z.string().min(1, 'Password is required'),
@@ -13,15 +16,8 @@ const deleteSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -163,6 +159,13 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Account deletion error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

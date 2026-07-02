@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
 import { prisma } from '@/lib/db/prisma';
+import { requireAuthApi } from '@/lib/auth/server-session';
 import type { CV, JobListing } from '@/types';
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await requireAuthApi();
     const { applicationId, tone, additionalInfo } = await req.json();
 
     if (!applicationId) {
@@ -17,9 +19,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get application with relations
+    // Get application with relations, enforcing ownership
     const application = await prisma.applications.findUnique({
-      where: { id: applicationId },
+      where: { id: applicationId, userId },
       include: {
         base_cvs: true,
         job_listings: true,
@@ -89,6 +91,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating cover letter:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

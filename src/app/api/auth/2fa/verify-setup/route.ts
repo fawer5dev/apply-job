@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
-import { verifyTOTP, generateBackupCodes } from '@/lib/auth/totp';
+import {
+  verifyTOTP,
+  generateBackupCodes,
+  hashBackupCode,
+} from '@/lib/auth/totp';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import { checkRateLimit } from '@/lib/auth/rate-limit';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const verifySetupSchema = z.object({
   code: z.string().length(6, 'Code must be 6 digits'),
@@ -11,15 +16,8 @@ const verifySetupSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -112,16 +110,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate backup codes
+    // Generate backup codes and store only their hashes
     const backupCodes = generateBackupCodes();
+    const backupCodeHashes = backupCodes.map(hashBackupCode);
 
-    // Enable 2FA and store secret and backup codes
+    // Enable 2FA and store secret and hashed backup codes
     await prisma.users.update({
       where: { id: userId },
       data: {
         twoFactorEnabled: true,
         twoFactorSecret: secret,
-        backupCodes: backupCodes,
+        backupCodes: backupCodeHashes,
       },
     });
 
@@ -149,6 +148,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('2FA verify setup error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

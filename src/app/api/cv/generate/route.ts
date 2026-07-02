@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { generateCustomCV } from '@/lib/ai/cv-generator';
 import { scoreCV } from '@/lib/ai/ats-scorer';
+import { requireAuthApi } from '@/lib/auth/server-session';
 import type { CV, JobListing } from '@/types';
 
 export async function POST(req: NextRequest) {
   try {
-    const { baseCVId, jobListingId, userId } = await req.json();
+    const userId = await requireAuthApi();
+    const { baseCVId, jobListingId } = await req.json();
 
-    if (!baseCVId || !jobListingId || !userId) {
+    if (!baseCVId || !jobListingId) {
       return NextResponse.json(
         {
           success: false,
@@ -18,10 +20,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get base CV and job listing
+    // Get base CV and job listing, enforcing ownership of the CV
     const [baseCV, jobListing] = await Promise.all([
       prisma.base_cvs.findUnique({
-        where: { id: baseCVId },
+        where: { id: baseCVId, userId },
       }),
       prisma.job_listings.findUnique({
         where: { id: jobListingId },
@@ -104,6 +106,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating CV:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

@@ -130,7 +130,7 @@ export default function ApplicationsPage() {
               <Link
                 key={application.id}
                 href={`/dashboard/applications/${application.id}`}
-                className="block rounded-lg border bg-card p-6 transition-colors hover:bg-accent"
+                className="block rounded-lg border bg-card p-6 transition-colors hover:bg-blue-100"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">

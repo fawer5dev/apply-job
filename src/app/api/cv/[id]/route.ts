@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
     if (!id) {
       return NextResponse.json({ error: 'CV ID required' }, { status: 400 });
     }
 
-    // Check if CV exists
+    // Check if CV exists and belongs to the current user
     const cv = await prisma.base_cvs.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
         applications: true,
       },
@@ -37,7 +39,7 @@ export async function DELETE(
 
     // Delete the CV
     await prisma.base_cvs.delete({
-      where: { id },
+      where: { id, userId },
     });
 
     return NextResponse.json({
@@ -46,6 +48,9 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting CV:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'Error deleting CV',
@@ -61,6 +66,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
     if (!id) {
@@ -68,15 +74,8 @@ export async function GET(
     }
 
     const cv = await prisma.base_cvs.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
         applications: {
           select: {
             id: true,
@@ -99,6 +98,9 @@ export async function GET(
     return NextResponse.json({ cv });
   } catch (error) {
     console.error('Error fetching CV:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'Error fetching CV',

@@ -46,8 +46,8 @@ export async function validateSessionEdge(
       include: { users: true },
     });
 
-    // Check if session exists and is not expired
-    if (!session || session.expires < new Date()) {
+    // Check if session exists, is valid, and is not expired
+    if (!session || !session.isValid || session.expires < new Date()) {
       return { valid: false };
     }
 

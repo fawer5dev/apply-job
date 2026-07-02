@@ -1,5 +1,5 @@
 import { TOTP, Secret } from 'otpauth';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import QRCode from 'qrcode';
 
 /**
@@ -27,10 +27,8 @@ export async function generateTOTPSecret(userEmail: string): Promise<{
   const otpauthUrl = totp.toString();
   const qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
 
-  // Generate 10 backup codes (8 chars each)
-  const backupCodes = Array.from({ length: 10 }, () =>
-    randomBytes(4).toString('hex').toUpperCase()
-  );
+  // Generate 10 backup codes
+  const backupCodes = generateBackupCodes();
 
   return {
     secret: secret.base32,
@@ -61,39 +59,52 @@ export function verifyTOTP(secret: string, token: string): boolean {
 }
 
 /**
- * Verify backup code
+ * Hash a backup code for storage (SHA-256)
+ */
+export function hashBackupCode(code: string): string {
+  const normalized = code.toUpperCase().replace(/\s/g, '');
+  return createHash('sha256').update(normalized).digest('hex');
+}
+
+/**
+ * Verify a backup code against stored hashes.
+ * `storedCodeHashes` should be the hashed values persisted in the database.
  */
 export function verifyBackupCode(
-  storedCodes: string[],
+  storedCodeHashes: string[],
   providedCode: string
 ): { valid: boolean; remainingCodes?: string[] } {
-  const normalizedProvided = providedCode.toUpperCase().replace(/\s/g, '');
-  const index = storedCodes.indexOf(normalizedProvided);
+  const providedHash = hashBackupCode(providedCode);
+  const index = storedCodeHashes.indexOf(providedHash);
 
   if (index === -1) {
     return { valid: false };
   }
 
-  // Remove used code
-  const remainingCodes = storedCodes.filter((_, i) => i !== index);
+  // Remove used code hash
+  const remainingCodes = storedCodeHashes.filter((_, i) => i !== index);
   return { valid: true, remainingCodes };
 }
 
 /**
- * Generate new backup codes
+ * Generate new backup codes.
+ * Each code is 16 hex characters (64 bits of entropy).
  */
 export function generateBackupCodes(count: number = 10): string[] {
   return Array.from({ length: count }, () =>
-    randomBytes(4).toString('hex').toUpperCase()
+    randomBytes(8).toString('hex').toUpperCase()
   );
 }
 
 /**
- * Format backup code for display (e.g., "1A2B-3C4D")
+ * Format backup code for display (e.g., "1A2B-3C4D-5E6F-7A8B")
  */
 export function formatBackupCode(code: string): string {
-  if (code.length !== 8) return code;
-  return `${code.slice(0, 4)}-${code.slice(4)}`;
+  if (code.length !== 16) return code;
+  return `${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(
+    8,
+    12
+  )}-${code.slice(12)}`;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from './session';
 // Use pragmatic any here to avoid mismatches between generated Prisma types
@@ -59,56 +59,23 @@ export async function getAuth(): Promise<AuthResult | null> {
 }
 
 /**
- * Get user ID from middleware headers (API routes)
- */
-export async function getUserIdFromHeaders(): Promise<string | null> {
-  const headersList = await headers();
-  return headersList.get('x-user-id');
-}
-
-/**
  * Require authentication in API routes
- * Throws error if not authenticated
+ * Derives the user ID ONLY from a valid session cookie. We intentionally do
+ * NOT trust client-supplied `x-user-id` headers to prevent header spoofing.
  */
 export async function requireAuthApi(): Promise<string> {
-  // Try to get userId from headers first (if middleware set it)
-  const userId = await getUserIdFromHeaders();
-  console.log('[requireAuthApi] userId from headers:', userId);
-  if (userId) {
-    return userId;
-  }
-
-  // If not in headers, validate session from cookies
   const sessionToken = await getSessionToken();
-  console.log('[requireAuthApi] sessionToken:', sessionToken ? 'found' : 'not found');
   if (!sessionToken) {
     throw new Error('Unauthorized');
   }
 
   const validation = await validateSession(sessionToken);
-  console.log('[requireAuthApi] validation:', validation.valid);
   if (!validation.valid || !validation.session) {
     throw new Error('Unauthorized');
   }
 
   // Cast to any to avoid cross-file Prisma type mismatches during CI builds.
   return (validation.session as any).userId;
-}
-
-/**
- * Get user email from middleware headers
- */
-export async function getUserEmailFromHeaders(): Promise<string | null> {
-  const headersList = await headers();
-  return headersList.get('x-user-email');
-}
-
-/**
- * Check if session should be refreshed
- */
-export async function shouldRefreshSession(): Promise<boolean> {
-  const headersList = await headers();
-  return headersList.get('x-should-refresh-session') === 'true';
 }
 
 /**

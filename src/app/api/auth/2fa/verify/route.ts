@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createHash } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
-import { verifyTOTP } from '@/lib/auth/totp';
+import { verifyTOTP, verifyBackupCode } from '@/lib/auth/totp';
 import { createSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import { checkRateLimit } from '@/lib/auth/rate-limit';
@@ -57,9 +58,11 @@ export async function POST(request: NextRequest) {
 
     const { tempToken, code, useBackupCode } = validation.data;
 
-    // Verify temporary session exists (created during login)
+    // Verify temporary session exists (created during login).
+    // Tokens are stored as SHA-256 hashes, so hash the incoming token first.
+    const tempTokenHash = createHash('sha256').update(tempToken).digest('hex');
     const tempSession = await prisma.sessions.findUnique({
-      where: { sessionToken: tempToken },
+      where: { sessionToken: tempTokenHash },
       include: {
         users: {
           select: {
@@ -73,7 +76,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!tempSession || tempSession.expires < new Date()) {
+    if (
+      !tempSession ||
+      !tempSession.isValid ||
+      tempSession.expires < new Date()
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -97,21 +104,22 @@ export async function POST(request: NextRequest) {
 
     let isValid = false;
     let usedBackupCode = false;
+    let remainingBackupCodes: string[] | undefined;
+    const backupCodeHashes = (user.backupCodes as string[]) || [];
 
     if (useBackupCode) {
-      // Verify backup code
-      const backupCodes = (user.backupCodes as string[]) || [];
-      const codeIndex = backupCodes.indexOf(code);
+      // Verify backup code against stored hashes
+      const backupResult = verifyBackupCode(backupCodeHashes, code);
 
-      if (codeIndex !== -1) {
+      if (backupResult.valid) {
         isValid = true;
         usedBackupCode = true;
+        remainingBackupCodes = backupResult.remainingCodes;
 
-        // Remove used backup code
-        const updatedBackupCodes = backupCodes.filter((_, i) => i !== codeIndex);
+        // Persist the remaining backup code hashes
         await prisma.users.update({
           where: { id: user.id },
-          data: { backupCodes: updatedBackupCodes },
+          data: { backupCodes: remainingBackupCodes },
         });
       }
     } else {
@@ -187,7 +195,7 @@ export async function POST(request: NextRequest) {
       expiresAt,
       ...(usedBackupCode && {
         warning: `Backup code used. You have ${
-          ((user.backupCodes as string[])?.length || 0) - 1
+          (remainingBackupCodes?.length || 0)
         } backup codes remaining.`,
       }),
     });

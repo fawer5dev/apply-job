@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateCVPDF } from '@/lib/pdf/generator';
 import { prisma } from '@/lib/db/prisma';
+import { requireAuthApi } from '@/lib/auth/server-session';
 import type { CV } from '@/types';
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await requireAuthApi();
     const { applicationId, template } = await req.json();
 
     if (!applicationId) {
@@ -17,9 +19,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get application
+    // Get application, enforcing ownership
     const application = await prisma.applications.findUnique({
-      where: { id: applicationId },
+      where: { id: applicationId, userId },
       include: {
         job_listings: true,
       },
@@ -51,6 +53,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating PDF:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

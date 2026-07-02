@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
-import { generateBackupCodes } from '@/lib/auth/totp';
+import { generateBackupCodes, hashBackupCode } from '@/lib/auth/totp';
 import { createAuditLog } from '@/lib/auth/audit-log';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const regenerateSchema = z.object({
   password: z.string().min(1, 'Password is required'),
@@ -11,15 +12,8 @@ const regenerateSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -98,14 +92,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate new backup codes
+    // Generate new backup codes and store only their hashes
     const newBackupCodes = generateBackupCodes();
+    const backupCodeHashes = newBackupCodes.map(hashBackupCode);
 
     // Update backup codes
     await prisma.users.update({
       where: { id: userId },
       data: {
-        backupCodes: newBackupCodes,
+        backupCodes: backupCodeHashes,
       },
     });
 
@@ -128,6 +123,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Regenerate backup codes error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { generateCoverLetterPDF } from '@/lib/pdf/generator';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const toTitleCase = (str: string): string =>
   str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
@@ -10,22 +11,18 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
-    // Get the application with cover letter
+    // Get the application with cover letter, enforcing ownership
     const application = await prisma.applications.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
         cover_letters: true,
         job_listings: {
           select: {
             title: true,
             company: true,
-          },
-        },
-        users: {
-          select: {
-            name: true,
           },
         },
       },
@@ -72,6 +69,9 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error generating cover letter PDF:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'Error generating PDF',

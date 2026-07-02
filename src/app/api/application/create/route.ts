@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get base CV and job listing
+    // Get base CV and job listing, enforcing ownership of the CV
     const [baseCV, jobListing] = await Promise.all([
-      prisma.base_cvs.findUnique({ where: { id: baseCVId } }),
+      prisma.base_cvs.findUnique({ where: { id: baseCVId, userId } }),
       prisma.job_listings.findUnique({ where: { id: jobListingId } }),
     ]);
 

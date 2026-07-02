@@ -246,7 +246,7 @@ export default function ViewCVPage() {
                     </span>
                   )}
                 </div>
-                <h1 className="mb-4 font-display text-5xl font-bold tracking-tight md:text-6xl">
+                <h1 className="mb-4 text-xl font-medium">
                   {cv.title}
                 </h1>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">

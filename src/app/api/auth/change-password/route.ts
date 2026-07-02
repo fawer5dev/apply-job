@@ -9,7 +9,10 @@ import {
 import { revokeAllSessions, createSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import { sendSecurityNotification } from '@/lib/email/sender';
-import { setSessionCookie } from '@/lib/auth/server-session';
+import {
+  setSessionCookie,
+  requireAuthApi,
+} from '@/lib/auth/server-session';
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -18,15 +21,8 @@ const changePasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -175,6 +171,13 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Change password error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

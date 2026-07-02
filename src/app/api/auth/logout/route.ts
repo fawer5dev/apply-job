@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revokeSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import { clearSessionCookie, getSessionToken } from '@/lib/auth/server-session';
+import {
+  clearSessionCookie,
+  getSessionToken,
+  requireAuthApi,
+} from '@/lib/auth/server-session';
 import { createHash } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
+
     // Get session token from cookie
     const sessionToken = await getSessionToken();
 
@@ -23,9 +30,6 @@ export async function POST(request: NextRequest) {
       'unknown';
     const userAgent = request.headers.get('user-agent') || undefined;
 
-    // Get user ID from session before revoking
-    const userId = request.headers.get('x-user-id');
-
     // Hash token before revoking
     const tokenHash = createHash('sha256').update(sessionToken).digest('hex');
 
@@ -33,16 +37,14 @@ export async function POST(request: NextRequest) {
     await revokeSession(tokenHash);
 
     // Create audit log
-    if (userId) {
-      await createAuditLog({
-        userId,
-        action: 'logout',
-        details: {},
-        ipAddress: ip,
-        userAgent,
-        success: true,
-      });
-    }
+    await createAuditLog({
+      userId,
+      action: 'logout',
+      details: {},
+      ipAddress: ip,
+      userAgent,
+      success: true,
+    });
 
     // Create response with cleared cookie
     const response = NextResponse.json({
@@ -55,6 +57,13 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Logout error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

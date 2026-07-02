@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revokeAllSessions } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import { clearSessionCookie } from '@/lib/auth/server-session';
+import {
+  clearSessionCookie,
+  requireAuthApi,
+} from '@/lib/auth/server-session';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -47,6 +43,13 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Logout all error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 import { createAuditLog } from '@/lib/auth/audit-log';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const disableSchema = z.object({
   password: z.string().min(1, 'Password is required'),
@@ -10,15 +11,8 @@ const disableSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -123,6 +117,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('2FA disable error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {

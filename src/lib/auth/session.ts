@@ -27,7 +27,8 @@ export interface SessionValidationResult {
  */
 export async function createSession(
   userId: string,
-  metadata: SessionMetadata
+  metadata: SessionMetadata,
+  expiresAt?: Date
 ): Promise<string> {
   // Generate cryptographically secure token
   const tokenBytes = randomBytes(32);
@@ -46,7 +47,7 @@ export async function createSession(
       id: sessionId,
       userId,
       sessionToken: tokenHash,
-      expires: new Date(Date.now() + SESSION_DURATION),
+      expires: expiresAt ?? new Date(Date.now() + SESSION_DURATION),
       userAgent: metadata.userAgent,
       ipAddress: metadata.ipAddress,
       deviceId: metadata.deviceId,

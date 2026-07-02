@@ -10,14 +10,14 @@ export async function GET(request: NextRequest) {
     let userId: string;
     try {
       userId = await requireAuthApi();
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Get all active sessions for user
+    // Get all active sessions for user. Never expose sessionToken to the client.
     const sessions = await prisma.sessions.findMany({
       where: {
         userId,
@@ -37,23 +37,21 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         lastActive: true,
         expires: true,
-        sessionToken: true,
       },
     });
 
-    // Get current session token to mark it
-    const currentSessionToken = request.cookies.get('session-token')?.value;
-    let currentSessionId: string | null = null;
-
-    if (currentSessionToken) {
-      // Session tokens in DB are already hashed, so we need to compare with the hashed version
-      // But requireAuthApi already validated our session, so we can get the session ID from there
-      const currentSession = await prisma.sessions.findUnique({
-        where: { sessionToken: currentSessionToken },
-        select: { id: true },
-      });
-      currentSessionId = currentSession?.id || null;
-    }
+    // Identify the current session by the most recently active valid session for this user.
+    // requireAuthApi has already validated the cookie, so this is safe and avoids leaking hashes.
+    const currentSession = await prisma.sessions.findFirst({
+      where: {
+        userId,
+        isValid: true,
+        expires: { gt: new Date() },
+      },
+      orderBy: { lastActive: 'desc' },
+      select: { id: true },
+    });
+    const currentSessionId = currentSession?.id || null;
 
     // Format sessions with parsed device info
     const formattedSessions = sessions.map((session: any) => {

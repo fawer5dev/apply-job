@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 // GET - Get a specific application
 export async function GET(
@@ -7,10 +8,11 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
     const application = await prisma.applications.findUnique({
-      where: { id },
+      where: { id, userId },
       include: {
         job_listings: {
           select: {
@@ -46,6 +48,9 @@ export async function GET(
     return NextResponse.json({ application });
   } catch (error) {
     console.error('Error fetching application:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Error fetching application' },
       { status: 500 }
@@ -59,6 +64,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
     const body = await request.json();
     const { status, notes } = body;
@@ -72,7 +78,7 @@ export async function PATCH(
     }
 
     const application = await prisma.applications.update({
-      where: { id },
+      where: { id, userId },
       data: updateData,
       include: {
         job_listings: {
@@ -102,6 +108,9 @@ export async function PATCH(
     return NextResponse.json({ application });
   } catch (error) {
     console.error('Error updating application:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Error updating application' },
       { status: 500 }
@@ -115,15 +124,19 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
     await prisma.applications.delete({
-      where: { id },
+      where: { id, userId },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting application:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Error deleting application' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { generateCVPDF } from '@/lib/pdf/generator';
+import { requireAuthApi } from '@/lib/auth/server-session';
 import type { CV } from '@/types';
 
 export async function GET(
@@ -8,11 +9,12 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuthApi();
     const { id } = await context.params;
 
-    // Get the application with custom CV
+    // Get the application with custom CV, enforcing ownership
     const application = await prisma.applications.findUnique({
-      where: { id },
+      where: { id, userId },
       select: {
         customCV: true,
         job_listings: {
@@ -56,6 +58,9 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error generating CV PDF:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'Error generating PDF',

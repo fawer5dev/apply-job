@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { analyzeJobDescription } from '@/lib/ai/job-analyzer';
 import { AIError } from '@/lib/ai/errors';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 export async function POST(req: NextRequest) {
   try {
+    await requireAuthApi();
     const body = await req.json();
 
     // Validate basic data (without using schema for now)
@@ -62,6 +64,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error analyzing job:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     if (error instanceof AIError) {
       return NextResponse.json(
         {
@@ -88,6 +96,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
+    await requireAuthApi();
     const jobListings = await prisma.job_listings.findMany({
       orderBy: {
         createdAt: 'desc',
@@ -101,6 +110,12 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching jobs:', error);
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

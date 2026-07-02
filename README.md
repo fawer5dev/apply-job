@@ -15,6 +15,8 @@ Web app to automate the job application process by generating personalized CVs a
 - **Application Tracking** — Manage all your applications through their lifecycle (Draft → Ready → Applied → Interviewing → Offered → Accepted/Rejected).
 - **CV Templates** — Reusable CV HTML templates stored in the database.
 - **Multi-language** — Full English and Spanish interface. **Spanish is the default locale.**
+- **SEO** — Sitemap, robots.txt, JSON-LD structured data, and Open Graph image for search engine visibility.
+- **Design System** — Documented in [DESIGN.md](DESIGN.md) with blue-themed flat modern SaaS styling (Inter font).
 
 ## Tech Stack
 
@@ -59,33 +61,40 @@ pnpm db:seed        # Seed demo data
 ```
 apply-job/
 ├── prisma/                  # DB schema, migrations & seed
-├── public/                  # Static files (favicon, etc.)
+├── public/                  # Static files (favicon, og-image, etc.)
 ├── messages/                # Translation files (en.json, es.json)
 ├── files/                   # User uploaded CVs (gitignored)
 ├── scripts/                 # Build & utility scripts
 ├── templates/
 │   └── cv/                  # HTML templates for CV PDF generation
+├── DESIGN.md                # Design system specification
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/        # Internationalized routes (default: es)
-│   │   │   ├── login/, register/, verify-email/
+│   │   │   ├── login/          # Login page (with layout)
+│   │   │   ├── register/       # Register page (with layout)
+│   │   │   ├── verify-email/
 │   │   │   ├── forgot-password/, reset-password/
+│   │   │   ├── not-found.tsx   # Custom 404 page
 │   │   │   └── dashboard/
 │   │   │       ├── cv/            # CV listing, new, edit
 │   │   │       ├── applications/  # Applications listing, new, detail
 │   │   │       └── profile/       # Profile, change password, delete account, 2FA
-│   │   └── api/              # API endpoints (no locale prefix)
-│   │       ├── auth/         # Register, login, session, 2FA, profile, etc.
-│   │       ├── cv/           # CV upload, parse, create, generate
-│   │       ├── application/  # Application CRUD
-│   │       ├── job/          # Job posting analysis
-│   │       ├── cover-letter/ # Cover letter generation
-│   │       └── pdf/          # PDF generation
+│   │   └── api/               # API endpoints (no locale prefix)
+│   │       ├── auth/           # Register, login, session, 2FA, profile, etc.
+│   │       ├── cv/             # CV upload, parse, create, generate
+│   │       ├── application/    # Application CRUD
+│   │       ├── job/            # Job posting analysis
+│   │       ├── cover-letter/   # Cover letter generation
+│   │       └── pdf/            # PDF generation
+│   │   ├── sitemap.ts          # Dynamic sitemap generation
+│   │   └── robots.ts           # Robots.txt rules
 │   ├── components/
 │   │   ├── ui/               # shadcn/ui primitives (button, card, input, etc.)
 │   │   ├── cv/               # CV form component
 │   │   ├── LanguageSwitcher.tsx
-│   │   └── UserMenu.tsx
+│   │   ├── UserMenu.tsx
+│   │   └── JsonLd.tsx        # JSON-LD structured data (SEO)
 │   ├── hooks/                # Custom React hooks (use-auth)
 │   ├── config/               # App configuration (site, constants)
 │   ├── lib/

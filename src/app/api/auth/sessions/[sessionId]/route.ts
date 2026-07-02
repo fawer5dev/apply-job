@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { revokeSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 // DELETE /api/auth/sessions/[sessionId] - Revoke a specific session
 export async function DELETE(
@@ -9,15 +10,8 @@ export async function DELETE(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    // Get user ID from middleware headers
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Derive user ID from the validated session cookie only
+    const userId = await requireAuthApi();
 
     // Get request metadata
     const ip =
@@ -73,6 +67,13 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Revoke session error:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
       {
