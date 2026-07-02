@@ -14,8 +14,6 @@
 
 # Tests and documentation (not shipped to repo)
 /tests/
-/docs/README.md
-/docs/TROUBLESHOOTING.md
 
 
 # next.js
@@ -44,6 +42,7 @@ dev_logs.txt
 
 # vercel
 .vercel
+.agents
 
 # typescript
 *.tsbuildinfo
