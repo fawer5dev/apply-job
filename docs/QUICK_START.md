@@ -253,7 +253,7 @@ Before deploying to production:
 
 ### Documentation
 
-- Full docs: `docs/SETUP.md`
+- Full docs: `ENV_VARIABLES.md`
 - Environment guide: `docs/ENV_VARIABLES.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - API reference: Check individual route files in `src/app/api/`

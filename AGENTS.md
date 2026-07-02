@@ -45,7 +45,7 @@ pnpm db:studio        # prisma studio (GUI)
 - **Jest** with `next/jest` wrapper. Config in `jest.config.js`.
 - Test file patterns: `tests/unit/**/*.test.{js,jsx,ts,tsx}`, `tests/integration/**/*.test.{js,jsx,ts,tsx}`, `tests/e2e/**/*.test.{js,jsx,ts,tsx}`.
 - Setup file referenced: `tests/jest.setup.js`. Because `tests/` is gitignored, this file may be missing locally; create it or remove the `setupFilesAfterEnv` entry in `jest.config.js` before running tests.
-- **The `tests/` directory and `docs/README.md` are gitignored** — tests are not shipped to the repository.
+- **The `tests/` directory is gitignored** — tests are not shipped to the repository.
 - Integration test scripts exist in package.json (`test:integration`, `test:integration:new-app`, etc.) using `tsx` runner — these are for manual/integration testing, not Jest.
 
 ## Lint & format

@@ -498,7 +498,7 @@ For enterprise deployments, consider:
 - **Vercel Documentation**: https://vercel.com/docs
 - **Next.js Deployment**: https://nextjs.org/docs/deployment
 - **Prisma with Vercel**: https://www.prisma.io/docs/guides/deployment/deployment-guides/deploying-to-vercel
-- **Documentation Index**: See `docs/README.md`
+- **Documentation**: See [README.md](../README.md) for project overview
 - **Project Issues/Context**: See `PROJECT_CONTEXT.md`
 
 ---

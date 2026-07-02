@@ -332,7 +332,7 @@ EMAIL_FROM="Apply Job <your-email@gmail.com>"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-For complete documentation, see [AUTH_FINAL_COMPLETE.md](AUTH_FINAL_COMPLETE.md) and [ENV_VARIABLES.md](ENV_VARIABLES.md).
+For complete documentation, see [ENV_VARIABLES.md](ENV_VARIABLES.md).
 
 ---
 
