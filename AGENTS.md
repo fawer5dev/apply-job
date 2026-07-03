@@ -23,7 +23,7 @@ pnpm db:studio        # prisma studio (GUI)
 
 - **Next.js 15** App Router, TypeScript, Tailwind CSS, shadcn/ui.
 - **i18n**: next-intl with `[locale]` dynamic segment on all user-facing pages.
-  - Locales: `en`, `es` (**default is `es` — Spanish**).
+  - Locales: `en`, `es` (**default is `en` — English**).
   - API routes live at `/api/*` — **no locale prefix**.
   - Use `@/` path alias for `src/`.
 - **Database**: PostgreSQL + Prisma ORM. Models use **plural table names** (`accounts`, `users`, `sessions`, `base_cvs`, `job_listings`, `applications`, `cover_letters`, `audit_logs`, `rate_limits`, `verification_tokens`, `cv_templates`).

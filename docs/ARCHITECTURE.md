@@ -354,7 +354,7 @@ The application uses **next-intl** for comprehensive internationalization suppor
 ```typescript
 // src/middleware.ts
 - Detects user's locale from URL path segment ([locale])
-- Falls back to default locale (es)
+- Falls back to default locale (en)
 - Protects authenticated routes
 - Redirects unauthenticated users to login
 ```
@@ -385,7 +385,7 @@ messages/
 // src/i18n/routing.ts
 export const routing = defineRouting({
   locales: ['en', 'es'],
-  defaultLocale: 'es',
+  defaultLocale: 'en',
 });
 ```
 

@@ -117,7 +117,7 @@ messages/
 
 src/
 ├── i18n/
-│   ├── routing.ts    # Locale configuration (default: es)
+│   ├── routing.ts    # Locale configuration (default: en)
 │   └── request.ts    # Server-side i18n
 ├── middleware.ts     # Locale detection + auth protection
 └── app/
@@ -423,7 +423,7 @@ apply-job/
 │   │   ├── globals.css        # Global styles
 │   │   ├── layout.tsx         # Root layout
 │   │   │
-│   │   ├── [locale]/          # 🌍 Internationalized routes (default: es)
+│   │   ├── [locale]/          # 🌍 Internationalized routes (default: en)
 │   │   │   ├── page.tsx       # Landing page
 │   │   │   ├── login/
 │   │   │   │   └── page.tsx           # Login page
@@ -523,7 +523,7 @@ apply-job/
 │   │   └── use-auth.tsx       # Authentication context & hooks
 │   │
 │   ├── i18n/                  # 🌍 next-intl config
-│   │   ├── routing.ts         # Locale routing (default: es)
+│   │   ├── routing.ts         # Locale routing (default: en)
 │   │   └── request.ts         # Server-side i18n
 │   │
 │   ├── lib/                   # Business logic

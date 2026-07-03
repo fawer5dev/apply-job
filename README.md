@@ -24,7 +24,7 @@ Web app to automate the job application process by generating personalized CVs a
 | **Framework** | Next.js 15 (App Router) |
 | **Language** | TypeScript 5 (strict mode) |
 | **UI** | React 18, Tailwind CSS 3, shadcn/ui |
-| **i18n** | next-intl (en, es — default: es) |
+| **i18n** | next-intl (en, es — default: en) |
 | **Database** | PostgreSQL 15+ with Prisma ORM |
 | **Auth** | Custom session-based (Argon2id, TOTP 2FA) |
 | **AI** | Google Gemini (primary), OpenAI GPT-4o (fallback) |
@@ -130,7 +130,7 @@ apply-job/
 ├── DESIGN.md                # Design system specification
 ├── src/
 │   ├── app/
-│   │   ├── [locale]/        # Internationalized routes (default: es)
+│   │   ├── [locale]/        # Internationalized routes (default: en)
 │   │   │   ├── login/       # Login page
 │   │   │   ├── register/    # Registration page
 │   │   │   ├── verify-email/, forgot-password/, reset-password/

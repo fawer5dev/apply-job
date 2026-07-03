@@ -151,7 +151,7 @@ If you need to run migrations manually (e.g. first-time setup or emergency fix):
 ### Step 5: Verify Deployment
 
 1. Visit your deployment URL (e.g., `https://your-app.vercel.app`)
-2. Test the registration flow: `/en/register` or `/es/register` (Spanish is the default locale)
+2. Test the registration flow: `/en/register` or `/es/register` (English is the default locale)
 3. Check that emails are being sent
 4. Test login and authentication
 5. Upload a CV and create an application
@@ -265,7 +265,7 @@ After successful deployment:
 - [ ] Create a job application
 - [ ] Generate a cover letter
 - [ ] Check that PDFs download correctly
-- [ ] Test internationalization (switch to Spanish `/es/` — default locale)
+- [ ] Test internationalization (switch to Spanish `/es/`)
 - [ ] Test fallback to English `/en/`
 - [ ] Set up custom domain (optional)
 - [ ] Configure production email service (SendGrid, AWS SES)

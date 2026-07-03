@@ -15,7 +15,6 @@
 # Tests and documentation (not shipped to repo)
 /tests/
 
-
 # next.js
 /.next/
 /out/
@@ -42,7 +41,6 @@ dev_logs.txt
 
 # vercel
 .vercel
-.agents
 
 # typescript
 *.tsbuildinfo
@@ -62,9 +60,13 @@ data/
 # Uploads
 uploads/
 
-#files
+#files & folders
 files/
 public/test-upload.html
 src/app/[locale]/test-upload/
 src/lib/pdf/generator.ts.backup
 scripts/test-*.js
+.agents/
+!.agents/skills/
+!.agents/skills/**
+videos/
