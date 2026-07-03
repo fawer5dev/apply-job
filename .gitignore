@@ -67,6 +67,4 @@ src/app/[locale]/test-upload/
 src/lib/pdf/generator.ts.backup
 scripts/test-*.js
 .agents/
-!.agents/skills/
-!.agents/skills/**
 videos/
