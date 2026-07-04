@@ -97,7 +97,7 @@ export function getVerificationEmailTemplate(
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: #4F46E5; color: white; padding: 20px; text-align: center; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 8px; margin-top: 20px; }
-        .button { display: inline-block; padding: 12px 30px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 30px; background: #3730A3; color: #FFFFFF; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: 700; }
         .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
       </style>
     </head>
