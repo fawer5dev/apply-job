@@ -14,7 +14,7 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
 - **Styling**: Tailwind CSS 3.4 + shadcn/ui (Radix UI components)
 - **State Management**: Zustand 4.5.4 + TanStack React Query 5.51.1
 - **Forms**: React Hook Form 7.52.1 + Zod 3.23.8
-- **Internationalization**: next-intl 4.11.0 (English, Spanish; **default: Spanish**)
+- **Internationalization**: next-intl 4.11.0 (English, Spanish; **default: English**)
 
 ### Backend
 
@@ -44,7 +44,7 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
 
 ### Main Entities
 
-1. **users**: Application user with authentication details
+1. **users**: Application user with authentication details and account plan (FREE | PROFESSIONAL)
 2. **sessions**: User sessions with device/IP tracking
 3. **accounts**: OAuth provider accounts (future use)
 4. **verification_tokens**: Email verification, password reset and 2FA tokens
@@ -345,7 +345,7 @@ The application uses **next-intl** for comprehensive internationalization suppor
 ### Supported Languages
 
 - **English (en)**
-- **Spanish (es)** - Default locale
+- **English (en)** - Default locale
 
 ### Implementation
 
@@ -537,7 +537,7 @@ See [Authentication Architecture](#-authentication-architecture) section above.
 
 ### Application Management
 
-- `POST /api/application/create` - Create new application with custom CV
+- `POST /api/application/create` - Create new application with custom CV (free plan limited to 3)
 - `GET /api/application/[id]` - Get application details
 - `PUT /api/application/[id]` - Update application
 - `DELETE /api/application/[id]` - Delete application
@@ -692,7 +692,8 @@ See [Authentication Architecture](#-authentication-architecture) section above.
 
 ### Phase 2: Multi-User
 
-- User subscriptions (Stripe)
+- [x] Account plans (FREE/PROFESSIONAL) with application limits
+- [ ] User subscriptions (Stripe)
 - Increased database tier
 - CDN for generated PDFs
 - Redis for sessions/rate limits
@@ -814,6 +815,7 @@ pnpm test:coverage  # With coverage
 - [x] Two-Factor Authentication (2FA)
 - [x] Session management
 - [x] Dashboard UI
+- [x] Account plans (FREE/PROFESSIONAL) with application limits
 - [ ] Automated tests
 
 ### Q3 2026

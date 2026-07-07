@@ -29,6 +29,15 @@ export async function GET(request: NextRequest) {
     // between generated Prisma client types and runtime shape in CI.
     const s: any = session as any;
 
+    const accountType: 'FREE' | 'PROFESSIONAL' =
+      s.users?.accountType ?? 'FREE';
+    let applicationCount = 0;
+    if (s.users?.id) {
+      applicationCount = await prisma.applications.count({
+        where: { userId: s.users.id },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       session: {
@@ -47,6 +56,8 @@ export async function GET(request: NextRequest) {
         emailVerified: s.users?.emailVerified,
         twoFactorEnabled: s.users?.twoFactorEnabled,
         isActive: s.users?.isActive,
+        accountType,
+        applicationCount,
       },
     });
   } catch (error) {

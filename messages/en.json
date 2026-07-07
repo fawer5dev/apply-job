@@ -252,6 +252,10 @@
       "AI_UNKNOWN": {
         "title": "Something went wrong",
         "description": "An unexpected error occurred while contacting the AI service. Please try again."
+      },
+      "APPLICATION_LIMIT_REACHED": {
+        "title": "Free plan limit reached",
+        "description": "You've used all 3 applications included in your Free plan. Upgrade to Professional for unlimited applications."
       }
     }
   },
@@ -428,6 +432,9 @@
     "memberSince": "Member Since",
     "accountType": "Account Type",
     "professionalPlan": "Professional Plan",
+    "freePlan": "Free Plan",
+    "freePlanUsage": "{count}/{limit} applications used",
+    "upgradeHint": "Upgrade to Professional for unlimited applications.",
     "dangerZone": "Danger Zone",
     "deleteAccountTitle": "Delete Account",
     "deleteAccountDescription": "Permanently remove your account and all associated data.",
@@ -451,6 +458,8 @@
   "UserMenu": {
     "profile": "Profile",
     "editProfile": "Edit Profile",
+    "professionalBadge": "Professional",
+    "freeBadge": "Free · {count}/{limit} applications",
     "activeSessions": "Active Sessions",
     "loadingSessions": "Loading sessions...",
     "noSessions": "No active sessions",

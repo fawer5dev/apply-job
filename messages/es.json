@@ -251,7 +251,11 @@
       },
       "AI_UNKNOWN": {
         "title": "Algo salió mal",
-        "description": "Ocurrió un error inesperado al contactar con el servicio de IA. Vuelve a intentarlo."
+        "description": "Ocurrió un error inesperado al contactar el servicio de IA. Por favor intenta de nuevo."
+      },
+      "APPLICATION_LIMIT_REACHED": {
+        "title": "Límite del plan gratuito alcanzado",
+        "description": "Has usado las 3 solicitudes incluidas en tu plan Gratuito. Mejora a Plan Profesional para solicitudes ilimitadas."
       }
     }
   },
@@ -428,6 +432,9 @@
     "memberSince": "Miembro Desde",
     "accountType": "Tipo de Cuenta",
     "professionalPlan": "Plan Profesional",
+    "freePlan": "Plan Gratuito",
+    "freePlanUsage": "{count}/{limit} solicitudes usadas",
+    "upgradeHint": "Mejora a Plan Profesional para solicitudes ilimitadas.",
     "dangerZone": "Zona de Peligro",
     "deleteAccountTitle": "Eliminar Cuenta",
     "deleteAccountDescription": "Elimina permanentemente tu cuenta y todos los datos asociados.",
@@ -451,6 +458,8 @@
   "UserMenu": {
     "profile": "Perfil",
     "editProfile": "Editar Perfil",
+    "professionalBadge": "Profesional",
+    "freeBadge": "Gratuito · {count}/{limit} solicitudes",
     "activeSessions": "Sesiones Activas",
     "loadingSessions": "Cargando sesiones...",
     "noSessions": "No hay sesiones activas",

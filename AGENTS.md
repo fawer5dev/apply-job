@@ -19,6 +19,23 @@ pnpm db:generate      # prisma generate
 pnpm db:studio        # prisma studio (GUI)
 ```
 
+## Plan management
+
+- New accounts default to **FREE** plan (max 3 applications).
+- Upgrade a user to **PROFESSIONAL** (unlimited applications):
+
+```bash
+# Via Prisma Studio (GUI)
+pnpm db:studio
+# → Navigate to users → find the user → change accountType to PROFESSIONAL
+
+# Via direct SQL
+psql "$DATABASE_URL" -c "UPDATE users SET \"accountType\" = 'PROFESSIONAL' WHERE email = 'user@example.com';"
+```
+
+- The free plan limit is in `src/lib/plans.ts` (`FREE_PLAN_APPLICATION_LIMIT = 3`). Change it there — no migration needed.
+- Plan is surfaced in: UserMenu badge, Profile page sidebar, and new-application page error display.
+
 ## Architecture
 
 - **Next.js 15** App Router, TypeScript, Tailwind CSS, shadcn/ui.

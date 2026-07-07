@@ -142,6 +142,18 @@ export default function UserMenu() {
           <p className="break-all text-xs text-gray-500">
             {user.email}
           </p>
+          {user.accountType === 'PROFESSIONAL' ? (
+            <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+              {t('professionalBadge')}
+            </span>
+          ) : (
+            <span className="mt-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+              {t('freeBadge', {
+                count: user.applicationCount ?? 0,
+                limit: 3,
+              })}
+            </span>
+          )}
         </div>
 
         <DropdownMenuSeparator />

@@ -243,7 +243,24 @@ export default function ProfilePage() {
                   <div className="h-px bg-foreground/10" />
                   <div>
                     <p className="break-words font-body text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('accountType')}</p>
-                    <p className="break-words font-body text-sm">{t('professionalPlan')}</p>
+                    <p className="break-words font-body text-sm">
+                      {user.accountType === 'PROFESSIONAL'
+                        ? t('professionalPlan')
+                        : t('freePlan')}
+                    </p>
+                    {user.accountType !== 'PROFESSIONAL' && (
+                      <p className="mt-1 break-words font-body text-xs text-muted-foreground">
+                        {t('freePlanUsage', {
+                          count: user.applicationCount ?? 0,
+                          limit: 3,
+                        })}
+                      </p>
+                    )}
+                    {user.accountType !== 'PROFESSIONAL' && (
+                      <p className="mt-1 break-words font-body text-xs font-medium text-primary">
+                        {t('upgradeHint')}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

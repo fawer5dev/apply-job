@@ -20,7 +20,8 @@ export type AuditAction =
   | 'session_refreshed'
   | 'oauth_connected'
   | 'account_deleted'
-  | 'account_deletion_failed';
+  | 'account_deletion_failed'
+  | 'application_limit_reached';
 
 interface AuditLogOptions {
   userId?: string;

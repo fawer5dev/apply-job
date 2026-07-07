@@ -10,6 +10,8 @@ interface User {
   emailVerified: Date | null;
   twoFactorEnabled: boolean;
   isActive: boolean;
+  accountType?: 'FREE' | 'PROFESSIONAL';
+  applicationCount?: number;
 }
 
 interface Session {

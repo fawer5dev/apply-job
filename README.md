@@ -12,8 +12,9 @@ Web app to automate the job application process by generating personalized CVs a
 - **ATS Scoring** — Calculate match score (0-100) with strengths, weaknesses, and improvement suggestions.
 - **Cover Letters** — Generate personalized cover letters with multiple tone options (professional, enthusiastic, casual) and automatic PDF generation.
 - **Application Tracking** — Manage all your applications through their lifecycle (Draft → Ready → Applied → Interviewing → Offered → Accepted/Rejected).
+- **Account Plans** — Free plan (up to 3 applications) with upgrade to Professional for unlimited usage. Plans enforced server-side with audit logging.
 - **CV Templates** — Reusable CV HTML templates stored in the database.
-- **Multi-language** — Full English and Spanish interface. **Spanish is the default locale.**
+- **Multi-language** — Full English and Spanish interface. **English is the default locale.**
 - **PDF Generation** — Professional PDF output via Puppeteer with custom templates.
 - **SEO** — Sitemap, robots.txt, JSON-LD structured data, and Open Graph image.
 
@@ -180,6 +181,27 @@ Select application + tone → AI generates personalized letter → Saved to `cov
 
 ### 5. Download PDF
 Puppeteer renders HTML template → Returns PDF download with professional formatting.
+
+## Account Plans
+
+| Plan | Applications | Upgrade |
+|------|--------------|---------|
+| **Free** | 3 | Default for new accounts |
+| **Professional** | Unlimited | Manual DB upgrade (see below) |
+
+New accounts start on the Free plan with a 3-application limit. The limit is enforced on the server when creating applications. Free users see their usage count in the menu and profile page.
+
+**To upgrade a user to Professional:**
+
+```bash
+# Via Prisma Studio (GUI)
+pnpm db:studio
+
+# Or via direct SQL
+psql "$DATABASE_URL" -c "UPDATE users SET \"accountType\" = 'PROFESSIONAL' WHERE email = 'user@example.com';"
+```
+
+The limit constant is defined in `src/lib/plans.ts` — change `FREE_PLAN_APPLICATION_LIMIT` there to adjust without a migration.
 
 ## AI Costs
 

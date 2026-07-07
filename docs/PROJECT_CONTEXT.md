@@ -1,6 +1,6 @@
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: June 28, 2026
+> **Last updated**: July 7, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -39,7 +39,7 @@
   - class-variance-authority
   - tailwind-merge
   - tailwindcss-animate
-- **Internationalization**: next-intl 4.11.0 (English, Spanish; default: Spanish)
+- **Internationalization**: next-intl 4.11.0 (English, Spanish; default: English)
 
 ### Backend
 
@@ -154,6 +154,7 @@ Models use **plural table names** as configured in `prisma/schema.prisma`.
 - lockedUntil: DateTime?
 - twoFactorEnabled: Boolean @default(false)
 - twoFactorSecret: String?
+- accountType: AccountType @default(FREE)
 ```
 
 **Relationships**: Has many `sessions`, `accounts`, `audit_logs`, `base_cvs`, `applications`, `cover_letters`, `verification_tokens`.
@@ -330,6 +331,8 @@ keywords: {
 ```
 
 **Status enum**: `DRAFT`, `READY`, `APPLIED`, `INTERVIEWING`, `OFFERED`, `REJECTED`, `ACCEPTED`, `WITHDRAWN`
+
+**Account plan enforcement**: Free tier users are limited to 3 applications (configurable in `src/lib/plans.ts`). Professional accounts have unlimited applications.
 
 ##### 9. **cover_letters**
 
@@ -551,6 +554,7 @@ apply-job/
 │   │   │   ├── edge-session.ts
 │   │   │   └── edge-crypto.ts
 │   │   │
+│   │   ├── plans.ts            # Account plan types & limits
 │   │   ├── cv/
 │   │   │   └── parser.ts
 │   │   │
@@ -1228,7 +1232,7 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 - [x] Complete database models (11 models, plural table names)
 - [x] Google Generative AI integration (primary)
 - [x] OpenAI GPT-4o integration (optional fallback)
-- [x] Multi-language support (English/Spanish) with next-intl; default is Spanish
+- [x] Multi-language support (English/Spanish) with next-intl; default is English
 - [x] Internationalization middleware and routing
 - [x] Language switcher component
 - [x] Resume parser (PDF, DOCX, TXT)
@@ -1258,6 +1262,12 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 - [x] **Vercel production deployment**
   - [x] `scripts/vercel-build.js` — auto-runs migrations when `DATABASE_URL` is set
   - [x] Neon PostgreSQL database connected
+- [x] **Account plans** (FREE / PROFESSIONAL)
+  - [x] Free plan: 3 application limit (configurable in `src/lib/plans.ts`)
+  - [x] Professional plan: unlimited applications
+  - [x] Limit enforced server-side with audit logging
+  - [x] Plan badge in UserMenu and plan display on profile page
+  - [x] Manual upgrade via database (`UPDATE users SET "accountType" = 'PROFESSIONAL'`)
 
 ### 🚧 In Development / Pending
 
@@ -1540,7 +1550,7 @@ This project is in a solid technical foundation phase. The architecture is scala
 **What works**:
 
 - ✅ Dual AI provider support (Google Gemini + OpenAI)
-- ✅ Multi-language interface (English/Spanish, default Spanish)
+- ✅ Multi-language interface (English/Spanish, default English)
 - ✅ AI APIs (job analysis, resume generation, cover letters, ATS scoring)
 - ✅ Robust database system (PostgreSQL with Prisma)
 - ✅ PDF generation and download
@@ -1549,6 +1559,7 @@ This project is in a solid technical foundation phase. The architecture is scala
 - ✅ SMTP email delivery
 - ✅ Dashboard UI
 - ✅ Vercel production deployment
+- ✅ Account plans (FREE/PROFESSIONAL) with application limits
 
 **What's missing**:
 
@@ -1559,6 +1570,6 @@ This project is in a solid technical foundation phase. The architecture is scala
 
 ---
 
-**Last updated**: June 28, 2026
+**Last updated**: July 7, 2026
 **Version**: 0.1.0 (matches package.json)
 **Maintainer**: @fawer5dev

@@ -5,6 +5,11 @@ import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
 import { requireAuthApi } from '@/lib/auth/server-session';
 import { AIError } from '@/lib/ai/errors';
 import type { CV, JobListing } from '@/types';
+import {
+  FREE_PLAN_APPLICATION_LIMIT,
+  canCreateApplication,
+} from '@/lib/plans';
+import { createAuditLog } from '@/lib/auth/audit-log';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +18,41 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { baseCVId, jobListingId, tone = 'professional' } = body;
+
+    // Enforce plan limits for free accounts
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { accountType: true },
+    });
+    const applicationCount = await prisma.applications.count({
+      where: { userId },
+    });
+    if (!canCreateApplication(user?.accountType, applicationCount)) {
+      await createAuditLog({
+        userId,
+        action: 'application_limit_reached',
+        details: {
+          limit: FREE_PLAN_APPLICATION_LIMIT,
+          current: applicationCount,
+          accountType: user?.accountType,
+        },
+        success: true,
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Free plan application limit reached',
+          errorCode: 'APPLICATION_LIMIT_REACHED',
+          details: {
+            limit: FREE_PLAN_APPLICATION_LIMIT,
+            current: applicationCount,
+            accountType: user?.accountType,
+          },
+          isRetryable: false,
+        },
+        { status: 402 }
+      );
+    }
 
     if (!baseCVId || !jobListingId) {
       return NextResponse.json(
