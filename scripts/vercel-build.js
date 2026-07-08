@@ -11,8 +11,8 @@ const hasDb = Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.trim(
 
 try {
   if (hasDb) {
-    console.log('DATABASE_URL detected — running migrations and building...');
-    execSync('pnpm prisma migrate deploy && pnpm next build', { stdio: 'inherit' });
+    console.log('DATABASE_URL detected — generating Prisma client, running migrations and building...');
+    execSync('pnpm prisma generate && pnpm prisma migrate deploy && pnpm next build', { stdio: 'inherit' });
   } else {
     console.log('No DATABASE_URL — skipping prisma migrate deploy and running next build only.');
     execSync('pnpm next build', { stdio: 'inherit' });
