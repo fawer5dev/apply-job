@@ -11,7 +11,7 @@ interface User {
   twoFactorEnabled: boolean;
   isActive: boolean;
   accountType?: 'FREE' | 'PROFESSIONAL';
-  applicationCount?: number;
+  applicationsUsed?: number;
 }
 
 interface Session {

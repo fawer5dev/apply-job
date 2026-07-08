@@ -19,21 +19,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { baseCVId, jobListingId, tone = 'professional' } = body;
 
-    // Enforce plan limits for free accounts
+    // Enforce plan limits for free accounts using the cumulative counter
     const user = await prisma.users.findUnique({
       where: { id: userId },
-      select: { accountType: true },
+      select: { accountType: true, applicationsUsed: true },
     });
-    const applicationCount = await prisma.applications.count({
-      where: { userId },
-    });
-    if (!canCreateApplication(user?.accountType, applicationCount)) {
+    const applicationsUsed = user?.applicationsUsed ?? 0;
+    if (!canCreateApplication(user?.accountType, applicationsUsed)) {
       await createAuditLog({
         userId,
         action: 'application_limit_reached',
         details: {
           limit: FREE_PLAN_APPLICATION_LIMIT,
-          current: applicationCount,
+          current: applicationsUsed,
           accountType: user?.accountType,
         },
         success: true,
@@ -45,7 +43,7 @@ export async function POST(request: NextRequest) {
           errorCode: 'APPLICATION_LIMIT_REACHED',
           details: {
             limit: FREE_PLAN_APPLICATION_LIMIT,
-            current: applicationCount,
+            current: applicationsUsed,
             accountType: user?.accountType,
           },
           isRetryable: false,
@@ -125,6 +123,12 @@ export async function POST(request: NextRequest) {
             tone,
             updatedAt: new Date(),
           },
+        });
+
+        // Increment cumulative applications-used counter
+        await tx.users.update({
+          where: { id: userId },
+          data: { applicationsUsed: { increment: 1 } },
         });
 
         // Create application with cover letter ID

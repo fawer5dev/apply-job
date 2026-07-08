@@ -190,6 +190,7 @@ model users {
   twoFactorEnabled    Boolean               @default(false)
   twoFactorSecret     String?
   accountType         AccountType           @default(FREE)
+  applicationsUsed    Int                   @default(0)
   accounts            accounts[]
   applications        applications[]
   audit_logs          audit_logs[]

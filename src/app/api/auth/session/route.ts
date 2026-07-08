@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
 import { getSessionToken } from '@/lib/auth/server-session';
 import { validateSession } from '@/lib/auth/session';
 
@@ -31,12 +30,7 @@ export async function GET(request: NextRequest) {
 
     const accountType: 'FREE' | 'PROFESSIONAL' =
       s.users?.accountType ?? 'FREE';
-    let applicationCount = 0;
-    if (s.users?.id) {
-      applicationCount = await prisma.applications.count({
-        where: { userId: s.users.id },
-      });
-    }
+    const applicationsUsed = s.users?.applicationsUsed ?? 0;
 
     return NextResponse.json({
       success: true,
@@ -57,7 +51,7 @@ export async function GET(request: NextRequest) {
         twoFactorEnabled: s.users?.twoFactorEnabled,
         isActive: s.users?.isActive,
         accountType,
-        applicationCount,
+        applicationsUsed,
       },
     });
   } catch (error) {

@@ -251,7 +251,7 @@ export default function ProfilePage() {
                     {user.accountType !== 'PROFESSIONAL' && (
                       <p className="mt-1 break-words font-body text-xs text-muted-foreground">
                         {t('freePlanUsage', {
-                          count: user.applicationCount ?? 0,
+                          count: user.applicationsUsed ?? 0,
                           limit: 3,
                         })}
                       </p>
