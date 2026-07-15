@@ -21,6 +21,7 @@ export {
   GraduationCap,
   Loader2,
   Mail,
+  Pencil,
   Plus,
   Save,
   Sparkles,

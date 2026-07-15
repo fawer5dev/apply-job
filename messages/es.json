@@ -130,7 +130,11 @@
         "name": "Nombre Completo",
         "email": "Correo Electrónico",
         "phone": "Teléfono",
+        "phoneCountry": "Código de país",
         "location": "Ubicación",
+        "country": "País",
+        "city": "Ciudad",
+        "cityOther": "Otro",
         "linkedin": "URL de LinkedIn",
         "website": "URL del Sitio Web",
         "jobTitle": "Cargo",
@@ -151,7 +155,13 @@
         "name": "Tu nombre completo",
         "email": "tu@ejemplo.com",
         "phone": "+1 234 567 890",
+        "phoneNumber": "234 567 890",
+        "phoneCountry": "Seleccionar país",
         "location": "Ciudad, País",
+        "country": "Seleccionar país",
+        "city": "Seleccionar ciudad",
+        "selectCountryFirst": "Selecciona un país primero",
+        "customCity": "Ingresa tu ciudad",
         "linkedin": "https://linkedin.com/in/tuperfil",
         "website": "https://tusitio.com",
         "summary": "Breve resumen de tu experiencia profesional...",
@@ -270,6 +280,7 @@
     "loading": "Cargando CVs...",
     "default": "Predeterminado",
     "view": "Ver",
+    "edit": "Editar",
     "delete": "Eliminar",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este CV? Esta acción no se puede deshacer.",
     "noCVs": {
@@ -288,6 +299,7 @@
     "delete": "Eliminar",
     "deleting": "Eliminando...",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este CV? Esta acción no se puede deshacer.",
+    "edit": "Editar",
     "createApplication": "Crear Aplicación",
     "present": "Presente",
     "viewProject": "Ver",
@@ -300,6 +312,105 @@
       "skills": "Habilidades",
       "projects": "Proyectos",
       "certifications": "Certificaciones"
+    }
+  },
+  "EditCV": {
+    "badge": "Editar CV",
+    "title": "Editar CV Base",
+    "subtitle": "Actualiza los detalles de tu CV y guarda los cambios",
+    "backToCVs": "Volver a CVs",
+    "loading": "Cargando CV...",
+    "notFound": "CV no encontrado",
+    "form": {
+      "title": "Título del CV",
+      "titlePlaceholder": "Ej: CV Software Engineer 2024",
+      "save": "Guardar Cambios",
+      "saving": "Guardando...",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "missingTitle": "Por favor ingresa un título para el CV",
+      "saveFailed": "Error al guardar el CV"
+    },
+    "success": {
+      "title": "¡CV Actualizado Exitosamente!",
+      "message": "Redirigiendo a tus CVs..."
+    },
+    "cvForm": {
+      "sections": {
+        "personalInfo": "Información Personal",
+        "summary": "Resumen Profesional",
+        "experience": "Experiencia Laboral",
+        "education": "Educación",
+        "skills": "Habilidades"
+      },
+      "fields": {
+        "name": "Nombre Completo",
+        "email": "Correo Electrónico",
+        "phone": "Teléfono",
+        "phoneCountry": "Código de país",
+        "location": "Ubicación",
+        "country": "País",
+        "city": "Ciudad",
+        "cityOther": "Otro",
+        "linkedin": "URL de LinkedIn",
+        "website": "URL del Sitio Web",
+        "jobTitle": "Cargo",
+        "company": "Empresa",
+        "startDate": "Fecha de Inicio",
+        "endDate": "Fecha de Fin",
+        "current": "Trabajo aquí actualmente",
+        "description": "Descripción",
+        "achievements": "Logros / Responsabilidades Clave",
+        "degree": "Título",
+        "institution": "Institución",
+        "graduationDate": "Fecha de Graduación",
+        "gpa": "GPA",
+        "category": "Categoría",
+        "skills": "Habilidades"
+      },
+      "placeholders": {
+        "name": "Tu nombre completo",
+        "email": "tu@ejemplo.com",
+        "phone": "+1 234 567 890",
+        "phoneNumber": "234 567 890",
+        "phoneCountry": "Seleccionar país",
+        "location": "Ciudad, País",
+        "country": "Seleccionar país",
+        "city": "Seleccionar ciudad",
+        "selectCountryFirst": "Selecciona un país primero",
+        "customCity": "Ingresa tu ciudad",
+        "linkedin": "https://linkedin.com/in/tuperfil",
+        "website": "https://tusitio.com",
+        "summary": "Breve resumen de tu experiencia profesional...",
+        "jobTitle": "Ej: Senior Software Engineer",
+        "company": "Ej: Acme Inc.",
+        "workLocation": "Ciudad, País",
+        "startDate": "Ej: Ene 2020",
+        "endDate": "Ej: Dic 2022",
+        "jobDescription": "Describe tu rol y responsabilidades...",
+        "achievements": "Un logro por línea",
+        "degree": "Ej: Licenciatura en Ciencias de la Computación",
+        "institution": "Ej: Universidad de Tecnología",
+        "schoolLocation": "Ciudad, País",
+        "graduationDate": "Ej: 2018 - 2022",
+        "gpa": "Ej: 3.8 / 4.0",
+        "educationDescription": "Detalles adicionales...",
+        "skillCategory": "Ej: Habilidades Técnicas",
+        "skills": "Ej: React, TypeScript, Node.js"
+      },
+      "actions": {
+        "addExperience": "Agregar Experiencia",
+        "removeExperience": "Eliminar experiencia",
+        "addEducation": "Agregar Educación",
+        "removeEducation": "Eliminar educación",
+        "addSkillCategory": "Agregar Categoría de Habilidades",
+        "removeSkillCategory": "Eliminar categoría de habilidades"
+      },
+      "hints": {
+        "onePerLine": "Un elemento por línea",
+        "onePerLineOrComma": "Un elemento por línea o separados por comas"
+      }
     }
   },
   "Applications": {

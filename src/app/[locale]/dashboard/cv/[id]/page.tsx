@@ -13,6 +13,7 @@ import {
   Mail,
   Globe,
   Trash2,
+  Pencil,
 } from '@/lib/icons';
 
 interface PersonalInfo {
@@ -208,6 +209,13 @@ export default function ViewCVPage() {
             >
               {t('createApplication')}
               <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href={`/dashboard/cv/${cv.id}/edit`}
+              className="group flex items-center gap-2 border-2 border-foreground/20 bg-background px-6 py-3 font-body text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:border-primary hover:bg-primary/5"
+            >
+              <Pencil className="h-4 w-4" />
+              {t('edit')}
             </Link>
             <button
               onClick={handleDelete}

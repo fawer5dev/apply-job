@@ -130,7 +130,11 @@
         "name": "Full Name",
         "email": "Email",
         "phone": "Phone",
+        "phoneCountry": "Country code",
         "location": "Location",
+        "country": "Country",
+        "city": "City",
+        "cityOther": "Other",
         "linkedin": "LinkedIn URL",
         "website": "Website URL",
         "jobTitle": "Job Title",
@@ -151,7 +155,13 @@
         "name": "Your full name",
         "email": "you@example.com",
         "phone": "+1 234 567 890",
+        "phoneNumber": "234 567 890",
+        "phoneCountry": "Select country",
         "location": "City, Country",
+        "country": "Select country",
+        "city": "Select city",
+        "selectCountryFirst": "Select a country first",
+        "customCity": "Enter your city",
         "linkedin": "https://linkedin.com/in/yourprofile",
         "website": "https://yourwebsite.com",
         "summary": "Brief overview of your professional background...",
@@ -270,6 +280,7 @@
     "loading": "Loading CVs...",
     "default": "Default",
     "view": "View",
+    "edit": "Edit",
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this CV? This action cannot be undone.",
     "noCVs": {
@@ -288,6 +299,7 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "confirmDelete": "Are you sure you want to delete this CV? This action cannot be undone.",
+    "edit": "Edit",
     "createApplication": "Create Application",
     "present": "Present",
     "viewProject": "View",
@@ -300,6 +312,105 @@
       "skills": "Skills",
       "projects": "Projects",
       "certifications": "Certifications"
+    }
+  },
+  "EditCV": {
+    "badge": "Edit CV",
+    "title": "Edit Base CV",
+    "subtitle": "Update your CV details and save your changes",
+    "backToCVs": "Back to CVs",
+    "loading": "Loading CV...",
+    "notFound": "CV not found",
+    "form": {
+      "title": "CV Title",
+      "titlePlaceholder": "Ex: Software Engineer CV 2024",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "missingTitle": "Please enter a CV title",
+      "saveFailed": "Error saving CV"
+    },
+    "success": {
+      "title": "CV Updated Successfully!",
+      "message": "Redirecting to your CVs..."
+    },
+    "cvForm": {
+      "sections": {
+        "personalInfo": "Personal Information",
+        "summary": "Professional Summary",
+        "experience": "Work Experience",
+        "education": "Education",
+        "skills": "Skills"
+      },
+      "fields": {
+        "name": "Full Name",
+        "email": "Email",
+        "phone": "Phone",
+        "phoneCountry": "Country code",
+        "location": "Location",
+        "country": "Country",
+        "city": "City",
+        "cityOther": "Other",
+        "linkedin": "LinkedIn URL",
+        "website": "Website URL",
+        "jobTitle": "Job Title",
+        "company": "Company",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "current": "I currently work here",
+        "description": "Description",
+        "achievements": "Key Achievements / Responsibilities",
+        "degree": "Degree",
+        "institution": "Institution",
+        "graduationDate": "Graduation Date",
+        "gpa": "GPA",
+        "category": "Category",
+        "skills": "Skills"
+      },
+      "placeholders": {
+        "name": "Your full name",
+        "email": "you@example.com",
+        "phone": "+1 234 567 890",
+        "phoneNumber": "234 567 890",
+        "phoneCountry": "Select country",
+        "location": "City, Country",
+        "country": "Select country",
+        "city": "Select city",
+        "selectCountryFirst": "Select a country first",
+        "customCity": "Enter your city",
+        "linkedin": "https://linkedin.com/in/yourprofile",
+        "website": "https://yourwebsite.com",
+        "summary": "Brief overview of your professional background...",
+        "jobTitle": "e.g. Senior Software Engineer",
+        "company": "e.g. Acme Inc.",
+        "workLocation": "City, Country",
+        "startDate": "e.g. Jan 2020",
+        "endDate": "e.g. Dec 2022",
+        "jobDescription": "Describe your role and responsibilities...",
+        "achievements": "One achievement per line",
+        "degree": "e.g. Bachelor of Science in Computer Science",
+        "institution": "e.g. University of Technology",
+        "schoolLocation": "City, Country",
+        "graduationDate": "e.g. 2018 - 2022",
+        "gpa": "e.g. 3.8 / 4.0",
+        "educationDescription": "Additional details...",
+        "skillCategory": "e.g. Technical Skills",
+        "skills": "e.g. React, TypeScript, Node.js"
+      },
+      "actions": {
+        "addExperience": "Add Experience",
+        "removeExperience": "Remove experience",
+        "addEducation": "Add Education",
+        "removeEducation": "Remove education",
+        "addSkillCategory": "Add Skill Category",
+        "removeSkillCategory": "Remove skill category"
+      },
+      "hints": {
+        "onePerLine": "One item per line",
+        "onePerLineOrComma": "One item per line or separated by commas"
+      }
     }
   },
   "Applications": {

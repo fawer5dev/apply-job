@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { FileText, Plus, Loader2, Trash2, Calendar } from '@/lib/icons';
+import { FileText, Plus, Loader2, Trash2, Calendar, Pencil } from '@/lib/icons';
 
 interface BaseCV {
   id: string;
@@ -231,6 +231,14 @@ export default function ManageCVPage() {
                       className="flex-1 border-2 border-foreground/20 bg-background px-4 py-2 text-center font-body text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:border-primary hover:bg-primary/5"
                     >
                       {t('view')}
+                    </Link>
+                    <Link
+                      href={`/dashboard/cv/${cv.id}/edit`}
+                      className="group/btn inline-flex flex-1 items-center justify-center gap-2 border-2 border-foreground/20 bg-background px-4 py-2 font-body text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:border-primary hover:bg-primary/5"
+                      title={t('edit')}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      {t('edit')}
                     </Link>
                     <button
                       onClick={() => handleDelete(cv.id)}
