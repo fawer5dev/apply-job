@@ -9,10 +9,7 @@ import {
 import { revokeAllSessions, createSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import { sendSecurityNotification } from '@/lib/email/sender';
-import {
-  setSessionCookie,
-  requireAuthApi,
-} from '@/lib/auth/server-session';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -166,7 +163,13 @@ export async function POST(request: NextRequest) {
       sessionToken: newSessionToken,
     });
 
-    response.headers.set('Set-Cookie', setSessionCookie(newSessionToken, expiresAt));
+    response.cookies.set('session-token', newSessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+    });
 
     return response;
   } catch (error) {

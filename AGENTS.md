@@ -48,6 +48,27 @@ psql "$DATABASE_URL" -c "UPDATE users SET \"accountType\" = 'PROFESSIONAL' WHERE
 - **Middleware** (`src/middleware.ts`): Handles both i18n routing and auth protection. Public auth routes are listed explicitly. For API auth: middleware checks presence of `session-token` cookie and returns 401 if missing for protected API prefixes; session validation is done inside the route handler.
 - **PDF generation**: Uses `puppeteer-core` + `@sparticuz/chromium-min`. Marked as `serverExternalPackages` in next.config so they are NOT bundled. `chromium-min` downloads Chromium into `/tmp/` at runtime (no binary in node_modules).
 
+## Agent Skills
+
+This project uses **Agent Skills** (portable `SKILL.md` files that guide AI coding agents). Skills are installed via `npx skills add` and stored in `.agents/skills/`. The lockfile is `skills-lock.json`.
+
+### Installed skills
+
+| Skill | Source | Purpose |
+|---|---|---|
+| `design-taste-frontend` | Leonxlnx/taste-skill | Anti-slop frontend design: layout, typography, motion rules |
+| `redesign-existing-projects` | Leonxlnx/taste-skill | Audit-first redesign protocol for existing codebases |
+| `seo-audit` | coreyhaines31/marketingskills | SEO audit and recommendations |
+
+### Installing additional skills
+
+```bash
+npx skills add https://github.com/Leonxlnx/taste-skill           # install all taste skills
+npx skills add https://github.com/Leonxlnx/taste-skill --skill "skill-name" -y  # single skill
+```
+
+Skills are framework-agnostic instruction files — they don't modify code directly. The AI agent reads them and applies the rules when generating or modifying frontend code.
+
 ## Critical gotchas
 
 - **Prisma client is exported as `any`** (`src/lib/db/prisma.ts`). This is intentional — type mismatches between CI/generated client and runtime cause build failures otherwise. Do not rewrite it to a strict type without ensuring CI consistency first.
@@ -56,6 +77,8 @@ psql "$DATABASE_URL" -c "UPDATE users SET \"accountType\" = 'PROFESSIONAL' WHERE
 - **`EMAIL_FROM` must be a valid sender address** accepted by the SMTP provider (e.g., for Gmail it must match `SMTP_USER`). Malformed addresses get `501 Bad sender address syntax`.
 - **Transaction timeout for application creation** is extended to 15s (`maxWait: 15000, timeout: 15000` in the create route). Don't reduce it.
 - **Google Gemini may return 503** during high demand. There is a fallback to OpenAI in some flows.
+- **API routes must use `response.cookies.set()`** to set/clear the session cookie. Do NOT use `response.headers.set('Set-Cookie', ...)` — this can throw `ERR_INVALID_ARG_TYPE` in Next.js 15. See `src/lib/auth/server-session.ts` for the `setSessionCookie` / `clearSessionCookie` helper functions (used only outside API routes).
+- **Dashboard sub-pages must use the `DashboardBackBar` component** (`src/components/DashboardBackBar.tsx`) instead of copy-pasting the sticky back-navigation bar. Pass the translated label as a prop.
 
 ## Testing
 
@@ -79,10 +102,12 @@ psql "$DATABASE_URL" -c "UPDATE users SET \"accountType\" = 'PROFESSIONAL' WHERE
 | `src/app/api/` | API routes (no locale prefix) |
 | `src/lib/` | Business logic (auth, ai, cv, pdf, email, db) |
 | `src/components/ui/` | shadcn/ui components |
+| `src/components/DashboardBackBar.tsx` | Shared back-navigation bar for dashboard sub-pages |
 | `src/i18n/` | i18n config (routing, request) |
 | `prisma/` | Schema + seed |
 | `templates/` | HTML templates for PDF generation |
 | `messages/` | Translation JSON (en.json, es.json) |
+| `.agents/skills/` | Agent Skills (SKILL.md files for AI agent guidance) |
 | `DESIGN.md` | Visual design tokens and component styling (DESIGN.md format) |
 
 ## Design system

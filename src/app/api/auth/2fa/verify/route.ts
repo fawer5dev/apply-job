@@ -6,7 +6,7 @@ import { verifyTOTP, verifyBackupCode } from '@/lib/auth/totp';
 import { createSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import { checkRateLimit } from '@/lib/auth/rate-limit';
-import { setSessionCookie } from '@/lib/auth/server-session';
+
 
 const verifySchema = z.object({
   tempToken: z.string().min(1, 'Temporary token is required'),
@@ -200,7 +200,13 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    response.headers.set('Set-Cookie', setSessionCookie(sessionToken, expiresAt));
+    response.cookies.set('session-token', sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+    });
 
     return response;
   } catch (error) {

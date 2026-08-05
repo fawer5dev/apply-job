@@ -10,7 +10,6 @@ import {
   resetFailedAttempts,
 } from '@/lib/auth/account-lockout';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import { setSessionCookie } from '@/lib/auth/server-session';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -28,7 +27,16 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || undefined;
 
     // Check rate limit
-    const rateLimit = await checkRateLimit(ip, 'login');
+    let rateLimit;
+    try {
+      rateLimit = await checkRateLimit(ip, 'login');
+    } catch (err) {
+      console.error('Rate limit check error:', err);
+      return NextResponse.json(
+        { success: false, error: 'Service temporarily unavailable. Please try again.' },
+        { status: 503 }
+      );
+    }
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {
@@ -282,12 +290,19 @@ export async function POST(request: NextRequest) {
       expiresAt,
     });
 
-    // Set session cookie
-    response.headers.set('Set-Cookie', setSessionCookie(sessionToken, expiresAt));
+    const maxAge = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+    response.cookies.set('session-token', sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge,
+    });
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error instanceof Error ? error.message : error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
 
     return NextResponse.json(
       {

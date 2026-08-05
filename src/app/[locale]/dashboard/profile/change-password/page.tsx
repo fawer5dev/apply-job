@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/routing';
-import { Lock, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useRouter } from '@/i18n/routing';
+import { Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import DashboardBackBar from '@/components/DashboardBackBar';
 
 export default function ChangePasswordPage() {
   const t = useTranslations('ChangePassword');
   const router = useRouter();
-  
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -52,106 +53,105 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-2xl">
-        <Link
-          href="/dashboard/profile"
-          className="group mb-8 inline-flex items-center gap-2 font-body text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t('back')}
-        </Link>
+    <>
+      <DashboardBackBar label={t('back')} />
 
-        <div className="mb-12 animate-fade-in-up">
-          <h1 className="mb-4 font-display text-5xl font-bold tracking-tight">
-            {t('title')}
-          </h1>
-          <p className="font-body text-lg text-muted-foreground">
-            {t('subtitle')}
-          </p>
-        </div>
+      <div className="container py-12 md:py-16">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-12">
+            <h1 className="text-2xl font-medium tracking-tight sm:text-3xl">
+              {t('title')}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              {t('subtitle')}
+            </p>
+          </div>
 
-        <section className="animate-fade-in-up border-2 border-foreground/10 bg-card p-8">
-          {success ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <CheckCircle className="mb-4 h-16 w-16 text-green-500" />
-              <h3 className="mb-2 font-display text-2xl font-bold">{t('success')}</h3>
-              <p className="font-body text-sm text-muted-foreground">Redirecting back to profile...</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-3">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider">
-                  {t('currentPassword')}
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full border-2 border-foreground/20 bg-background pl-12 pr-4 py-3 font-body text-sm transition-all focus-visible:border-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10"
-                    required
-                  />
-                </div>
+          <section className="rounded-xl border bg-card p-8">
+            {success ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CheckCircle className="mb-4 h-16 w-16 text-emerald-500" />
+                <h3 className="mb-2 text-xl font-medium">{t('success')}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Redirecting back to profile...
+                </p>
               </div>
-
-              <div className="space-y-3">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider">
-                  {t('newPassword')}
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border-2 border-foreground/20 bg-background pl-12 pr-4 py-3 font-body text-sm transition-all focus-visible:border-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10"
-                    required
-                  />
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    {t('currentPassword')}
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-3">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider">
-                  {t('confirmPassword')}
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border-2 border-foreground/20 bg-background pl-12 pr-4 py-3 font-body text-sm transition-all focus-visible:border-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10"
-                    required
-                  />
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    {t('newPassword')}
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {error && (
-                <div className="border-2 border-red-500/50 bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/30 dark:text-red-200">
-                  {error}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    {t('confirmPassword')}
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background py-2 pl-10 pr-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      required
+                    />
+                  </div>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={updating}
-                className="group relative inline-flex h-14 w-full items-center justify-center gap-2 overflow-hidden bg-primary px-8 font-body text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:pointer-events-none disabled:opacity-50"
-              >
-                {updating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t('updating')}
-                  </>
-                ) : (
-                  t('saveChanges')
+                {error && (
+                  <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    {error}
+                  </div>
                 )}
-              </button>
-            </form>
-          )}
-        </section>
+
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
+                >
+                  {updating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t('updating')}
+                    </>
+                  ) : (
+                    t('saveChanges')
+                  )}
+                </button>
+              </form>
+            )}
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

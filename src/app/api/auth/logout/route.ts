@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revokeSession } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
 import {
-  clearSessionCookie,
   getSessionToken,
   requireAuthApi,
 } from '@/lib/auth/server-session';
@@ -52,7 +51,13 @@ export async function POST(request: NextRequest) {
       message: 'Logged out successfully',
     });
 
-    response.headers.set('Set-Cookie', clearSessionCookie());
+    response.cookies.set('session-token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
 
     return response;
   } catch (error) {

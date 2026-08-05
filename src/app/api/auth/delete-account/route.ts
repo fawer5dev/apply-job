@@ -4,10 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 import { verifyTOTP } from '@/lib/auth/totp';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import {
-  clearSessionCookie,
-  requireAuthApi,
-} from '@/lib/auth/server-session';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 const deleteSchema = z.object({
   password: z.string().min(1, 'Password is required'),
@@ -154,7 +151,13 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Account deleted successfully',
     });
-    response.headers.set('Set-Cookie', clearSessionCookie());
+    response.cookies.set('session-token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
 
     return response;
   } catch (error) {

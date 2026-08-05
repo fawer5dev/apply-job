@@ -190,6 +190,16 @@ The page background is pure white. Cards are white with a 1px gray-100 border. N
 
 Never use font-bold or font-semibold for headings. The design relies on font-medium with generous spacing for hierarchy, not weight contrast.
 
+### Font aliases
+
+The custom utility classes `font-display` and `font-body` are both aliased to Inter via `tailwind.config.ts`. They exist for future font swap flexibility but currently render identically to `font-sans`.
+
+### Iconography
+
+All lucide-react icons use a consistent `strokeWidth={1.5}`. Never use `strokeWidth={2}` or higher — it creates visual noise against the clean, light-weight typography system.
+
+Use icon libraries in this priority: `lucide-react` (primary), `@phosphor-icons/react` (secondary). Never hand-roll SVG icon paths.
+
 ## Layout
 
 The layout uses a mobile-first responsive grid:
@@ -201,6 +211,19 @@ The layout uses a mobile-first responsive grid:
 Spacing follows a consistent scale: 4px (xs), 8px (sm), 16px (md), 24px (lg), 32px (xl). All grids start at `grid-cols-1` and expand with breakpoints. Fixed widths are avoided — use `w-full sm:w-auto` instead.
 
 Form buttons always span full width on mobile (`w-full sm:w-auto`).
+
+### Dashboard Back Bar
+
+The shared `DashboardBackBar` component (`src/components/DashboardBackBar.tsx`) renders the sticky back-navigation bar used in all dashboard sub-pages (CV management, application details, profile settings, 2FA setup, etc.). It accepts a `label` prop for the translated "Back to Dashboard" text. Never copy-paste this bar — always use the component.
+
+### Animations
+
+Two custom animations are defined in `tailwind.config.ts`:
+
+- **`animate-fade-in-up`** — Fade in from 16px below (0.5s ease-out). Used for section and page headers.
+- **`animate-scale-in`** — Scale in from 95% with opacity (0.3s ease-out). Used for cards and feature grids.
+
+Keep animation usage minimal. Only use these for page-load reveals. Avoid decorative micro-interactions, hover scale transforms, or staggered delays as per the "no decorative animations" rule.
 
 ## Shapes
 
@@ -249,9 +272,22 @@ Pill-shaped indicators with a Lucide icon inside:
 
 All badges use 12px font-medium text with 2.5px horizontal and 0.5px vertical padding.
 
+### Error States
+
+All error banners follow a consistent pattern across the application:
+
+- **Container:** `rounded-lg border border-destructive/50 bg-destructive/10 p-4`
+- **Layout:** Flex row with `gap-3`, containing an `AlertCircle` icon (`h-4 w-4 shrink-0`) and the error message text
+- **Text:** `text-sm text-destructive`
+- **Nav bar backdrop:** Omit the colored accent bar (the old `border-l-4` pattern). Use the above container pattern everywhere.
+
+Success states follow the same layout with `border-emerald-500/50 bg-emerald-50` and `CheckCircle` icon.
+
 ### Navigation
 
-The top bar is 56px tall, sticky, with a semi-transparent white background and subtle bottom border. Logo combines an icon with the app name in font-medium gray-900. Nav links are 14px gray-500 text with 8px border-radius hover states. Active links use blue-700 text on blue-50 background.
+The top bar is 56px tall, sticky, with a semi-transparent white background and subtle bottom border. Logo combines an icon with the app name in font-medium gray-900. Nav links are 14px font-medium text. Active links use `text-primary` (via CSS variable token, maps to blue-700). Inactive links use `text-muted-foreground`. Active state is detected via `usePathname()` — never hardcode nav styles per page.
+
+Hover states on desktop nav links transition to `text-primary` with a 200ms color transition. Mobile nav uses `bg-primary/10 text-primary` for active items and `bg-accent` hover for inactive items.
 
 The user avatar is a 32px circle with blue-50 background and blue-700 initials in 12px font-medium text.
 

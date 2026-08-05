@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Successful login without 2FA
-        setUser(data.user);
+        setUser(data.users);
         await fetchSession();
 
         return { success: true };

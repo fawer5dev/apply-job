@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revokeAllSessions } from '@/lib/auth/session';
 import { createAuditLog } from '@/lib/auth/audit-log';
-import {
-  clearSessionCookie,
-  requireAuthApi,
-} from '@/lib/auth/server-session';
+import { requireAuthApi } from '@/lib/auth/server-session';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +35,13 @@ export async function POST(request: NextRequest) {
       revokedCount,
     });
 
-    response.headers.set('Set-Cookie', clearSessionCookie());
+    response.cookies.set('session-token', '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
 
     return response;
   } catch (error) {

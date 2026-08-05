@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const t = useTranslations('Login');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,7 +56,7 @@ export default function LoginPage() {
           router.push(redirectTo);
         }
       } else {
-        setError(result.error || 'Login failed');
+        setError(result.error || t('loginFailed'));
         if (
           result.error?.includes('verify your email') ||
           result.error?.includes('verification')
@@ -63,7 +65,7 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError(t('unexpectedError'));
     } finally {
       setLoading(false);
     }
@@ -90,10 +92,10 @@ export default function LoginPage() {
       if (response.ok) {
         router.push(redirectTo);
       } else {
-        setError(data.error || '2FA verification failed');
+        setError(data.error || t('twoFAFailed'));
       }
     } catch (err) {
-      setError('An unexpected error occurred during 2FA verification');
+      setError(t('unexpectedError'));
     } finally {
       setLoading(false);
     }
@@ -101,7 +103,7 @@ export default function LoginPage() {
 
   const handleResendVerification = async () => {
     if (!email) {
-      setError('Please enter your email address first');
+      setError(t('enterEmailFirst'));
       return;
     }
 
@@ -122,10 +124,10 @@ export default function LoginPage() {
         setResendSuccess(true);
         setError(null);
       } else {
-        setError(data.error || 'Failed to resend verification email');
+        setError(data.error || t('resendFailed'));
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError(t('unexpectedError'));
     } finally {
       setResendingEmail(false);
     }
@@ -136,24 +138,24 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
         <Card className="w-full max-w-md shadow-sm">
           <CardHeader>
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-              <ShieldCheck className="h-5 w-5 text-blue-700" />
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
-            <CardTitle>Two-Factor Authentication</CardTitle>
-            <CardDescription>
-              Enter the 6-digit code from your authenticator app
-            </CardDescription>
+            <CardTitle>{t('twoFactorTitle')}</CardTitle>
+            <CardDescription>{t('twoFactorDescription')}</CardDescription>
           </CardHeader>
           <form onSubmit={handle2FASubmit}>
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">
-                  <AlertDescription className="break-words">{error}</AlertDescription>
+                  <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="twoFactorCode">Authentication Code</Label>
+                <Label htmlFor="twoFactorCode">
+                  {t('authenticationCode')}
+                </Label>
                 <Input
                   id="twoFactorCode"
                   type="text"
@@ -168,20 +170,20 @@ export default function LoginPage() {
                 />
               </div>
 
-              <p className="text-xs text-gray-400">
-                Lost your device?{' '}
+              <p className="text-xs text-muted-foreground">
+                {t('backupCodeHint')}{' '}
                 <button
                   type="button"
-                  className="text-blue-700 hover:underline"
+                  className="text-primary hover:underline"
                   onClick={() => setError('Please use a backup code instead')}
                 >
-                  Use backup code
+                  {t('useBackupCode')}
                 </button>
               </p>
             </CardContent>
             <CardFooter className="flex-col space-y-2">
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Verifying...' : 'Verify'}
+                {loading ? t('verifying') : t('verify')}
               </Button>
               <Button
                 type="button"
@@ -194,7 +196,7 @@ export default function LoginPage() {
                 }}
               >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
-                Back to Login
+                {t('backToLogin')}
               </Button>
             </CardFooter>
           </form>
@@ -207,19 +209,17 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-            <LogIn className="h-5 w-5 text-blue-700" />
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <LogIn className="h-5 w-5 text-primary" />
           </div>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
+          <CardTitle>{t('welcomeBack')}</CardTitle>
+          <CardDescription>{t('signInToContinue')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription className="break-words">
+                <AlertDescription>
                   {error}
                   {requiresVerification && (
                     <div className="mt-2">
@@ -233,8 +233,8 @@ export default function LoginPage() {
                       >
                         <Mail className="mr-1.5 h-3.5 w-3.5" />
                         {resendingEmail
-                          ? 'Sending...'
-                          : 'Resend Verification Email'}
+                          ? t('sending')
+                          : t('resendVerification')}
                       </Button>
                     </div>
                   )}
@@ -244,36 +244,30 @@ export default function LoginPage() {
 
             {resendSuccess && (
               <Alert variant="success">
-                <AlertDescription className="break-words">
-                  Verification email sent! Please check your inbox and spam
-                  folder.
+                <AlertDescription>
+                  {t('verificationSent')}
                 </AlertDescription>
               </Alert>
             )}
 
             {searchParams.get('verified') === 'true' && (
               <Alert variant="success">
-                <AlertDescription className="break-words">
-                  Email verified successfully! You can now log in.
-                </AlertDescription>
+                <AlertDescription>{t('emailVerified')}</AlertDescription>
               </Alert>
             )}
 
             {searchParams.get('reset') === 'true' && (
               <Alert variant="success">
-                <AlertDescription className="break-words">
-                  Password reset successfully! Please log in with your new
-                  password.
-                </AlertDescription>
+                <AlertDescription>{t('passwordReset')}</AlertDescription>
               </Alert>
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -284,12 +278,12 @@ export default function LoginPage() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-blue-700 hover:underline"
+                  className="text-xs text-primary hover:underline"
                 >
-                  Forgot password?
+                  {t('forgotPassword')}
                 </Link>
               </div>
               <Input
@@ -305,12 +299,12 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('signingIn') : t('signIn')}
             </Button>
-            <p className="text-center text-sm text-gray-500">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-blue-700 hover:underline">
-                Sign up
+            <p className="text-center text-sm text-muted-foreground">
+              {t('noAccount')}{' '}
+              <Link href="/register" className="text-primary hover:underline">
+                {t('signUp')}
               </Link>
             </p>
           </CardFooter>
