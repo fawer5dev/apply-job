@@ -37,10 +37,18 @@ export function getGoogleAIClient(): GoogleGenAI {
   return client;
 }
 
+/** A document sent inline to Gemini (base64, never stored by this app). */
+export interface PdfAttachment {
+  mimeType: 'application/pdf';
+  /** Base64-encoded file bytes. */
+  data: string;
+}
+
 export interface GoogleGenerateOptions {
   temperature?: number;
   maxTokens?: number;
   responseFormat?: 'json' | 'text';
+  attachments?: PdfAttachment[];
 }
 
 /**
@@ -57,9 +65,24 @@ export async function generateContent(
 ): Promise<string> {
   const isJSON = options.responseFormat === 'json';
 
+  // Documents go before the instructions, as Google recommends for PDFs.
+  const contents = options.attachments?.length
+    ? [
+        {
+          role: 'user' as const,
+          parts: [
+            ...options.attachments.map((file) => ({
+              inlineData: { mimeType: file.mimeType, data: file.data },
+            })),
+            { text: userPrompt },
+          ],
+        },
+      ]
+    : userPrompt;
+
   const response = await getGoogleAIClient().models.generateContent({
     model: AI_CONFIG.model,
-    contents: userPrompt,
+    contents,
     config: {
       systemInstruction: systemPrompt,
       temperature: options.temperature ?? AI_CONFIG.defaultTemperature,

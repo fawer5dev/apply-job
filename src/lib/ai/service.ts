@@ -1,11 +1,13 @@
 import type { z } from 'zod';
 import * as googleAI from './google-ai';
+import type { PdfAttachment } from './google-ai';
 import { AIError, FRIENDLY_FALLBACK, toAIError } from './errors';
 import { AI_CONFIG } from '@/config/ai';
 
 export interface GenerateConfig {
   temperature?: number;
   maxTokens?: number;
+  attachments?: PdfAttachment[];
 }
 
 export interface GenerateJSONConfig<T> extends GenerateConfig {

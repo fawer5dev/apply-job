@@ -19,6 +19,9 @@ export default function NewCVPage() {
   const [title, setTitle] = useState('');
   const [parsing, setParsing] = useState(false);
   const [parsedCV, setParsedCV] = useState<CV | null>(null);
+  const [extractionMethod, setExtractionMethod] = useState<
+    'text' | 'visual' | null
+  >(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -62,6 +65,7 @@ export default function NewCVPage() {
       }
 
       setParsedCV(data.cv);
+      setExtractionMethod(data.extractionMethod === 'visual' ? 'visual' : 'text');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.parseFailed'));
     } finally {
@@ -104,6 +108,7 @@ export default function NewCVPage() {
 
   const resetUpload = () => {
     setParsedCV(null);
+    setExtractionMethod(null);
     setFile(null);
     setError('');
   };
@@ -349,6 +354,18 @@ export default function NewCVPage() {
                   {t('review.uploadAnother')}
                 </button>
               </div>
+
+              {extractionMethod === 'visual' && (
+                <div
+                  role="status"
+                  className="relative overflow-hidden border-2 border-amber-500/50 bg-amber-50 p-4 dark:bg-amber-950/30"
+                >
+                  <div className="absolute left-0 top-0 h-full w-2 bg-amber-500" />
+                  <p className="pl-4 font-body text-sm text-amber-900 dark:text-amber-100">
+                    {t('review.visualNotice')}
+                  </p>
+                </div>
+              )}
 
               <CVForm
                 initialData={parsedCV}

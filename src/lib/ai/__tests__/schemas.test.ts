@@ -55,6 +55,18 @@ describe('atsEvaluationSchema', () => {
   });
 });
 
+describe('parsedCVSchema with unreadable fields', () => {
+  it('turns null required text (e.g. illegible date) into an empty string', () => {
+    const result = generatedCVSchema.parse({
+      personalInfo: { name: null, email: null },
+      experience: [{ title: 'Engineer', company: null, startDate: null }],
+    });
+    expect(result.personalInfo.name).toBe('');
+    expect(result.experience[0].startDate).toBe('');
+    expect(result.experience[0].company).toBe('');
+  });
+});
+
 describe('jobAnalysisSchema', () => {
   it('maps unknown seniority to a safe default', () => {
     const result = jobAnalysisSchema.parse({

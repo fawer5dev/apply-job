@@ -149,7 +149,8 @@
     "review": {
       "title": "Revisa tu CV",
       "subtitle": "Verifica y edita la información extraída antes de guardar",
-      "uploadAnother": "Subir otro archivo"
+      "uploadAnother": "Subir otro archivo",
+      "visualNotice": "PDF escaneado o basado en imágenes: lo leímos visualmente con IA. Revisa con cuidado el nombre, las fechas, el correo y el teléfono, y completa lo que no se pudo leer."
     },
     "cvForm": {
       "sections": {

@@ -7,12 +7,22 @@ import { z } from 'zod';
  * Model output is untrusted: fields are coerced to safe defaults where a
  * missing value is harmless, and anything structurally wrong makes
  * `generateJSON` fail (and retry) instead of reaching the database.
+ *
+ * Models often return `null` for fields they cannot read (for example a date
+ * in a scanned CV). Required text fields accept null and become '' so an
+ * unreadable value does not fail the whole response.
  */
 
 const optionalText = z
   .string()
   .nullish()
   .transform((value) => value?.trim() || undefined);
+
+/** Required text: null/undefined becomes '' (caller decides how to handle). */
+const requiredText = z
+  .string()
+  .nullish()
+  .transform((value) => value?.trim() ?? '');
 
 const textList = z
   .array(z.string())
@@ -30,8 +40,8 @@ const score = z
 // ---------- CV ----------
 
 export const personalInfoSchema = z.object({
-  name: z.string().trim().default(''),
-  email: z.string().trim().default(''),
+  name: requiredText,
+  email: requiredText,
   phone: optionalText,
   location: optionalText,
   linkedin: optionalText,
@@ -40,10 +50,10 @@ export const personalInfoSchema = z.object({
 });
 
 export const experienceSchema = z.object({
-  title: z.string().trim().default(''),
-  company: z.string().trim().default(''),
+  title: requiredText,
+  company: requiredText,
   location: optionalText,
-  startDate: z.string().trim().default(''),
+  startDate: requiredText,
   endDate: optionalText,
   current: z.boolean().nullish().transform((value) => value ?? undefined),
   description: optionalText,
@@ -51,22 +61,22 @@ export const experienceSchema = z.object({
 });
 
 export const educationSchema = z.object({
-  degree: z.string().trim().default(''),
-  institution: z.string().trim().default(''),
+  degree: requiredText,
+  institution: requiredText,
   location: optionalText,
-  graduationDate: z.string().trim().default(''),
+  graduationDate: requiredText,
   gpa: optionalText,
   description: optionalText,
 });
 
 export const skillCategorySchema = z.object({
-  category: z.string().trim().default('Skills'),
+  category: requiredText.transform((value) => value || 'Skills'),
   items: textList,
 });
 
 export const projectSchema = z.object({
-  name: z.string().trim().default(''),
-  description: z.string().trim().default(''),
+  name: requiredText,
+  description: requiredText,
   technologies: textList,
   url: optionalText,
   startDate: optionalText,
@@ -74,9 +84,9 @@ export const projectSchema = z.object({
 });
 
 export const certificationSchema = z.object({
-  name: z.string().trim().default(''),
-  issuer: z.string().trim().default(''),
-  date: z.string().trim().default(''),
+  name: requiredText,
+  issuer: requiredText,
+  date: requiredText,
   url: optionalText,
 });
 
@@ -136,7 +146,7 @@ export const generatedCVSchema = cvBodySchema.extend({
 
 export const jobRequirementSchema = z.object({
   category: z.enum(['required', 'preferred', 'bonus']).catch('preferred'),
-  skill: z.string().trim().default(''),
+  skill: requiredText,
   description: optionalText,
 });
 

@@ -5,12 +5,12 @@ Web app to automate the job application process by generating personalized CVs a
 ## Features
 
 - **Authentication** — Custom session-based auth with email/password, email verification, TOTP 2FA, multi-device session management, password reset, account lockout, rate limiting, and audit logging.
-- **Base CV Upload** — Upload your main CV (PDF, DOCX, TXT) and automatically extract structured information.
+- **Base CV Upload** — Upload your main CV (PDF, DOCX, TXT) and automatically extract structured information. Scanned and mixed PDFs are read visually with Gemini (up to 10 pages).
 - **CV Management** — Create, edit, and manage multiple base CVs.
 - **Job Description Analysis** — Analyze job postings and extract key requirements, keywords, and seniority level.
 - **Personalized CV Generation** — Generate CVs tailored to each job posting using AI (Google Gemini).
-- **ATS Scoring** — Calculate match score (0-100) with strengths, weaknesses, and improvement suggestions.
-- **Cover Letters** — Generate personalized cover letters with multiple tone options (professional, enthusiastic, casual) and automatic PDF generation.
+- **ATS Fit Estimates** — Get an AI estimate (not the output of a specific ATS) with strengths, weaknesses, and improvement suggestions, plus a separate deterministic keyword-coverage score.
+- **Cover Letters** — Generate personalized cover letters with professional, creative, formal, or friendly tone and automatic PDF generation.
 - **Application Tracking** — Manage all your applications through their lifecycle (Draft → Ready → Applied → Interviewing → Offered → Accepted/Rejected).
 - **Account Plans** — Free plan (up to 3 applications) with upgrade to Professional for unlimited usage. Plans enforced server-side with audit logging.
 - **CV Templates** — Reusable CV HTML templates stored in the database.
@@ -62,7 +62,7 @@ pnpm db:push
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Default locale is Spanish (`/es`); switch to English at `/en`.
+Open [http://localhost:3000](http://localhost:3000). English is the default locale; Spanish is available at `/es`.
 
 ## Environment Variables
 
@@ -205,11 +205,7 @@ The limit constant is defined in `src/lib/plans.ts` — change `FREE_PLAN_APPLIC
 
 ## AI Costs
 
-| Provider | Per Application | 100 Apps/Month |
-|----------|----------------|----------------|
-| **Google Gemini** | ~$0.005 (estimate, varies by model) | **<$1** |
-
-Gemini is the only AI provider. Costs depend on the model configured in `src/config/ai.ts`; verify current pricing before relying on these figures.
+Google Gemini is the only AI provider. Cost depends on the model selected in `src/config/ai.ts`, prompt size, and whether visual PDF reading is used. Check Google's current pricing and measure representative requests before estimating production spend; this README does not publish a fixed per-application price.
 
 ## Deployment
 

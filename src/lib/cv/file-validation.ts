@@ -19,6 +19,12 @@ export const MAX_CV_TEXT_CHARS = 60_000;
 /** Below this, the file most likely has no text layer (e.g. scanned PDF). */
 export const MIN_CV_TEXT_CHARS = 50;
 
+/**
+ * Page cap for visual reading (scanned or mixed PDFs). Gemini accepts far more,
+ * but each page costs tokens and latency; a CV rarely exceeds this.
+ */
+export const MAX_VISUAL_PDF_PAGES = 10;
+
 export class CVInputError extends Error {
   readonly status: number;
   readonly code: string;

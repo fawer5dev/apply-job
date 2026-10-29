@@ -149,7 +149,8 @@
     "review": {
       "title": "Review Your CV",
       "subtitle": "Check and edit the extracted information before saving",
-      "uploadAnother": "Upload another file"
+      "uploadAnother": "Upload another file",
+      "visualNotice": "Scanned or image-based PDF: we read it visually with AI. Check the name, dates, email and phone carefully, and fill in anything that was unreadable."
     },
     "cvForm": {
       "sections": {

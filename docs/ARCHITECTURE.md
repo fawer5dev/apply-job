@@ -28,16 +28,16 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
   - TOTP 2FA (`otpauth` with QR codes)
   - Multi-device session management
   - Rate limiting and account lockout
-- **Email**: Nodemailer 8.0.7 (SMTP)
+- **Email**: Nodemailer (SMTP)
 - **AI**: Google Gemini (only provider, `@google/genai`)
 - **PDF**: Puppeteer-core 25.1.0 + `@sparticuz/chromium-min`
-- **Document Parsing**: pdf-parse 1.1.1, mammoth 1.8.0
+- **Document Parsing**: pdf-parse (PDF text extraction and page classification), mammoth (DOCX text extraction)
 
 ### Infrastructure
 
 - **Hosting**: Vercel
 - **Database**: Neon / Supabase / Railway
-- **Storage**: Local `files/` directory (production: consider S3/Vercel Blob)
+- **File Storage**: Uploaded CV files are processed in memory and not retained. CV fields are stored as structured data; generated PDFs are returned on demand.
 - **Monitoring**: Sentry + Vercel Analytics (recommended)
 
 ## 📊 Data Model
@@ -344,8 +344,8 @@ The application uses **next-intl** for comprehensive internationalization suppor
 
 ### Supported Languages
 
-- **English (en)**
 - **English (en)** - Default locale
+- **Spanish (es)**
 
 ### Implementation
 
@@ -523,9 +523,9 @@ See [Authentication Architecture](#-authentication-architecture) section above.
 
 ### CV Management
 
-- `POST /api/cv/upload` - Upload and parse resume file
+- `POST /api/cv/upload` - Upload, parse, and save structured CV fields (the source file and newly extracted raw text are not retained)
 - `POST /api/cv/create` - Create base CV manually
-- `POST /api/cv/parse` - Parse raw CV text without saving
+- `POST /api/cv/parse` - Parse a CV without saving it; response includes `extractionMethod: 'text' | 'visual'`
 - `POST /api/cv/generate` - Generate customized resume
 - `GET /api/cv/[id]` - Get specific base CV
 - `PUT /api/cv/[id]` - Update base CV
@@ -556,20 +556,25 @@ See [Authentication Architecture](#-authentication-architecture) section above.
 
 ## 🤖 AI Services
 
-### Primary Provider: Google Gemini
+### Provider: Google Gemini
 
-**Cost-effective solution for high-volume processing**
+Google Gemini is the only AI provider. The application uses `@google/genai`;
+the model and request limits are centralized in `src/config/ai.ts`, and the
+model can be overridden with `GOOGLE_AI_MODEL`. Retryable provider errors are
+retried up to `AI_CONFIG.maxAttempts`; there is no cross-provider fallback.
 
-- Uses `@google/generative-ai` SDK
-- Fast response times
-- Large context window
-- Suitable for all generation tasks
+Every JSON-producing AI operation validates its output with a Zod schema from
+`src/lib/ai/schemas.ts` before the result can be returned or persisted. Never
+persist or render raw model output.
 
-### Provider policy
+### CV Document Processing
 
-Google Gemini is the only provider. OpenAI was removed because no API key is
-available and the fallback added complexity without benefit. The model is
-configured in `src/config/ai.ts` and can be overridden with `GOOGLE_AI_MODEL`.
+- PDF pages are classified as `text`, `scanned`, or `mixed` by `src/lib/cv/pdf-analysis.ts`.
+- Text PDFs use `pdf-parse` and send extracted text to Gemini.
+- Scanned and mixed PDFs send the complete PDF inline to Gemini for visual reading; this path is capped at 10 pages by `MAX_VISUAL_PDF_PAGES`.
+- DOCX and TXT use text extraction. OCR for other image formats is not implemented.
+- The API returns the extraction method so the UI can request review of visually extracted fields.
+- Source files and newly extracted `rawText` are not retained by the upload flow. The Prisma `rawText` column remains for compatibility with existing records.
 
 ### Service Functions
 
@@ -589,19 +594,19 @@ configured in `src/config/ai.ts` and can be overridden with `GOOGLE_AI_MODEL`.
 
 **Prompt**: Evaluates resume according to ATS criteria
 **Input**: CV + JobListing
-**Output**: Score (0-100), strengths, weaknesses, suggestions
+**Output**: AI-estimated ATS fit (0-100), strengths, weaknesses, and suggestions. It is not the result of any specific ATS.
 
 #### 4. Cover Letter Generator
 
 **Prompt**: Generates personalized cover letter
 **Input**: CV + JobListing + tone
-**Output**: Cover letter text + HTML
+**Output**: Plain-text cover letter. The model does not generate HTML; the PDF template escapes its text.
 
 **Format Details:**
 
-- **Greeting**: "Hi {companyName} team," (dynamically inserted from job listing)
-- **Signature**: "Best regards,\n{candidateName}" (dynamically populated from CV)
-- **Tone Options**: professional, enthusiastic, casual
+- **Greeting**: Addresses the company team in the requested output language
+- **Signature**: Includes the candidate name from the CV
+- **Tone Options**: professional, creative, formal, friendly
 - **Length**: ~200-300 words
 
 **PDF Styling:**
@@ -633,11 +638,13 @@ configured in `src/config/ai.ts` and can be overridden with `GOOGLE_AI_MODEL`.
 - **XSS Prevention**: React automatic escaping + httpOnly cookies
 - **CSRF Prevention**: SameSite cookies
 - **Environment Variables**: Sensitive data in `.env.local` (never committed)
+- **PDF Rendering**: CV strings are escaped, JavaScript is disabled, and Chromium requests are restricted to data URLs and the required font hosts.
+- **AI Inputs**: CVs and job descriptions are untrusted data; model output is schema-validated before persistence.
 
 ### Future Enhancements
 
 - **OAuth Providers**: GitHub, Google login (Account model exists)
-- **API Rate Limiting**: Per-user API quotas
+- **AI Usage Budgets**: Per-user monthly/token budgets in addition to the existing per-operation rate limits
 - **Data Encryption**: At-rest encryption for sensitive data
 - **Security Headers**: Additional security headers
 - **CAPTCHA**: Bot protection on registration/login

@@ -43,10 +43,13 @@ export async function POST(request: NextRequest) {
 
     const { buffer, kind } = await readValidatedCVFile(file);
 
-    const parsedCV = await parseCV(buffer, kind);
+    const { cv: parsedCV, extractionMethod } = await parseCV(buffer, kind);
 
     return NextResponse.json({
       success: true,
+      // 'visual' means the text was read from the PDF image by Gemini; the
+      // client should ask the user to review the fields before saving.
+      extractionMethod,
       cv: {
         personalInfo: parsedCV.personalInfo,
         summary: parsedCV.summary ?? null,

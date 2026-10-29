@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const { buffer, kind } = await readValidatedCVFile(file);
 
-    const parsedCV = await parseCV(buffer, kind);
+    const { cv: parsedCV, extractionMethod } = await parseCV(buffer, kind);
 
     // Validate parsed data before saving so incomplete AI responses
     // surface clear errors instead of corrupt DB records.
@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      extractionMethod,
       base_cvs: {
         id: baseCV.id,
         title: baseCV.title,

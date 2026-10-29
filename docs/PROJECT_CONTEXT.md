@@ -1,8 +1,8 @@
-> **Estado actual (fase de mejoras):** Google Gemini es el único proveedor de IA. Las referencias a OpenAI, `openai.ts`, `ai` (Vercel AI SDK) y `@google/generative-ai` que aparecen más abajo describen el estado anterior y ya no aplican. Ver `src/config/ai.ts`, `src/lib/ai/schemas.ts` y `src/lib/applications/generate-application.ts`.
+> **Current implementation (updated 2026-10-30):** Google Gemini is the only AI provider (`@google/genai`). Scanned and mixed PDFs are sent inline to Gemini for visual reading (maximum 10 pages); there is no separate OCR service. AI JSON is validated with Zod, PDFs are rendered from escaped text, and newly uploaded source files/raw text are not retained. See `src/config/ai.ts`, `src/lib/ai/schemas.ts`, `src/lib/cv/pdf-analysis.ts`, `src/lib/cv/parser.ts`, and `src/lib/applications/generate-application.ts`. Older details in this document are historical snapshots; verify behavior against current source code.
 
 # 📋 Complete Project Context - Apply Job
 
-> **Last updated**: July 7, 2026
+> **Last updated**: October 30, 2026
 >
 > This document contains all necessary information to continue project development in any tool or environment.
 
@@ -19,7 +19,7 @@
 - Calculate ATS (Applicant Tracking System) scoring
 - Generate personalized cover letters with multiple tone options
 - Manage applications and track progress
-- Multi-language support (English and Spanish, **Spanish default**)
+- Multi-language support (English and Spanish, **English default**)
 - Professional PDF generation with custom templates
 
 ---
@@ -58,14 +58,15 @@
   - Comprehensive audit logging
 - **Email**: nodemailer 8.0.7 (SMTP)
 - **AI/ML**:
-  - Google Generative AI (`@google/generative-ai`) - Primary, cost-effective
-  - OpenAI GPT-4o (API v4.56.0) - Optional, higher quality fallback
-  - ai SDK (Vercel AI SDK v3.3.0)
+  - Google Gemini (`@google/genai`) - only AI provider
+  - Model configured in `src/config/ai.ts`, with optional `GOOGLE_AI_MODEL` override
+  - Per-operation Zod output validation in `src/lib/ai/schemas.ts`
+  - Retryable errors retried up to `AI_CONFIG.maxAttempts`; no provider fallback
 - **PDF Processing**:
   - puppeteer-core 25.1.0 (PDF generation)
   - @sparticuz/chromium-min 149.0.0 (Chromium downloader for serverless)
-  - pdf-parse 1.1.1 (text extraction)
-  - mammoth 1.8.0 (DOCX parsing)
+  - pdf-parse (PDF text extraction and scanned/mixed page classification)
+  - mammoth (DOCX text extraction)
 
 ### State Management & Data Fetching
 
@@ -90,7 +91,8 @@
 - **Library**: next-intl 4.11.0
 - **Supported Languages**:
   - English (en)
-  - Spanish (es) - **Default**
+  - Spanish (es)
+- **Default locale**: English (en)
 - **Translation Files**: `messages/en.json`, `messages/es.json`
 - **Routing**: All user-facing pages under `[locale]` dynamic segment
 - **Middleware**: Automatic locale detection and auth protection (`src/middleware.ts`)
@@ -242,7 +244,7 @@ Models use **plural table names** as configured in `prisma/schema.prisma`.
 - skills: Json
 - projects: Json?
 - certifications: Json?
-- rawText: String?
+- rawText: String? (legacy field; new CV uploads set it to null)
 - fileUrl: String?
 - createdAt: DateTime @default(now())
 - updatedAt: DateTime
@@ -536,13 +538,16 @@ apply-job/
 │   │   │   ├── service.ts
 │   │   │   ├── errors.ts
 │   │   │   ├── google-ai.ts
-│   │   │   ├── openai.ts
+│   │   │   ├── schemas.ts
 │   │   │   ├── job-analyzer.ts
 │   │   │   ├── cv-generator.ts
 │   │   │   ├── cover-letter-generator.ts
 │   │   │   ├── ats-scorer.ts
 │   │   │   └── prompts/
 │   │   │       └── index.ts
+│   │   ├── applications/       # Shared application generation and plan checks
+│   │   ├── cv/                  # Parsing, PDF classification, and file validation
+│   │   ├── pdf/                 # PDF generation and HTML escaping
 │   │   │
 │   │   ├── auth/              # Authentication services
 │   │   │   ├── session.ts
@@ -841,7 +846,8 @@ Generates a personalized cover letter.
 ```json
 {
   "applicationId": "string",
-  "tone": "professional|enthusiastic|casual"
+  "tone": "professional|creative|formal|friendly",
+  "language": "en|es"
 }
 ```
 
@@ -861,7 +867,10 @@ Generates a PDF from a resume or cover letter.
 
 ##### POST /api/cv/upload
 
-Uploads and parses a CV file (PDF, DOCX, TXT).
+Uploads and parses a CV file (PDF, DOCX, TXT). The route validates file size and
+signature, saves structured CV fields, and does not save the uploaded file or
+newly extracted raw text. Scanned and mixed PDFs are read visually by Gemini
+(maximum 10 pages).
 
 **Request**: `multipart/form-data` with file
 
@@ -871,7 +880,9 @@ Creates a base CV manually from structured data.
 
 ##### POST /api/cv/parse
 
-Parses raw CV text without saving to database.
+Parses a CV file without saving it to the database. The response includes
+`extractionMethod: 'text' | 'visual'`; the visual method means Gemini read the
+scanned or mixed PDF pages directly.
 
 ##### GET/PUT/DELETE /api/cv/[id]
 
@@ -943,14 +954,11 @@ EMAIL_FROM="Apply Job <your-email@gmail.com>"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 # ============================================
-# GOOGLE AI (Recommended - Cost-effective)
+# GOOGLE AI (Required; only AI provider)
 # ============================================
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
-
-# ============================================
-# OPENAI (Optional - Higher quality fallback)
-# ============================================
-# OPENAI_API_KEY="sk-..."
+# Optional; defaults to the model in src/config/ai.ts
+# GOOGLE_AI_MODEL="gemini-3.8-flash"
 
 # ============================================
 # OPTIONAL: OAUTH (Future)
@@ -1049,12 +1057,13 @@ pnpm test:coverage
 1. User uploads file (PDF/DOCX/TXT)
    ↓
 2. src/lib/cv/parser.ts → parseCV()
-   - Extracts text from file
+   - Extracts text from DOCX/TXT and text PDFs
+   - Classifies PDF pages; sends scanned/mixed PDFs inline to Gemini for visual reading
    ↓
 3. src/lib/ai/service.ts / google-ai.ts
    - AI structures data into BaseCV format
    ↓
-4. Save to DB (base_cvs table)
+4. Save structured fields to DB (base_cvs table; new uploads set legacy rawText to null)
    ↓
 5. Display structured resume for review
 ```
@@ -1111,7 +1120,7 @@ pnpm test:coverage
    ↓
 4. Save to cover_letters table
    ↓
-5. Display cover letter (Markdown/HTML)
+5. Display the plain-text cover letter
 ```
 
 ### Workflow 5: PDF Generation
@@ -1157,35 +1166,32 @@ pnpm test:coverage
 
 ## 🤖 AI System - Implementation Details
 
-### Providers
+### Provider and configuration
 
-**Primary: Google Gemini**
-
-- Package: `@google/generative-ai`
-- Cost-effective, fast
-- Used for all generation tasks
-
-**Optional/Fallback: OpenAI GPT-4o**
-
-- Package: `openai`
-- Model: `gpt-4o`
-- Used when Google Gemini returns errors (503) or when configured
+- Google Gemini is the only provider; the client uses `@google/genai`.
+- Model, default generation limits, timeout, and retry count are centralized in `src/config/ai.ts`.
+- Override the model with `GOOGLE_AI_MODEL`; confirm it is available to the configured API key.
+- Retry only errors classified as transient. There is no cross-provider fallback.
+- Every JSON response is parsed and validated against a Zod schema in `src/lib/ai/schemas.ts` before use.
 
 ### Main Prompts
 
 Prompts are in `src/lib/ai/prompts/index.ts`:
 
-1. **CV_PARSER_PROMPT**: Structures resume text into JSON
+1. **CV parser instructions** (`src/lib/cv/parser.ts`): Structures extracted text or a visually read PDF into JSON
 2. **JOB_ANALYZER_PROMPT**: Analyzes job description
 3. **CV_GENERATOR_PROMPT**: Customizes resume for job posting
-4. **ATS_SCORER_PROMPT**: Calculates ATS score
-5. **COVER_LETTER_PROMPT**: Generates personalized cover letter
+4. **ATS_SCORER_PROMPT**: Produces an AI estimate of fit; it is not the score from a specific ATS
+5. **COVER_LETTER_PROMPT**: Generates a personalized plain-text cover letter (HTML is not generated by the model)
 
-### Fallback Strategy
+### CV document processing
 
-- The application attempts Google Gemini first
-- If Gemini returns a 503 or other error, it falls back to OpenAI if configured
-- User-friendly error messages are returned if both providers fail
+- PDF pages are classified as `text`, `scanned`, or `mixed` using characters per page (`src/lib/cv/pdf-analysis.ts`).
+- Text PDFs use `pdf-parse`; extracted text is sent to Gemini.
+- Scanned and mixed PDFs are sent in full as inline `application/pdf` data for Gemini visual reading, capped at 10 pages. The PDF is held in memory by the app and is not stored as an uploaded file.
+- DOCX and TXT use text extraction. Image files and standalone image OCR are not supported.
+- The API returns `extractionMethod: 'text' | 'visual'`; the CV review screen warns users to verify visually extracted fields.
+- All extracted CV text is treated as untrusted input. The model must leave illegible fields empty rather than guess.
 
 ---
 
@@ -1232,12 +1238,12 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 - [x] Tailwind CSS + shadcn/ui configuration
 - [x] Prisma + PostgreSQL setup
 - [x] Complete database models (11 models, plural table names)
-- [x] Google Generative AI integration (primary)
-- [x] OpenAI GPT-4o integration (optional fallback)
+- [x] Google Gemini integration via `@google/genai` (only provider)
+- [x] Zod validation for AI JSON and retries for transient Gemini errors
 - [x] Multi-language support (English/Spanish) with next-intl; default is English
 - [x] Internationalization middleware and routing
 - [x] Language switcher component
-- [x] Resume parser (PDF, DOCX, TXT)
+- [x] Resume parser (PDF, DOCX, TXT), including visual reading of scanned/mixed PDFs (up to 10 pages)
 - [x] API: CV upload, create, parse, generate
 - [x] API: Job description analysis
 - [x] API: Custom resume generation
@@ -1319,13 +1325,13 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 ### 1. Resume Parsing
 
 - **Issue**: Resumes can have very varied formats
-- **Current solution**: AI structures extracted text
-- **Improvement**: Implement validations and fallbacks
+- **Current solution**: Validate file size and signatures, extract PDF/DOCX/TXT text, classify PDF pages, route scanned/mixed PDFs through Gemini visual reading, and validate the resulting CV with Zod
+- **Limitation**: Visual reading is limited to 10-page PDFs; there is no standalone OCR for image uploads
 
 ### 2. AI API Costs
 
 - **Issue**: Each resume generation costs money
-- **Solution**: Use Gemini for cost-effective generation, cache results, rate limit per user
+- **Solution**: Use Gemini only, retry transient failures, cap visual PDF pages, and apply per-user rate limits. Caching and a monthly spend budget remain future work.
 
 ### 3. ATS Score Accuracy
 
@@ -1339,8 +1345,9 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 
 ### 5. File Upload Security
 
-- **Issue**: File uploads can be attack vector
-- **Solution**: Validate types, scan malware, limit size
+- **Issue**: File uploads can be an attack vector
+- **Current solution**: Check declared MIME against file signatures, enforce a 10 MB limit, cap extracted text, and limit scanned/mixed visual PDF reading to 10 pages
+- **Limitation**: There is no malware scanner; accepted files are PDF, DOCX, and TXT only
 
 ### 6. Transaction Timeouts ✅ FIXED
 
@@ -1351,7 +1358,7 @@ File: `templates/cv/modern.html` and `src/lib/pdf/generator.ts`
 ### 7. Google AI Service Availability
 
 - **Issue**: 503 errors during high demand periods
-- **Solution**: Fallback to OpenAI when configured, retry logic, user-friendly error messages
+- **Current solution**: Retry retryable Gemini errors up to `AI_CONFIG.maxAttempts` and return user-friendly errors. There is no OpenAI fallback.
 
 ---
 
@@ -1469,8 +1476,7 @@ export default config;
 - **Next.js 15**: https://nextjs.org/docs
 - **React**: https://react.dev
 - **Prisma**: https://www.prisma.io/docs
-- **OpenAI API**: https://platform.openai.com/docs
-- **Google AI SDK**: https://ai.google.dev/
+- **Google Gemini API and SDK**: https://ai.google.dev/gemini-api/docs
 - **Tailwind CSS**: https://tailwindcss.com/docs
 - **shadcn/ui**: https://ui.shadcn.com
 - **next-intl**: https://next-intl-docs.vercel.app/
@@ -1538,7 +1544,7 @@ When resuming the project, verify:
 - [ ] `.env.local` configured correctly (DATABASE_URL, SESSION_SECRET, SMTP_*, NEXT_PUBLIC_APP_URL, GOOGLE_AI_API_KEY)
 - [ ] Database accessible (`pnpm db:studio`)
 - [ ] Prisma client generated (`pnpm db:generate`)
-- [ ] Valid AI API key (Google AI or OpenAI) configured
+- [ ] Valid `GOOGLE_AI_API_KEY` configured; verify the selected model is available to this key
 - [ ] `pnpm dev` works at http://localhost:3000
 - [ ] No TypeScript errors (`pnpm type-check`)
 - [ ] Review this document for complete context
@@ -1551,7 +1557,7 @@ This project is in a solid technical foundation phase. The architecture is scala
 
 **What works**:
 
-- ✅ Dual AI provider support (Google Gemini + OpenAI)
+- ✅ Google Gemini integration (`@google/genai`), validated JSON outputs, and visual reading for scanned/mixed PDFs (up to 10 pages)
 - ✅ Multi-language interface (English/Spanish, default English)
 - ✅ AI APIs (job analysis, resume generation, cover letters, ATS scoring)
 - ✅ Robust database system (PostgreSQL with Prisma)
@@ -1572,6 +1578,6 @@ This project is in a solid technical foundation phase. The architecture is scala
 
 ---
 
-**Last updated**: July 7, 2026
+**Last updated**: October 30, 2026
 **Version**: 0.1.0 (matches package.json)
 **Maintainer**: @fawer5dev

@@ -1,15 +1,25 @@
-import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 import type { Experience, ParsedCV } from '@/types';
 import { generateJSON } from '@/lib/ai/service';
+import type { PdfAttachment } from '@/lib/ai/google-ai';
 import { DATA_SAFETY_RULES } from '@/lib/ai/prompts';
 import { parsedCVSchema } from '@/lib/ai/schemas';
 import {
   CVInputError,
   MAX_CV_TEXT_CHARS,
+  MAX_VISUAL_PDF_PAGES,
   MIN_CV_TEXT_CHARS,
   type CVFileKind,
 } from './file-validation';
+import { analyzePdf } from './pdf-analysis';
+
+/** How the CV text was obtained. Shown to the user for review. */
+export type ExtractionMethod = 'text' | 'visual';
+
+export interface ParseCVResult {
+  cv: ParsedCV;
+  extractionMethod: ExtractionMethod;
+}
 
 function normalizeExperience(experience: Experience[] = []): Experience[] {
   return experience.map((exp) => {
@@ -58,23 +68,77 @@ function normalizeExperience(experience: Experience[] = []): Experience[] {
 }
 
 /**
- * Extract text from an already validated CV file and structure it with AI.
- * `rawText` is used only for this call and is not returned or stored.
+ * Read an already validated CV file and structure it with AI.
+ *
+ * - DOCX/TXT and PDFs with a text layer use the extracted text.
+ * - PDFs without a usable text layer (scanned or mixed) are sent to Gemini
+ *   visually, up to MAX_VISUAL_PDF_PAGES pages.
+ *
+ * Extracted text is used only for this call and is not returned or stored.
  */
 export async function parseCV(
   buffer: Buffer,
   kind: CVFileKind
-): Promise<ParsedCV> {
-  let rawText: string;
+): Promise<ParseCVResult> {
+  if (kind === 'pdf') {
+    return parsePDFCV(buffer);
+  }
 
+  const rawText = await extractText(buffer, kind);
+  return {
+    cv: await structureCV({ text: validateExtractedText(rawText) }),
+    extractionMethod: 'text',
+  };
+}
+
+async function parsePDFCV(buffer: Buffer): Promise<ParseCVResult> {
+  let analysis;
   try {
-    if (kind === 'pdf') {
-      rawText = await parsePDF(buffer);
-    } else if (kind === 'docx') {
-      rawText = await parseDOCX(buffer);
-    } else {
-      rawText = buffer.toString('utf8');
+    analysis = await analyzePdf(buffer);
+  } catch (error) {
+    console.error('Error reading PDF:', error);
+    throw new CVInputError(
+      'The file could not be read. Check that it is not corrupted or password-protected.',
+      422,
+      'FILE_UNREADABLE'
+    );
+  }
+
+  if (analysis.kind === 'text') {
+    return {
+      cv: await structureCV({ text: validateExtractedText(analysis.text) }),
+      extractionMethod: 'text',
+    };
+  }
+
+  // Scanned or mixed: visual reading. Keep the page cap to bound cost.
+  if (analysis.pageCount > MAX_VISUAL_PDF_PAGES) {
+    throw new CVInputError(
+      `This PDF has no readable text on some or all pages and has ${analysis.pageCount} pages. Scanned CVs are limited to ${MAX_VISUAL_PDF_PAGES} pages. Upload a shorter version or a text-based PDF.`,
+      422,
+      'PDF_TOO_MANY_PAGES'
+    );
+  }
+
+  console.log(
+    `PDF classified as ${analysis.kind}; reading ${analysis.pageCount} page(s) visually.`
+  );
+  return {
+    cv: await parseCVVisually(buffer),
+    extractionMethod: 'visual',
+  };
+}
+
+async function extractText(
+  buffer: Buffer,
+  kind: Exclude<CVFileKind, 'pdf'>
+): Promise<string> {
+  try {
+    if (kind === 'docx') {
+      const result = await mammoth.extractRawText({ buffer });
+      return result.value;
     }
+    return buffer.toString('utf8');
   } catch (error) {
     console.error('Error extracting CV text:', error);
     throw new CVInputError(
@@ -83,30 +147,25 @@ export async function parseCV(
       'FILE_UNREADABLE'
     );
   }
+}
 
-  rawText = rawText.replace(/\u0000/g, '').trim();
-  if (rawText.length < MIN_CV_TEXT_CHARS) {
+function validateExtractedText(rawText: string): string {
+  const text = rawText.replace(/\u0000/g, '').trim();
+  if (text.length < MIN_CV_TEXT_CHARS) {
     throw new CVInputError(
-      'No readable text was found. Scanned PDFs (images) are not supported yet; use a text-based PDF, DOCX or TXT.',
+      'No readable text was found. Use a text-based PDF, DOCX or TXT.',
       422,
       'NO_TEXT'
     );
   }
-  if (rawText.length > MAX_CV_TEXT_CHARS) {
+  if (text.length > MAX_CV_TEXT_CHARS) {
     throw new CVInputError(
       'The CV text is too long. Shorten it to about 2 pages and try again.',
       422,
       'TEXT_TOO_LONG'
     );
   }
-
-  const structuredCV = await structureCVText(rawText);
-  return structuredCV;
-}
-
-async function parsePDF(buffer: Buffer): Promise<string> {
-  const data = await pdf(buffer);
-  return data.text;
+  return text;
 }
 
 async function parseDOCX(buffer: Buffer): Promise<string> {
@@ -114,7 +173,15 @@ async function parseDOCX(buffer: Buffer): Promise<string> {
   return result.value;
 }
 
-async function structureCVText(text: string): Promise<ParsedCV> {
+/**
+ * Structure a CV with Gemini. Input is either the extracted text or the PDF
+ * itself (visual reading, for scanned or mixed documents).
+ */
+async function structureCV(input: {
+  text: string;
+  attachments?: PdfAttachment[];
+}): Promise<ParsedCV> {
+  const text = input.text;
   const systemPrompt = `You are an expert in CV analysis. You extract structured information from CVs with precision. You always respond in valid JSON format.\n${DATA_SAFETY_RULES}`;
 
   const userPrompt = `
@@ -194,6 +261,7 @@ Return a JSON with the following exact structure:
 IMPORTANT:
 - Extract ALL available information from the CV
 - If a section is not present, use an empty array [] or null
+- If text is illegible or cut off, leave that field empty; never guess names, dates, emails or phone numbers
 - For experience, set "current" to true if the person is still working there
 - For startDate/endDate, preserve the original format from the CV
 - Maintain the original chronological order
@@ -212,6 +280,7 @@ For each experience entry, split the role details as follows:
       temperature: 0.3,
       maxTokens: 8000,
       schema: parsedCVSchema,
+      attachments: input.attachments,
     });
 
     parsed.experience = normalizeExperience(parsed.experience);
@@ -225,9 +294,23 @@ For each experience entry, split the role details as follows:
 
     return parsed;
   } catch (error) {
-    console.error('Error in structureCVText:', error);
+    console.error('Error in structureCV:', error);
     throw error;
   }
+}
+
+/**
+ * Read a PDF whose text layer is missing or incomplete by sending the file to
+ * Gemini. The PDF lives only in memory for this request.
+ */
+export async function parseCVVisually(buffer: Buffer): Promise<ParsedCV> {
+  return structureCV({
+    text:
+      'The CV is provided as an attached PDF document. Read every page, including text that appears only in images. Pages may be scanned or photographed.',
+    attachments: [
+      { mimeType: 'application/pdf', data: buffer.toString('base64') },
+    ],
+  });
 }
 
 

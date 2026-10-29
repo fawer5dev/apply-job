@@ -103,7 +103,7 @@ Choose a PostgreSQL provider that works well with Vercel:
     EMAIL_FROM=Apply Job <your.email@gmail.com>
     ```
 
-    **AI Providers (at least one required):**
+    **AI Provider (required):**
 
     ```env
     GOOGLE_AI_API_KEY=your-google-ai-api-key
@@ -159,6 +159,30 @@ If you need to run migrations manually (e.g. first-time setup or emergency fix):
 7. Verify build logs show `prisma migrate deploy` ran successfully
 
 ---
+
+## Personal Data Sent to Google AI
+
+The app sends CV content to Google Gemini for processing. This happens on every
+CV upload and application generation.
+
+| Flow | What is sent to Google |
+|------|------------------------|
+| Text CV (DOCX, TXT, PDF with a text layer) | Extracted CV text, inside the prompt |
+| Scanned or mixed PDF (visual reading) | The **entire PDF file** (base64, inline request), up to 10 pages |
+| Job analysis | Job title, company, and job description |
+| CV adaptation, ATS estimate, cover letter | Structured CV data and job description |
+
+Notes:
+
+- Visual reading sends the original file. The file is held in memory only for the
+  request and is **not written to disk or to the database** by this app.
+- Retention on Google's side depends on the API used. Inline requests are not
+  uploaded to the Files API by this app; check Google's current data-use terms for
+  your account and billing tier before processing real candidates' data.
+- Limit the visual path with `MAX_VISUAL_PDF_PAGES` in `src/lib/cv/file-validation.ts`.
+- The CV review screen currently warns when a PDF was read visually. Add a
+  product privacy notice that explicitly names Google Gemini before inviting
+  users to upload third-party candidates' CVs.
 
 ## Environment Variables Reference
 
@@ -225,6 +249,18 @@ Also run `pnpm db:generate` locally if needed.
 - Ensure database allows connections from Vercel IPs
 - Check SSL mode is enabled (`?sslmode=require`)
 
+### ❌ Build Error: Prisma `P1001` during `migrate deploy`
+
+`scripts/vercel-build.js` runs `prisma migrate deploy` whenever `DATABASE_URL` is
+non-empty. Prisma `P1001` means the build could not reach the configured database
+host and port; it is a connectivity error, not a Next.js compilation error.
+
+- Confirm `DATABASE_URL` is set for the Vercel environment used by the deployment (Production or Preview) and points to the current database endpoint/branch.
+- Confirm the database compute/endpoint is active and does not restrict Vercel build connections by IP.
+- If using a provider's pooled connection string, check whether migrations require a direct connection. This repository currently uses `DATABASE_URL` for Prisma migrations; supporting a separate `DIRECT_URL` requires adding Prisma's `directUrl` datasource setting and configuring that variable in Vercel.
+- Do not remove `DATABASE_URL` merely to skip migrations: application routes still need the database at runtime.
+- If a redeploy with the same configuration succeeds, the original failure may have been transient; verify migrations completed successfully in the deployment log.
+
 ### ❌ Emails Not Sending
 
 **Cause:** Invalid SMTP configuration  
@@ -265,7 +301,7 @@ After successful deployment:
 - [ ] Generate a cover letter
 - [ ] Check that PDFs download correctly
 - [ ] Test internationalization (switch to Spanish `/es/`)
-- [ ] Test fallback to English `/en/`
+- [ ] Test the English locale `/en/`
 - [ ] Set up custom domain (optional)
 - [ ] Configure production email service (SendGrid, AWS SES)
 - [ ] Set up error monitoring (Sentry, LogRocket)
@@ -383,15 +419,16 @@ Already implemented in the application:
 
 - Login attempts: 5 per 15 minutes
 - Registration: 3 per hour
-- Email sending: 5 per hour
+- Email verification: 10 per hour
+- CV parsing with AI: 10 per user per hour
+- AI generation and job analysis: 20 per user per hour
 
 ### File Storage
 
-Currently, user uploads are stored in the local `files/` directory. For production, consider:
-
-- AWS S3 for CV storage
-- Vercel Blob for simple file storage
-- Cloudinary for image optimization
+Uploaded CV source files are processed in memory and are not retained. The app
+stores structured CV fields in PostgreSQL; it does not currently store original
+uploads or generated PDFs in a file bucket. Add object storage only if persistent
+downloadable source/generated files become a product requirement.
 
 ---
 
@@ -485,9 +522,9 @@ For enterprise deployments, consider:
 
 ### AI APIs
 
-- Google AI: check current pricing for the model set in `src/config/ai.ts`
-
-**Estimated Monthly Cost for Small App**: $0-20/month
+Google AI pricing depends on the model set in `src/config/ai.ts`, token usage,
+and the number of visual PDF requests. Check current Google pricing and estimate
+cost from measured production usage; the monthly total is not fixed by this app.
 
 ---
 
