@@ -32,7 +32,31 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
     windowMs: 60 * 60 * 1000, // 1 hour
     blockDurationMs: 60 * 60 * 1000, // 1 hour
   },
+  // Per-user AI operations (cost control). Keyed by `user:<id>`.
+  'ai-parse': {
+    maxAttempts: 10,
+    windowMs: 60 * 60 * 1000, // 1 hour
+    blockDurationMs: 60 * 60 * 1000, // 1 hour
+  },
+  'ai-generate': {
+    maxAttempts: 20,
+    windowMs: 60 * 60 * 1000, // 1 hour
+    blockDurationMs: 60 * 60 * 1000, // 1 hour
+  },
 };
+
+export type AIRateLimitEndpoint = 'ai-parse' | 'ai-generate';
+
+/**
+ * Per-user limit for AI operations. Use before calling the provider so a
+ * single session cannot trigger unbounded generations.
+ */
+export function checkAIRateLimit(
+  userId: string,
+  endpoint: AIRateLimitEndpoint
+): Promise<RateLimitResult> {
+  return checkRateLimit(`user:${userId}`, endpoint);
+}
 
 export interface RateLimitResult {
   allowed: boolean;

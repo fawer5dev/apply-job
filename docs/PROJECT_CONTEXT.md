@@ -1,3 +1,5 @@
+> **Estado actual (fase de mejoras):** Google Gemini es el único proveedor de IA. Las referencias a OpenAI, `openai.ts`, `ai` (Vercel AI SDK) y `@google/generative-ai` que aparecen más abajo describen el estado anterior y ya no aplican. Ver `src/config/ai.ts`, `src/lib/ai/schemas.ts` y `src/lib/applications/generate-application.ts`.
+
 # 📋 Complete Project Context - Apply Job
 
 > **Last updated**: July 7, 2026

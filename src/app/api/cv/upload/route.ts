@@ -2,47 +2,59 @@ import { NextRequest, NextResponse } from 'next/server';
 import { parseCV } from '@/lib/cv/parser';
 import { prisma } from '@/lib/db/prisma';
 import { requireAuthApi } from '@/lib/auth/server-session';
+import { checkAIRateLimit } from '@/lib/auth/rate-limit';
+import { AIError } from '@/lib/ai/errors';
 import { baseCVSchema } from '@/lib/utils/validation';
+import {
+  CVInputError,
+  checkUploadContentLength,
+  readValidatedCVFile,
+} from '@/lib/cv/file-validation';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user ID
     const userId = await requireAuthApi();
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const title = formData.get('title') as string;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    }
-
-    if (!title) {
-      return NextResponse.json({ error: 'Title required' }, { status: 400 });
-    }
-
-    // Validate file type
-    const allowedTypes = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain',
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
+    const lengthError = checkUploadContentLength(request);
+    if (lengthError) {
       return NextResponse.json(
-        { error: 'File type not supported. Use PDF, DOCX or TXT.' },
-        { status: 400 }
+        { error: lengthError.message, errorCode: lengthError.code },
+        { status: lengthError.status }
       );
     }
 
-    // Parse CV using AI
-    console.log('Parsing CV...');
-    const parsedCV = await parseCV(file);
+    const rateLimit = await checkAIRateLimit(userId, 'ai-parse');
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many CV parsing requests. Please try again later.',
+          errorCode: 'AI_RATE_LIMITED',
+          retryAfter: rateLimit.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const title = formData.get('title');
+
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    if (typeof title !== 'string' || !title.trim()) {
+      return NextResponse.json({ error: 'Title required' }, { status: 400 });
+    }
+
+    const { buffer, kind } = await readValidatedCVFile(file);
+
+    const parsedCV = await parseCV(buffer, kind);
 
     // Validate parsed data before saving so incomplete AI responses
     // surface clear errors instead of corrupt DB records.
     const validation = baseCVSchema.safeParse({
-      title,
+      title: title.trim(),
       ...parsedCV,
     });
 
@@ -57,13 +69,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save to database
-    const baseCVId = `cv_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    // Save to database. rawText is intentionally not stored: the structured
+    // fields hold the CV content and the original file is not retained.
     const baseCV = await prisma.base_cvs.create({
       data: {
-        id: baseCVId,
+        id: `cv_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         userId,
-        title,
+        title: validation.data.title,
         personalInfo: parsedCV.personalInfo as never,
         summary: parsedCV.summary || null,
         experience: parsedCV.experience as never,
@@ -71,7 +83,7 @@ export async function POST(request: NextRequest) {
         skills: parsedCV.skills as never,
         projects: (parsedCV.projects || null) as never,
         certifications: (parsedCV.certifications || null) as never,
-        rawText: parsedCV.rawText || null,
+        rawText: null,
         updatedAt: new Date(),
       },
     });
@@ -91,21 +103,37 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error instanceof CVInputError) {
+      return NextResponse.json(
+        { error: error.message, errorCode: error.code },
+        { status: error.status }
+      );
+    }
+    if (error instanceof AIError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          errorCode: error.code,
+          isRetryable: error.isRetryable,
+        },
+        { status: 500 }
+      );
+    }
+
     console.error('Error processing CV:', error);
     return NextResponse.json(
-      {
-        error: 'Error processing CV',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Error processing CV' },
       { status: 500 }
     );
   }
 }
 
 // GET - Get user CVs
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Get authenticated user ID
     const userId = await requireAuthApi();
 
     const base_cvs = await prisma.base_cvs.findMany({

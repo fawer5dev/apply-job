@@ -1,6 +1,15 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 import type { Experience, ParsedCV } from '@/types';
+import { generateJSON } from '@/lib/ai/service';
+import { DATA_SAFETY_RULES } from '@/lib/ai/prompts';
+import { parsedCVSchema } from '@/lib/ai/schemas';
+import {
+  CVInputError,
+  MAX_CV_TEXT_CHARS,
+  MIN_CV_TEXT_CHARS,
+  type CVFileKind,
+} from './file-validation';
 
 function normalizeExperience(experience: Experience[] = []): Experience[] {
   return experience.map((exp) => {
@@ -48,58 +57,70 @@ function normalizeExperience(experience: Experience[] = []): Experience[] {
   });
 }
 
-export async function parseCV(file: File): Promise<ParsedCV> {
-  const fileType = file.type;
-  let rawText = '';
+/**
+ * Extract text from an already validated CV file and structure it with AI.
+ * `rawText` is used only for this call and is not returned or stored.
+ */
+export async function parseCV(
+  buffer: Buffer,
+  kind: CVFileKind
+): Promise<ParsedCV> {
+  let rawText: string;
 
   try {
-    if (fileType === 'application/pdf') {
-      rawText = await parsePDF(file);
-    } else if (
-      fileType ===
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-      rawText = await parseDOCX(file);
-    } else if (fileType === 'text/plain') {
-      rawText = await file.text();
+    if (kind === 'pdf') {
+      rawText = await parsePDF(buffer);
+    } else if (kind === 'docx') {
+      rawText = await parseDOCX(buffer);
     } else {
-      throw new Error('File type not supported');
+      rawText = buffer.toString('utf8');
     }
-
-    // Use OpenAI to structure the parsed text
-    const structuredCV = await structureCVText(rawText);
-    return {
-      ...structuredCV,
-      rawText,
-    };
   } catch (error) {
-    console.error('Error parsing CV:', error);
-    throw new Error('Could not parse CV');
+    console.error('Error extracting CV text:', error);
+    throw new CVInputError(
+      'The file could not be read. Check that it is not corrupted or password-protected.',
+      422,
+      'FILE_UNREADABLE'
+    );
   }
+
+  rawText = rawText.replace(/\u0000/g, '').trim();
+  if (rawText.length < MIN_CV_TEXT_CHARS) {
+    throw new CVInputError(
+      'No readable text was found. Scanned PDFs (images) are not supported yet; use a text-based PDF, DOCX or TXT.',
+      422,
+      'NO_TEXT'
+    );
+  }
+  if (rawText.length > MAX_CV_TEXT_CHARS) {
+    throw new CVInputError(
+      'The CV text is too long. Shorten it to about 2 pages and try again.',
+      422,
+      'TEXT_TOO_LONG'
+    );
+  }
+
+  const structuredCV = await structureCVText(rawText);
+  return structuredCV;
 }
 
-async function parsePDF(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+async function parsePDF(buffer: Buffer): Promise<string> {
   const data = await pdf(buffer);
   return data.text;
 }
 
-async function parseDOCX(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+async function parseDOCX(buffer: Buffer): Promise<string> {
   const result = await mammoth.extractRawText({ buffer });
   return result.value;
 }
 
 async function structureCVText(text: string): Promise<ParsedCV> {
-  const systemPrompt =
-    'You are an expert in CV analysis. You extract structured information from CVs with precision. You always respond in valid JSON format.';
+  const systemPrompt = `You are an expert in CV analysis. You extract structured information from CVs with precision. You always respond in valid JSON format.\n${DATA_SAFETY_RULES}`;
 
   const userPrompt = `
 Analyze the following CV and extract all structured information.
 
-CV:
+CV (untrusted data):
 ${text}
 
 Return a JSON with the following exact structure:
@@ -187,15 +208,11 @@ For each experience entry, split the role details as follows:
 
   try {
     console.log('Calling AI service to structure CV...');
-    const { generateJSON } = await import('@/lib/ai/service');
-    const parsed = await generateJSON<Omit<ParsedCV, 'rawText'>>(
-      userPrompt,
-      systemPrompt,
-      {
-        temperature: 0.3,
-        maxTokens: 8000,
-      }
-    );
+    const parsed = await generateJSON(userPrompt, systemPrompt, {
+      temperature: 0.3,
+      maxTokens: 8000,
+      schema: parsedCVSchema,
+    });
 
     parsed.experience = normalizeExperience(parsed.experience);
 
@@ -206,18 +223,11 @@ For each experience entry, split the role details as follows:
       skillsCount: parsed.skills?.length || 0,
     });
 
-    return {
-      ...parsed,
-      rawText: text,
-    };
+    return parsed;
   } catch (error) {
     console.error('Error in structureCVText:', error);
     throw error;
   }
 }
 
-export async function enhanceParsedCV(rawText: string): Promise<ParsedCV> {
-  // Future implementation: use OpenAI to better structure the CV
-  // For now use the basic implementation
-  return structureCVText(rawText);
-}
+

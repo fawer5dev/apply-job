@@ -1,10 +1,5 @@
-// File limits
+// File limits (see src/lib/cv/file-validation.ts for accepted types and checks)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const ACCEPTED_FILE_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain',
-];
 
 // ATS Scoring
 export const ATS_SCORE_WEIGHTS = {
@@ -12,13 +7,6 @@ export const ATS_SCORE_WEIGHTS = {
   KEYWORD_MATCH: 0.3,
   STRUCTURE_CLARITY: 0.2,
   LENGTH_APPROPRIATENESS: 0.1,
-};
-
-// AI generation limits
-export const AI_GENERATION_LIMITS = {
-  MAX_TOKENS: 4000,
-  TEMPERATURE: 0.7,
-  MODEL: 'gpt-4o',
 };
 
 // Application statuses

@@ -13,6 +13,8 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: [
+    // Unit tests colocated with the code are versioned (tests/ is gitignored).
+    '<rootDir>/src/**/__tests__/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/tests/unit/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/tests/e2e/**/*.test.{js,jsx,ts,tsx}',

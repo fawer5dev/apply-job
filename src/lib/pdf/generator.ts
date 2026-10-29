@@ -2,6 +2,7 @@ import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import type { CV, Experience } from '@/types';
+import { escapeDeep, escapeHtml } from './html';
 
 // Chromium pack hosted on GitHub Releases — downloaded once per Lambda instance
 // into /tmp/ (Lambda's writable filesystem) and reused on warm invocations.
@@ -22,6 +23,36 @@ const LOCAL_CHROME_CANDIDATES = [
   '/usr/bin/chromium',
   '/usr/bin/chromium-browser',
 ];
+
+// ---------- Render safety ----------
+
+// Only font CSS/files are needed by the templates. Everything else is blocked.
+const ALLOWED_RENDER_HOSTS = new Set([
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+]);
+
+/**
+ * Restrict what a page can do while rendering: no JavaScript, and only
+ * data: URLs or the font hosts above may be requested.
+ */
+async function lockDownPage(page: import('puppeteer-core').Page): Promise<void> {
+  await page.setJavaScriptEnabled(false);
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    let allowed = false;
+    try {
+      const url = new URL(request.url());
+      allowed =
+        url.protocol === 'data:' ||
+        url.protocol === 'about:' ||
+        (url.protocol === 'https:' && ALLOWED_RENDER_HOSTS.has(url.hostname));
+    } catch {
+      allowed = false;
+    }
+    void (allowed ? request.continue() : request.abort()).catch(() => {});
+  });
+}
 
 function findLocalChrome(): string | null {
   for (const candidate of LOCAL_CHROME_CANDIDATES) {
@@ -69,12 +100,13 @@ export async function generateCVPDF(
   cv: CV,
   template: string = 'modern'
 ): Promise<Buffer> {
-  const html = renderCVTemplate(cv, template);
+  const html = renderCVTemplate(escapeDeep(cv), template);
 
   const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
+    await lockDownPage(page);
     await page.setContent(html, { waitUntil: 'load' });
 
     const pdf = await page.pdf({
@@ -475,21 +507,25 @@ function renderCVTemplate(cv: CV, template: string): string {
   `;
 }
 
+/**
+ * Render a cover letter PDF from plain text. The text is escaped by the
+ * template; model-generated HTML is never used.
+ */
 export async function generateCoverLetterPDF(
   content: string,
-  htmlContent?: string,
   candidateName?: string
 ): Promise<Buffer> {
   const normalizedContent = processCoverLetterSignatureCase(content);
-  const normalizedHtmlContent = htmlContent
-    ? processCoverLetterHtmlSignatureCase(htmlContent)
-    : undefined;
-  const html = normalizedHtmlContent || renderCoverLetterTemplate(normalizedContent, candidateName);
+  const html = renderCoverLetterTemplate(
+    escapeHtml(normalizedContent),
+    candidateName ? escapeHtml(candidateName) : undefined
+  );
 
   const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
+    await lockDownPage(page);
     // Use 'load' (networkidle0 was removed in puppeteer-core v25).
     // waitForNetworkIdle() ensures Google Fonts finishes loading before printing.
     await page.setContent(html, { waitUntil: 'load' });
@@ -537,26 +573,6 @@ function processCoverLetterSignatureCase(content: string): string {
       return line;
     })
     .join('\n');
-}
-
-function processCoverLetterHtmlSignatureCase(htmlContent: string): string {
-  if (!htmlContent) return htmlContent;
-
-  const signatureAndNameRegex =
-    /(<p[^>]*>\s*(?:best regards|sincerely)[^<]*<\/p>\s*<p[^>]*>)([\s\S]*?)(<\/p>)/gi;
-
-  return htmlContent.replace(signatureAndNameRegex, (_, opening, nameBlock, closing) => {
-    const normalizedNameBlock = nameBlock
-      .split(/<br\s*\/?\s*>/gi)
-      .map((segment: string) => {
-        const plain = segment.replace(/<[^>]+>/g, '').trim();
-        if (!plain) return segment;
-        return toTitleCase(plain);
-      })
-      .join('<br>');
-
-    return `${opening}${normalizedNameBlock}${closing}`;
-  });
 }
 
 // Helper function to format cover letter content with proper styling

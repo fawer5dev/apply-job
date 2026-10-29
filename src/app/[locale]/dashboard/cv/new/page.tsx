@@ -287,7 +287,7 @@ export default function NewCVPage() {
                   <input
                     id="file"
                     type="file"
-                    accept=".pdf,.docx,.doc,.txt"
+                    accept=".pdf,.docx,.txt"
                     onChange={handleFileChange}
                     className="hidden"
                     required

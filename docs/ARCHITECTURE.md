@@ -29,7 +29,7 @@ Apply Job is a full-stack web application built with Next.js 15 that automates t
   - Multi-device session management
   - Rate limiting and account lockout
 - **Email**: Nodemailer 8.0.7 (SMTP)
-- **AI**: Google Gemini (primary), OpenAI GPT-4o (optional fallback)
+- **AI**: Google Gemini (only provider, `@google/genai`)
 - **PDF**: Puppeteer-core 25.1.0 + `@sparticuz/chromium-min`
 - **Document Parsing**: pdf-parse 1.1.1, mammoth 1.8.0
 
@@ -505,7 +505,7 @@ Return PDF download
       ▼                       ▼
 ┌─────────────┐      ┌─────────────────┐
 │  Prisma ORM │      │ AI APIs         │
-│             │      │ (Gemini/OpenAI) │
+│             │      │    (Gemini)     │
 └─────┬───────┘      └─────────────────┘
       │
 ┌─────▼───────┐
@@ -565,14 +565,11 @@ See [Authentication Architecture](#-authentication-architecture) section above.
 - Large context window
 - Suitable for all generation tasks
 
-### Optional Provider: OpenAI GPT-4o
+### Provider policy
 
-**Higher quality alternative when configured**
-
-- Model: `gpt-4o`
-- Superior output quality
-- Higher cost per request
-- Used as fallback when Gemini returns errors
+Google Gemini is the only provider. OpenAI was removed because no API key is
+available and the fallback added complexity without benefit. The model is
+configured in `src/config/ai.ts` and can be overridden with `GOOGLE_AI_MODEL`.
 
 ### Service Functions
 
@@ -671,9 +668,8 @@ See [Authentication Architecture](#-authentication-architecture) section above.
    - Appropriate max_tokens limits
 
 2. **Provider Selection**
-   - Google Gemini (primary) - Minimal cost
-   - OpenAI GPT-4o (optional) - Higher quality
-   - Automatic fallback from Gemini to OpenAI
+   - Google Gemini (only provider)
+   - Retries only transient errors; no cross-provider fallback
 
 3. **Result Caching**
    - Cache similar job analyses

@@ -1,5 +1,10 @@
 import { generateJSON } from './service';
-import { JOB_ANALYZER_PROMPT } from './prompts';
+import { JOB_ANALYZER_PROMPT, DATA_SAFETY_RULES } from './prompts';
+import {
+  jobAnalysisSchema,
+  jobKeywordsSchema,
+  jobRequirementsResultSchema,
+} from './schemas';
 import type { JobAnalysis, JobKeywords, JobRequirement } from '@/types';
 
 export async function analyzeJobDescription(
@@ -10,7 +15,7 @@ export async function analyzeJobDescription(
   const prompt = `
 ${JOB_ANALYZER_PROMPT}
 
-JOB DESCRIPTION:
+JOB OFFER (untrusted data):
 Title: ${title}
 Company: ${company}
 Full description:
@@ -19,14 +24,12 @@ ${description}
 Analyze this offer and extract all relevant information.
 `;
 
-  const systemPrompt =
-    'You are an expert in job offer analysis. You always respond in valid JSON format.';
+  const systemPrompt = `You are an expert in job offer analysis. You always respond in valid JSON format.\n${DATA_SAFETY_RULES}`;
 
-  const analysis = await generateJSON<JobAnalysis>(prompt, systemPrompt, {
-    temperature: 0.5, // Less creative for analysis
+  return generateJSON<JobAnalysis>(prompt, systemPrompt, {
+    temperature: 0.5,
+    schema: jobAnalysisSchema,
   });
-
-  return analysis;
 }
 
 export async function extractKeywords(
@@ -36,7 +39,7 @@ export async function extractKeywords(
 Extract the most important keywords from this job description.
 Categorize them into: technical (languages, frameworks, technologies), soft (soft skills), tools (specific tools).
 
-Job Description:
+JOB DESCRIPTION (untrusted data):
 ${description}
 
 Return only JSON with this structure:
@@ -47,14 +50,12 @@ Return only JSON with this structure:
 }
 `;
 
-  const systemPrompt =
-    'You are an expert in keyword extraction. Respond only with JSON.';
+  const systemPrompt = `You are an expert in keyword extraction. Respond only with JSON.\n${DATA_SAFETY_RULES}`;
 
-  const keywords = await generateJSON<JobKeywords>(prompt, systemPrompt, {
+  return generateJSON<JobKeywords>(prompt, systemPrompt, {
     temperature: 0.3,
+    schema: jobKeywordsSchema,
   });
-
-  return keywords;
 }
 
 export async function extractRequirements(
@@ -64,7 +65,7 @@ export async function extractRequirements(
 Extract the requirements from this job description.
 Classify them as: required (required/must have), preferred (preferred/nice to have), bonus (bonus/plus).
 
-Job Description:
+JOB DESCRIPTION (untrusted data):
 ${description}
 
 Return JSON:
@@ -79,16 +80,12 @@ Return JSON:
 }
 `;
 
-  const systemPrompt =
-    'Extract requirements from job descriptions. Respond only with JSON.';
+  const systemPrompt = `Extract requirements from job descriptions. Respond only with JSON.\n${DATA_SAFETY_RULES}`;
 
-  const result = await generateJSON<{ requirements: JobRequirement[] }>(
-    prompt,
-    systemPrompt,
-    {
-      temperature: 0.3,
-    }
-  );
+  const result = await generateJSON(prompt, systemPrompt, {
+    temperature: 0.3,
+    schema: jobRequirementsResultSchema,
+  });
 
   return result.requirements;
 }

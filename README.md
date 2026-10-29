@@ -8,7 +8,7 @@ Web app to automate the job application process by generating personalized CVs a
 - **Base CV Upload** — Upload your main CV (PDF, DOCX, TXT) and automatically extract structured information.
 - **CV Management** — Create, edit, and manage multiple base CVs.
 - **Job Description Analysis** — Analyze job postings and extract key requirements, keywords, and seniority level.
-- **Personalized CV Generation** — Generate CVs tailored to each job posting using AI (Google Gemini or OpenAI).
+- **Personalized CV Generation** — Generate CVs tailored to each job posting using AI (Google Gemini).
 - **ATS Scoring** — Calculate match score (0-100) with strengths, weaknesses, and improvement suggestions.
 - **Cover Letters** — Generate personalized cover letters with multiple tone options (professional, enthusiastic, casual) and automatic PDF generation.
 - **Application Tracking** — Manage all your applications through their lifecycle (Draft → Ready → Applied → Interviewing → Offered → Accepted/Rejected).
@@ -28,7 +28,7 @@ Web app to automate the job application process by generating personalized CVs a
 | **i18n** | next-intl (en, es — default: en) |
 | **Database** | PostgreSQL 15+ with Prisma ORM |
 | **Auth** | Custom session-based (Argon2id, TOTP 2FA) |
-| **AI** | Google Gemini (primary), OpenAI GPT-4o (fallback) |
+| **AI** | Google Gemini (`@google/genai`) |
 | **PDF** | puppeteer-core + `@sparticuz/chromium-min` |
 | **State** | Zustand + TanStack React Query |
 | **Forms** | React Hook Form + Zod |
@@ -78,9 +78,9 @@ SESSION_SECRET="your-64-character-hex-string"
 # App URL (required)
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# AI Provider (at least one required)
+# AI Provider (Google Gemini)
 GOOGLE_AI_API_KEY="your-google-ai-api-key"
-# OPENAI_API_KEY="sk-..."  # optional fallback
+# GOOGLE_AI_MODEL="gemini-3.8-flash"  # optional model override
 
 # Email / SMTP (required for auth flows)
 SMTP_HOST="smtp.gmail.com"
@@ -152,7 +152,7 @@ apply-job/
 │   │   └── UserMenu.tsx
 │   ├── hooks/                # use-auth.tsx
 │   ├── lib/
-│   │   ├── ai/               # Gemini, OpenAI, job analyzer, CV generator, ATS scorer
+│   │   ├── ai/               # Gemini client, schemas, job analyzer, CV generator, ATS scorer
 │   │   ├── auth/             # Session, password, 2FA, rate limit, audit
 │   │   ├── cv/               # CV parser (PDF, DOCX, TXT)
 │   │   ├── db/               # Prisma client
@@ -207,10 +207,9 @@ The limit constant is defined in `src/lib/plans.ts` — change `FREE_PLAN_APPLIC
 
 | Provider | Per Application | 100 Apps/Month |
 |----------|----------------|----------------|
-| **Google Gemini** | ~$0.005 | **<$1** |
-| **OpenAI GPT-4o** | ~$0.08-0.14 | **$4-7** |
+| **Google Gemini** | ~$0.005 (estimate, varies by model) | **<$1** |
 
-Gemini is the recommended primary provider for cost-effectiveness. OpenAI serves as a fallback.
+Gemini is the only AI provider. Costs depend on the model configured in `src/config/ai.ts`; verify current pricing before relying on these figures.
 
 ## Deployment
 

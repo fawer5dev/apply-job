@@ -1,11 +1,11 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { AI_CONFIG } from '@/config/ai';
 
-// Load environment variables if not already present
+// Load environment variables if not already present (scripts / tsx runs).
 if (!process.env.GOOGLE_AI_API_KEY) {
   try {
-    // Try loading .env.local first, then .env
     dotenv.config({ path: path.join(process.cwd(), '.env.local') });
     if (!process.env.GOOGLE_AI_API_KEY) {
       dotenv.config({ path: path.join(process.cwd(), '.env') });
@@ -15,7 +15,6 @@ if (!process.env.GOOGLE_AI_API_KEY) {
   }
 }
 
-// Helper function to get API key with validation at runtime
 function getApiKey(): string {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
@@ -26,139 +25,58 @@ function getApiKey(): string {
   return apiKey;
 }
 
-// Lazy initialization of Google AI (only when actually used)
-let genAI: GoogleGenerativeAI | null = null;
-function getGenAI(): GoogleGenerativeAI {
-  if (!genAI) {
-    genAI = new GoogleGenerativeAI(getApiKey());
+// Lazy initialization so the app can boot without an API key.
+let client: GoogleGenAI | null = null;
+export function getGoogleAIClient(): GoogleGenAI {
+  if (!client) {
+    client = new GoogleGenAI({
+      apiKey: getApiKey(),
+      httpOptions: { timeout: AI_CONFIG.requestTimeoutMs },
+    });
   }
-  return genAI;
+  return client;
 }
 
-// Default configuration
-export const AI_CONFIG = {
-  model: 'gemini-2.5-flash', // Gemini 2.5 Flash - faster and more available
-  temperature: 0.7,
-  maxTokens: 8000, // Increased default
-};
+export interface GoogleGenerateOptions {
+  temperature?: number;
+  maxTokens?: number;
+  responseFormat?: 'json' | 'text';
+}
 
 /**
- * Helper function to generate content with Google AI
- * Maintains a similar interface to OpenAI to facilitate migration
+ * Generate text with Gemini. System instructions go in `systemInstruction`
+ * (not concatenated into the user prompt).
+ *
+ * Throws a plain Error on empty output or truncation so the service layer
+ * can classify it.
  */
 export async function generateContent(
   systemPrompt: string,
   userPrompt: string,
-  config?: {
-    temperature?: number;
-    maxTokens?: number;
-    responseFormat?: 'json' | 'text';
-  }
+  options: GoogleGenerateOptions = {}
 ): Promise<string> {
-  const model = getGenAI().getGenerativeModel({
+  const isJSON = options.responseFormat === 'json';
+
+  const response = await getGoogleAIClient().models.generateContent({
     model: AI_CONFIG.model,
-    generationConfig: {
-      temperature: config?.temperature ?? AI_CONFIG.temperature,
-      maxOutputTokens: config?.maxTokens ?? AI_CONFIG.maxTokens,
-      responseMimeType:
-        config?.responseFormat === 'json' ? 'application/json' : undefined,
+    contents: userPrompt,
+    config: {
+      systemInstruction: systemPrompt,
+      temperature: options.temperature ?? AI_CONFIG.defaultTemperature,
+      maxOutputTokens: options.maxTokens ?? AI_CONFIG.defaultMaxOutputTokens,
+      responseMimeType: isJSON ? 'application/json' : 'text/plain',
     },
   });
 
-  // Combine system prompt with user prompt for Gemini
-  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+  const finishReason = response.candidates?.[0]?.finishReason;
+  if (finishReason === 'MAX_TOKENS') {
+    throw new Error('AI response was truncated (MAX_TOKENS)');
+  }
 
-  // If JSON is required, add explicit instructions
-  const finalPrompt =
-    config?.responseFormat === 'json'
-      ? `${fullPrompt}\n\nIMPORTANT: Respond ONLY with valid JSON, no markdown, no additional text.`
-      : fullPrompt;
-
-  const result = await model.generateContent(finalPrompt);
-  const response = result.response;
-  let text = response.text();
-
-  // Clean response if it's JSON
-  if (config?.responseFormat === 'json') {
-    // Remove markdown code blocks if they exist
-    text = text
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-
-    // Fix common JSON issues
-    // Remove any text before the first { or [
-    const jsonStart = Math.min(
-      text.indexOf('{') >= 0 ? text.indexOf('{') : Infinity,
-      text.indexOf('[') >= 0 ? text.indexOf('[') : Infinity
-    );
-    if (jsonStart !== Infinity && jsonStart > 0) {
-      text = text.substring(jsonStart);
-    }
-
-    // Remove any text after the last } or ]
-    const lastBrace = text.lastIndexOf('}');
-    const lastBracket = text.lastIndexOf(']');
-    const jsonEnd = Math.max(lastBrace, lastBracket);
-    if (jsonEnd >= 0 && jsonEnd < text.length - 1) {
-      text = text.substring(0, jsonEnd + 1);
-    }
+  const text = response.text ?? '';
+  if (!text.trim()) {
+    throw new Error('Failed to parse AI response: empty content');
   }
 
   return text;
 }
-
-/**
- * Helper function to generate structured JSON
- */
-export async function generateJSON<T>(
-  userPrompt: string,
-  systemPrompt: string,
-  config?: {
-    temperature?: number;
-    maxTokens?: number;
-  }
-): Promise<T> {
-  const content = await generateContent(systemPrompt, userPrompt, {
-    ...config,
-    responseFormat: 'json',
-  });
-
-  try {
-    return JSON.parse(content) as T;
-  } catch (error) {
-    // Log the problematic content for debugging
-    console.error('Failed to parse JSON. Raw content:');
-    console.error(content.substring(0, 500));
-    console.error('...');
-    throw new Error(`Failed to parse JSON response: ${error}`);
-  }
-}
-
-/**
- * Function for streaming (for future implementations)
- */
-export async function generateContentStream(
-  systemPrompt: string,
-  userPrompt: string
-): Promise<ReadableStream> {
-  const model = getGenAI().getGenerativeModel({
-    model: AI_CONFIG.model,
-  });
-
-  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-  const result = await model.generateContentStream(fullPrompt);
-
-  const encoder = new TextEncoder();
-  return new ReadableStream({
-    async start(controller) {
-      for await (const chunk of result.stream) {
-        const text = chunk.text();
-        controller.enqueue(encoder.encode(text));
-      }
-      controller.close();
-    },
-  });
-}
-
-export { getGenAI as genAI };

@@ -1,10 +1,10 @@
 /**
  * AI error classification.
  *
- * Raw errors from @google/generative-ai and openai are long, technical and
- * always in English (e.g. "[GoogleGenerativeAI Error]: ... 503 Service
- * Unavailable ... high demand"). This module converts them into stable,
- * machine-readable codes the API layer and UI can localize.
+ * Raw errors from @google/genai are long, technical and always in English
+ * (e.g. "[GoogleGenAI Error]: ... 503 Service Unavailable ... high demand").
+ * This module converts them into stable, machine-readable codes the API layer
+ * and UI can localize.
  */
 
 export type AICode =
@@ -45,6 +45,13 @@ interface Rule {
 }
 
 const RULES: Rule[] = [
+  {
+    // Output cut off by maxOutputTokens: retrying with the same limit would
+    // most likely truncate again, so it is not retryable.
+    code: 'AI_INVALID_RESPONSE',
+    isRetryable: false,
+    patterns: [/truncated/, /max_tokens/],
+  },
   {
     code: 'AI_SERVICE_BUSY',
     isRetryable: true,
@@ -106,7 +113,7 @@ const RULES: Rule[] = [
   },
 ];
 
-const FRIENDLY_FALLBACK: Record<AICode, string> = {
+export const FRIENDLY_FALLBACK: Record<AICode, string> = {
   AI_SERVICE_BUSY:
     'The AI service is temporarily busy. Please try again in a moment.',
   AI_RATE_LIMITED:

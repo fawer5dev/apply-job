@@ -50,13 +50,15 @@ export async function GET(
     console.log('Generating cover letter PDF...');
     const pdfBuffer = await generateCoverLetterPDF(
       application.cover_letters.content,
-      application.cover_letters.htmlContent || undefined,
       candidateName
     );
 
-    // Generate filename
-    const companyName = application.job_listings.company.replace(/\s+/g, '_');
-    const candidateFileName = toTitleCase(candidateName).replace(/\s+/g, '_');
+    // Generate a header-safe filename (no quotes, slashes or control chars)
+    const safe = (value: string) =>
+      value.replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80) ||
+      'document';
+    const companyName = safe(application.job_listings.company);
+    const candidateFileName = safe(toTitleCase(candidateName));
     const filename = `${candidateFileName}_cover-letter_${companyName}.pdf`;
 
     // Return PDF as Uint8Array

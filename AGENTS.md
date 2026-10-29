@@ -76,7 +76,10 @@ Skills are framework-agnostic instruction files — they don't modify code direc
 - **`.env.example` is gitignored** — changes to it won't appear in the repo. `.env.local` is the active env file.
 - **`EMAIL_FROM` must be a valid sender address** accepted by the SMTP provider (e.g., for Gmail it must match `SMTP_USER`). Malformed addresses get `501 Bad sender address syntax`.
 - **Transaction timeout for application creation** is extended to 15s (`maxWait: 15000, timeout: 15000` in the create route). Don't reduce it.
-- **Google Gemini may return 503** during high demand. There is a fallback to OpenAI in some flows.
+- **Google Gemini may return 503** during high demand. `generateJSON` retries retryable errors (busy, rate limit, network, invalid output) up to `AI_CONFIG.maxAttempts`.
+- **Google Gemini is the only AI provider.** There is no OpenAI integration. The model and limits live in `src/config/ai.ts` (override with `GOOGLE_AI_MODEL`). Do not reintroduce a second provider without a decision recorded here.
+- **AI output is validated.** Every AI call passes a Zod schema from `src/lib/ai/schemas.ts` (`generateJSON` requires `schema`). Never persist or render raw model output.
+- **Model-generated HTML is never rendered.** Cover letters are stored as plain text; the PDF template escapes all content.
 - **API routes must use `response.cookies.set()`** to set/clear the session cookie. Do NOT use `response.headers.set('Set-Cookie', ...)` — this can throw `ERR_INVALID_ARG_TYPE` in Next.js 15. See `src/lib/auth/server-session.ts` for the `setSessionCookie` / `clearSessionCookie` helper functions (used only outside API routes).
 - **Dashboard sub-pages must use the `DashboardBackBar` component** (`src/components/DashboardBackBar.tsx`) instead of copy-pasting the sticky back-navigation bar. Pass the translated label as a prop.
 
@@ -86,6 +89,7 @@ Skills are framework-agnostic instruction files — they don't modify code direc
 - Test file patterns: `tests/unit/**/*.test.{js,jsx,ts,tsx}`, `tests/integration/**/*.test.{js,jsx,ts,tsx}`, `tests/e2e/**/*.test.{js,jsx,ts,tsx}`.
 - Setup file referenced: `tests/jest.setup.js`. Because `tests/` is gitignored, this file may be missing locally; create it or remove the `setupFilesAfterEnv` entry in `jest.config.js` before running tests.
 - **The `tests/` directory is gitignored** — tests are not shipped to the repository.
+- Unit tests that must be versioned live next to the code in `src/**/__tests__/*.test.ts` (matched by `jest.config.js`). Use `/** @jest-environment node */` for server-side modules.
 - Integration test scripts exist in package.json (`test:integration`, `test:integration:new-app`, etc.) using `tsx` runner — these are for manual/integration testing, not Jest.
 
 ## Lint & format

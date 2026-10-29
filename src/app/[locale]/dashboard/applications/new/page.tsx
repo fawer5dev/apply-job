@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Loader2, CheckCircle, ArrowRight, AlertTriangle, RotateCcw } from 'lucide-react';
 
 type AICode =
@@ -22,6 +22,7 @@ interface AIErrorState {
 
 export default function NewApplicationPage() {
   const t = useTranslations('NewApplication');
+  const locale = useLocale();
   const router = useRouter();
 
   const [step, setStep] = useState(1);
@@ -120,6 +121,7 @@ export default function NewApplicationPage() {
           jobListingId,
           userId: 'temp-user',
           tone: 'professional',
+          language: locale,
         }),
       });
 

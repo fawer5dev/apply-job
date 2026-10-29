@@ -1,239 +1,136 @@
+import type { z } from 'zod';
 import * as googleAI from './google-ai';
-import * as openaiAI from './openai';
-import { toAIError, AIError } from './errors';
-
-export type AIProvider = 'google' | 'openai' | 'auto';
+import { AIError, FRIENDLY_FALLBACK, toAIError } from './errors';
+import { AI_CONFIG } from '@/config/ai';
 
 export interface GenerateConfig {
   temperature?: number;
   maxTokens?: number;
-  responseFormat?: 'json' | 'text';
-  provider?: AIProvider;
 }
 
-interface GenerateContentResult {
-  content: string;
-  /**
-   * When the primary provider failed but the fallback succeeded, this holds the
-   * classified primary error. If the fallback response can't be processed we can
-   * surface the root cause (e.g. "AI service is busy") instead of a generic
-   * "unexpected response" parse error.
-   */
-  originalError?: AIError;
+export interface GenerateJSONConfig<T> extends GenerateConfig {
+  /** Schema the model output must satisfy before it is returned. */
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>;
 }
 
-async function tryGenerateContent(
-  systemPrompt: string,
-  userPrompt: string,
-  config: GenerateConfig = {}
-): Promise<GenerateContentResult> {
-  const { provider = 'auto', ...rest } = config;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // If specific provider is requested
-  if (provider === 'google') {
+/**
+ * Run a provider call, retrying only errors that are marked retryable.
+ * Every thrown value leaves this function as an AIError.
+ */
+async function withRetry<T>(operation: () => Promise<T>): Promise<T> {
+  let lastError: AIError | undefined;
+
+  for (let attempt = 1; attempt <= AI_CONFIG.maxAttempts; attempt++) {
     try {
-      return {
-        content: await googleAI.generateContent(systemPrompt, userPrompt, rest),
-      };
+      return await operation();
     } catch (error) {
-      throw toAIError(error);
-    }
-  }
-  if (provider === 'openai') {
-    try {
-      return {
-        content: await openaiAI.generateContent(
-          systemPrompt,
-          userPrompt,
-          rest
-        ),
-      };
-    } catch (error) {
-      throw toAIError(error);
-    }
-  }
+      lastError = toAIError(error);
 
-  // Auto mode: Try Google first (usually cheaper/available), then fallback to OpenAI
-  let googleAIError: AIError | null = null;
-  try {
-    return {
-      content: await googleAI.generateContent(systemPrompt, userPrompt, rest),
-    };
-  } catch (error) {
-    googleAIError = toAIError(error);
-    console.warn(
-      'Google AI failed, trying OpenAI fallback...',
-      googleAIError.code,
-      googleAIError.message
-    );
+      if (!lastError.isRetryable || attempt === AI_CONFIG.maxAttempts) {
+        break;
+      }
 
-    try {
-      const content = await openaiAI.generateContent(
-        systemPrompt,
-        userPrompt,
-        rest
+      console.warn(
+        `Retryable AI error (attempt ${attempt}/${AI_CONFIG.maxAttempts}):`,
+        lastError.code
       );
-      return {
-        content,
-        // Remember the root cause only when it's a transient failure. That way
-        // if the fallback response can't be parsed we can show a useful message
-        // (e.g. service busy) instead of blaming the fallback's response shape.
-        originalError: googleAIError.isRetryable ? googleAIError : undefined,
-      };
-    } catch {
-      console.error('Both AI providers failed');
-      // Throw the classified primary (Google) error so the UI can show a
-      // localized, retryable-aware message instead of the raw technical string.
-      throw googleAIError;
+      await sleep(500 * attempt);
     }
   }
+
+  throw lastError ?? new AIError({
+    code: 'AI_UNKNOWN',
+    isRetryable: false,
+    message: FRIENDLY_FALLBACK.AI_UNKNOWN,
+  });
 }
 
 /**
- * Unified function to generate content with automatic fallback
+ * Generate free text with Google Gemini.
  */
 export async function generateContent(
   systemPrompt: string,
   userPrompt: string,
   config: GenerateConfig = {}
 ): Promise<string> {
-  const { content } = await tryGenerateContent(systemPrompt, userPrompt, config);
-  return content;
-}
-
-function extractJSONContent(content: string): string {
-  // Clean content if it's not perfectly clean JSON
-  let cleanContent = content;
-  if (content.includes('```')) {
-    cleanContent = content
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-  }
-
-  // Find the first { or [ and last } or ]
-  const startIdx = Math.min(
-    cleanContent.indexOf('{') >= 0 ? cleanContent.indexOf('{') : Infinity,
-    cleanContent.indexOf('[') >= 0 ? cleanContent.indexOf('[') : Infinity
+  return withRetry(() =>
+    googleAI.generateContent(systemPrompt, userPrompt, {
+      ...config,
+      responseFormat: 'text',
+    })
   );
-  const endIdx = Math.max(
-    cleanContent.lastIndexOf('}'),
-    cleanContent.lastIndexOf(']')
-  );
-
-  if (startIdx !== Infinity && endIdx !== -1 && endIdx > startIdx) {
-    cleanContent = cleanContent.substring(startIdx, endIdx + 1);
-  }
-
-  return cleanContent;
 }
 
 /**
- * Unified function to generate structured JSON with automatic fallback
- * and retry logic for malformed responses.
+ * Remove markdown fences and surrounding prose so the JSON can be parsed.
+ */
+function extractJSONContent(content: string): string {
+  let cleaned = content.trim();
+  if (cleaned.includes('```')) {
+    cleaned = cleaned.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+  }
+
+  const start = cleaned.search(/[{[]/);
+  const end = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'));
+  if (start !== -1 && end > start) {
+    cleaned = cleaned.substring(start, end + 1);
+  }
+  return cleaned;
+}
+
+/**
+ * Generate JSON with Gemini, parse it and validate it against `schema`.
+ *
+ * Invalid JSON or schema mismatches are classified as AI_INVALID_RESPONSE
+ * (retryable), so the operation is retried up to `maxAttempts` times before
+ * failing. Nothing is returned unless it satisfies the schema.
  */
 export async function generateJSON<T>(
   userPrompt: string,
   systemPrompt: string,
-  config: Omit<GenerateConfig, 'responseFormat'> = {}
+  config: GenerateJSONConfig<T>
 ): Promise<T> {
-  const { provider = 'auto', ...rest } = config;
-  const maxAttempts = 3;
-  let lastError: unknown;
-  let shouldTryOpenAIFallback = false;
+  const { schema, ...generation } = config;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  return withRetry(async () => {
+    const raw = await googleAI.generateContent(systemPrompt, userPrompt, {
+      ...generation,
+      responseFormat: 'json',
+    });
+
+    let parsed: unknown;
     try {
-      const { content, originalError } = await tryGenerateContent(
-        systemPrompt,
-        userPrompt,
+      parsed = JSON.parse(extractJSONContent(raw));
+    } catch (parseError) {
+      console.warn('Failed to parse JSON response. Raw content:', raw.slice(0, 300));
+      throw new AIError(
         {
-          ...rest,
-          responseFormat: 'json',
-        }
+          code: 'AI_INVALID_RESPONSE',
+          isRetryable: true,
+          message: FRIENDLY_FALLBACK.AI_INVALID_RESPONSE,
+        },
+        parseError
       );
-
-      const cleanContent = extractJSONContent(content);
-
-      try {
-        return JSON.parse(cleanContent) as T;
-      } catch (parseError) {
-        shouldTryOpenAIFallback = true;
-        console.warn(
-          `Failed to parse JSON response (attempt ${attempt}/${maxAttempts}):`,
-          parseError
-        );
-        console.warn('Raw content:', content.substring(0, 500));
-
-        // If the primary provider failed with a retryable error but the
-        // fallback returned content we can't parse, surface the original root
-        // cause on the last attempt.
-        if (attempt === maxAttempts && originalError?.isRetryable) {
-          throw originalError;
-        }
-
-        // Retryable parse failure - continue loop unless last attempt.
-        if (attempt < maxAttempts) {
-          // Small backoff before retrying.
-          await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
-          continue;
-        }
-
-        if (parseError instanceof AIError) {
-          throw parseError;
-        }
-
-        throw toAIError(
-          new Error(`Failed to parse AI response as JSON: ${parseError}`)
-        );
-      }
-    } catch (error) {
-      lastError = error;
-
-      // Only retry retryable AI errors.
-      if (
-        error instanceof AIError &&
-        error.isRetryable &&
-        attempt < maxAttempts
-      ) {
-        console.warn(
-          `Retryable AI error (attempt ${attempt}/${maxAttempts}):`,
-          error.code,
-          error.message
-        );
-        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
-        continue;
-      }
-
-      // Non-retryable error or last attempt: exit the loop.
-      break;
     }
-  }
 
-  // If the primary provider kept returning malformed JSON, try OpenAI once as
-  // a last resort because its JSON mode has stronger output guarantees.
-  if (shouldTryOpenAIFallback && provider !== 'openai') {
-    try {
-      const { content } = await tryGenerateContent(
-        systemPrompt,
-        userPrompt,
+    const result = schema.safeParse(parsed);
+    if (!result.success) {
+      console.warn(
+        'AI response failed schema validation:',
+        result.error.issues.slice(0, 5)
+      );
+      throw new AIError(
         {
-          ...rest,
-          provider: 'openai',
-          responseFormat: 'json',
-        }
+          code: 'AI_INVALID_RESPONSE',
+          isRetryable: true,
+          message: FRIENDLY_FALLBACK.AI_INVALID_RESPONSE,
+        },
+        result.error
       );
-      return JSON.parse(extractJSONContent(content)) as T;
-    } catch (fallbackError) {
-      // Prefer a concrete AI error from the fallback; otherwise keep the
-      // original last error.
-      if (fallbackError instanceof AIError) {
-        throw fallbackError;
-      }
     }
-  }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error('Failed to generate valid JSON after multiple attempts');
+    return result.data;
+  });
 }

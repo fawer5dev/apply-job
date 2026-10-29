@@ -1,6 +1,10 @@
 import 'dotenv/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
+/**
+ * Lists the Gemini models available to GOOGLE_AI_API_KEY.
+ * Use it to confirm the model in src/config/ai.ts (or GOOGLE_AI_MODEL) exists.
+ */
 async function listModels() {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) {
@@ -8,24 +12,23 @@ async function listModels() {
     process.exit(1);
   }
 
-  console.log('🔍 Listing available Google AI models...\n');
+  console.log('Listing available Google AI models...\n');
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  const client = new GoogleGenAI({ apiKey });
 
   try {
-    const models = await genAI.listModels();
-    console.log(`Found ${models.length} models:\n`);
-
-    models.forEach((model) => {
+    let count = 0;
+    for await (const model of await client.models.list()) {
+      count++;
       console.log(`Model: ${model.name}`);
       console.log(`  Display Name: ${model.displayName}`);
-      console.log(
-        `  Supported Methods: ${model.supportedGenerationMethods?.join(', ')}`
-      );
+      console.log(`  Supported Actions: ${model.supportedActions?.join(', ')}`);
       console.log();
-    });
+    }
+    console.log(`Found ${count} models.`);
   } catch (error) {
     console.error('Error listing models:', error);
+    process.exit(1);
   }
 }
 

@@ -107,8 +107,8 @@ Choose a PostgreSQL provider that works well with Vercel:
 
     ```env
     GOOGLE_AI_API_KEY=your-google-ai-api-key
-    # Optional fallback
-    # OPENAI_API_KEY=your-openai-api-key
+    # Optional model override
+    # GOOGLE_AI_MODEL=gemini-3.8-flash
     ```
 
 4. **Deploy**
@@ -212,10 +212,9 @@ Also run `pnpm db:generate` locally if needed.
 1. Go to your Vercel Dashboard.
 2. Select your project and go to **Settings** > **Environment Variables**.
 3. Add `GOOGLE_AI_API_KEY` with your Google AI API key.
-4. If you prefer OpenAI, add `OPENAI_API_KEY`. The system now includes an automatic fallback mechanism.
-5. Redeploy the application for the changes to take effect.
+4. Redeploy the application for the changes to take effect.
 
-*Note: The application now supports automatic fallback between Google AI and OpenAI. Ensure at least one is configured.*
+*Note: Google Gemini is the only AI provider. There is no fallback to other providers.*
 
 ### ❌ Runtime Error: "Failed to connect to database"
 
@@ -486,8 +485,7 @@ For enterprise deployments, consider:
 
 ### AI APIs
 
-- Google AI: ~$0.35 per 1M tokens (Gemini 2.5 Flash)
-- OpenAI: ~$5 per 1M tokens (GPT-4o)
+- Google AI: check current pricing for the model set in `src/config/ai.ts`
 
 **Estimated Monthly Cost for Small App**: $0-20/month
 

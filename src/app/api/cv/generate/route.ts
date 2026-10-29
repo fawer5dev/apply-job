@@ -1,91 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { generateCustomCV } from '@/lib/ai/cv-generator';
-import { scoreCV } from '@/lib/ai/ats-scorer';
 import { requireAuthApi } from '@/lib/auth/server-session';
-import type { CV, JobListing } from '@/types';
+import { checkAIRateLimit } from '@/lib/auth/rate-limit';
+import { canCreateApplication, FREE_PLAN_APPLICATION_LIMIT } from '@/lib/plans';
+import {
+  generateApplicationArtifacts,
+  releaseApplicationSlot,
+  reserveApplicationSlot,
+  resolveLanguage,
+  toCVData,
+  toJobData,
+} from '@/lib/applications/generate-application';
 
 export async function POST(req: NextRequest) {
+  let userId: string | undefined;
+  let slotReserved = false;
+
   try {
-    const userId = await requireAuthApi();
-    const { baseCVId, jobListingId } = await req.json();
+    userId = await requireAuthApi();
+    const body = await req.json();
+    const { baseCVId, jobListingId } = body;
+    const language = resolveLanguage(body.language);
 
     if (!baseCVId || !jobListingId) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required parameters',
-        },
+        { success: false, error: 'Missing required parameters' },
         { status: 400 }
       );
     }
 
-    // Get base CV and job listing, enforcing ownership of the CV
+    const rateLimit = await checkAIRateLimit(userId, 'ai-generate');
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many generation requests. Please try again later.',
+          errorCode: 'AI_RATE_LIMITED',
+          retryAfter: rateLimit.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
+
+    // Same plan rules as /api/application/create.
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { accountType: true, applicationsUsed: true },
+    });
+    if (!canCreateApplication(user?.accountType, user?.applicationsUsed ?? 0)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Free plan application limit reached',
+          errorCode: 'APPLICATION_LIMIT_REACHED',
+          details: {
+            limit: FREE_PLAN_APPLICATION_LIMIT,
+            current: user?.applicationsUsed ?? 0,
+            accountType: user?.accountType,
+          },
+        },
+        { status: 402 }
+      );
+    }
+
     const [baseCV, jobListing] = await Promise.all([
-      prisma.base_cvs.findUnique({
-        where: { id: baseCVId, userId },
-      }),
-      prisma.job_listings.findUnique({
-        where: { id: jobListingId },
-      }),
+      prisma.base_cvs.findUnique({ where: { id: baseCVId, userId } }),
+      prisma.job_listings.findUnique({ where: { id: jobListingId } }),
     ]);
 
     if (!baseCV || !jobListing) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'CV or job offer not found',
-        },
+        { success: false, error: 'CV or job offer not found' },
         { status: 404 }
       );
     }
 
-    // Prepare data for AI
-    const cvData = {
-      personalInfo: baseCV.personalInfo,
-      summary: baseCV.summary || undefined,
-      experience: baseCV.experience,
-      education: baseCV.education,
-      skills: baseCV.skills,
-      projects: baseCV.projects || undefined,
-      certifications: baseCV.certifications || undefined,
-    } as unknown as CV;
+    slotReserved = await reserveApplicationSlot(userId);
+    if (!slotReserved) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Free plan application limit reached',
+          errorCode: 'APPLICATION_LIMIT_REACHED',
+        },
+        { status: 402 }
+      );
+    }
 
-    const jobData = {
-      title: jobListing.title,
-      company: jobListing.company,
-      location: jobListing.location || undefined,
-      workMode: jobListing.workMode as
-        | 'remote'
-        | 'hybrid'
-        | 'onsite'
-        | undefined,
-      salary: jobListing.salary || undefined,
-      description: jobListing.description,
-      requirements: jobListing.requirements as any,
-      keywords: jobListing.keywords as any,
-      url: jobListing.url || undefined,
-      source: jobListing.source || undefined,
-    } as JobListing;
+    const artifacts = await generateApplicationArtifacts(
+      toCVData(baseCV),
+      toJobData(jobListing),
+      { tone: 'professional', language, includeCoverLetter: false }
+    );
 
-    // Generar CV personalizado
-    const customCV = await generateCustomCV(cvData, jobData);
-
-    // Calcular ATS score
-    const atsAnalysis = await scoreCV(customCV, jobData);
-
-    // Crear application
-    const appId = `app_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const application = await prisma.applications.create({
       data: {
-        id: appId,
+        id: `app_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         userId,
         baseCVId,
         jobListingId,
-        customCV: customCV as any,
-        atsScore: atsAnalysis.score,
-        atsAnalysis: atsAnalysis as any,
-        matchScore: customCV.atsOptimizations.matchScore,
+        customCV: artifacts.customCV as never,
+        atsScore: artifacts.atsAnalysis?.score ?? null,
+        atsAnalysis: (artifacts.atsAnalysis as never) ?? null,
+        matchScore: artifacts.matchScore,
         status: 'DRAFT',
         updatedAt: new Date(),
       },
@@ -105,6 +122,10 @@ export async function POST(req: NextRequest) {
       data: application,
     });
   } catch (error) {
+    if (slotReserved && userId) {
+      await releaseApplicationSlot(userId);
+    }
+
     console.error('Error generating CV:', error);
     if (error instanceof Error && error.message === 'Unauthorized') {
       return NextResponse.json(
@@ -113,10 +134,7 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Error generating CV',
-      },
+      { success: false, error: 'Error generating CV' },
       { status: 500 }
     );
   }

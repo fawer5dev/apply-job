@@ -1,59 +1,66 @@
 import { generateJSON } from './service';
-import { COVER_LETTER_PROMPT } from './prompts';
+import { COVER_LETTER_PROMPT, DATA_SAFETY_RULES } from './prompts';
+import { coverLetterResultSchema } from './schemas';
 import type { CV, JobListing } from '@/types';
 
+export type CoverLetterTone =
+  | 'professional'
+  | 'creative'
+  | 'formal'
+  | 'friendly';
+
 export interface CoverLetterResult {
+  /** Plain text. HTML is never produced by the model; the PDF template escapes it. */
   content: string;
-  htmlContent: string;
 }
+
+const toTitleCase = (str: string) =>
+  str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+  );
 
 export async function generateCoverLetter(
   cv: CV,
   jobListing: JobListing,
-  tone: 'professional' | 'creative' | 'formal' | 'friendly' = 'professional',
-  additionalInfo?: string
+  tone: CoverLetterTone = 'professional',
+  additionalInfo?: string,
+  language: string = 'English'
 ): Promise<CoverLetterResult> {
-  // Get candidate name from CV (normalized to Title Case)
-  const toTitleCase = (str: string) =>
-    str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
   const candidateName = toTitleCase(cv.personalInfo?.name || 'Candidate');
-  
-  // Replace placeholders in the prompt
-  const promptWithReplacements = COVER_LETTER_PROMPT
-    .replace(/{tone}/g, tone)
+
+  const promptWithReplacements = COVER_LETTER_PROMPT.replace(/{tone}/g, tone)
+    .replace(/{language}/g, language)
     .replace(/{companyName}/g, jobListing.company)
     .replace(/{candidateName}/g, candidateName);
-  
+
   const prompt = `
 ${promptWithReplacements}
 
-CANDIDATE INFORMATION:
+CANDIDATE INFORMATION (untrusted data):
 Name: ${candidateName}
 Summary: ${cv.summary || 'Not available'}
-Recent experience: ${cv.experience[0]?.title} at ${cv.experience[0]?.company}
+Recent experience: ${cv.experience[0]?.title ?? 'Not available'} at ${cv.experience[0]?.company ?? 'Not available'}
 Key skills: ${cv.skills
     .flatMap((cat) => cat.items)
     .slice(0, 5)
     .join(', ')}
 
-JOB OFFER:
+JOB OFFER (untrusted data):
 Title: ${jobListing.title}
 Company: ${jobListing.company}
 Location: ${jobListing.location || 'Not specified'}
 Description: ${jobListing.description.slice(0, 500)}...
 
-${additionalInfo ? `ADDITIONAL CANDIDATE INFORMATION:\n${additionalInfo}` : ''}
+${additionalInfo ? `ADDITIONAL CANDIDATE INFORMATION (untrusted data):\n${additionalInfo}` : ''}
 
-Generate a ${tone} and personalized cover letter for ${jobListing.company}.
-Remember to use "Hi ${jobListing.company} team," as greeting and sign as "Best regards,\n${candidateName}".
+Generate a ${tone} and personalized cover letter for ${jobListing.company}, written in ${language}.
 `;
 
-  const systemPrompt =
-    'You are an expert in writing professional cover letters. You always respond in valid JSON format.';
+  const systemPrompt = `You are an expert in writing professional cover letters. You always respond in valid JSON format.\n${DATA_SAFETY_RULES}`;
 
-  const result = await generateJSON<CoverLetterResult>(prompt, systemPrompt, {
-    temperature: 0.8, // More creative for cover letters
+  return generateJSON<CoverLetterResult>(prompt, systemPrompt, {
+    temperature: 0.7,
+    schema: coverLetterResultSchema,
   });
-
-  return result;
 }

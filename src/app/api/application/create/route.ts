@@ -1,25 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { generateCustomCV } from '@/lib/ai/cv-generator';
-import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
 import { requireAuthApi } from '@/lib/auth/server-session';
 import { AIError } from '@/lib/ai/errors';
-import type { CV, JobListing } from '@/types';
 import {
   FREE_PLAN_APPLICATION_LIMIT,
   canCreateApplication,
 } from '@/lib/plans';
 import { createAuditLog } from '@/lib/auth/audit-log';
+import { checkAIRateLimit } from '@/lib/auth/rate-limit';
+import {
+  generateApplicationArtifacts,
+  releaseApplicationSlot,
+  reserveApplicationSlot,
+  resolveLanguage,
+  resolveTone,
+  toCVData,
+  toJobData,
+} from '@/lib/applications/generate-application';
+
+function limitReachedResponse(
+  accountType: string | undefined,
+  applicationsUsed: number
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Free plan application limit reached',
+      errorCode: 'APPLICATION_LIMIT_REACHED',
+      details: {
+        limit: FREE_PLAN_APPLICATION_LIMIT,
+        current: applicationsUsed,
+        accountType,
+      },
+      isRetryable: false,
+    },
+    { status: 402 }
+  );
+}
 
 export async function POST(request: NextRequest) {
+  let userId: string | undefined;
+  let slotReserved = false;
+
   try {
-    // Get authenticated user ID
-    const userId = await requireAuthApi();
+    userId = await requireAuthApi();
 
     const body = await request.json();
-    const { baseCVId, jobListingId, tone = 'professional' } = body;
+    const { baseCVId, jobListingId } = body;
+    const tone = resolveTone(body.tone);
+    const language = resolveLanguage(body.language);
 
-    // Enforce plan limits for free accounts using the cumulative counter
+    if (!baseCVId || !jobListingId) {
+      return NextResponse.json(
+        { error: 'Base CV ID and Job Listing ID are required' },
+        { status: 400 }
+      );
+    }
+
+    const rateLimit = await checkAIRateLimit(userId, 'ai-generate');
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many generation requests. Please try again later.',
+          errorCode: 'AI_RATE_LIMITED',
+          isRetryable: true,
+          retryAfter: rateLimit.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
+
+    // Fast pre-check so free users get a clear message before any AI work.
     const user = await prisma.users.findUnique({
       where: { id: userId },
       select: { accountType: true, applicationsUsed: true },
@@ -36,30 +88,9 @@ export async function POST(request: NextRequest) {
         },
         success: true,
       });
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Free plan application limit reached',
-          errorCode: 'APPLICATION_LIMIT_REACHED',
-          details: {
-            limit: FREE_PLAN_APPLICATION_LIMIT,
-            current: applicationsUsed,
-            accountType: user?.accountType,
-          },
-          isRetryable: false,
-        },
-        { status: 402 }
-      );
+      return limitReachedResponse(user?.accountType, applicationsUsed);
     }
 
-    if (!baseCVId || !jobListingId) {
-      return NextResponse.json(
-        { error: 'Base CV ID and Job Listing ID are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get base CV and job listing, enforcing ownership of the CV
     const [baseCV, jobListing] = await Promise.all([
       prisma.base_cvs.findUnique({ where: { id: baseCVId, userId } }),
       prisma.job_listings.findUnique({ where: { id: jobListingId } }),
@@ -72,81 +103,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Generating custom CV with AI...');
+    // Atomic reservation: closes the race between the pre-check above and
+    // concurrent requests. Released below if anything fails.
+    slotReserved = await reserveApplicationSlot(userId);
+    if (!slotReserved) {
+      return limitReachedResponse(user?.accountType, applicationsUsed);
+    }
 
-    // Convert Prisma data to CV type
-    const cvData: CV = {
-      personalInfo: baseCV.personalInfo as never,
-      summary: baseCV.summary || undefined,
-      experience: baseCV.experience as never,
-      education: baseCV.education as never,
-      skills: baseCV.skills as never,
-      projects: (baseCV.projects as never) || undefined,
-      certifications: (baseCV.certifications as never) || undefined,
-    };
+    const artifacts = await generateApplicationArtifacts(
+      toCVData(baseCV),
+      toJobData(jobListing),
+      { tone, language, includeCoverLetter: true }
+    );
 
-    const jobData: JobListing = {
-      title: jobListing.title,
-      company: jobListing.company,
-      location: jobListing.location || undefined,
-      workMode:
-        (jobListing.workMode as 'remote' | 'hybrid' | 'onsite') || undefined,
-      salary: jobListing.salary || undefined,
-      description: jobListing.description,
-      keywords: jobListing.keywords as never,
-      requirements: jobListing.requirements as never,
-      url: jobListing.url || undefined,
-      source: jobListing.source || undefined,
-    };
-
-    // Generate custom CV and Cover Letter in parallel
-    const [customCV, coverLetter] = await Promise.all([
-      generateCustomCV(cvData, jobData),
-      generateCoverLetter(cvData, jobData, tone),
-    ]);
-
-    console.log('Saving application to database...');
-
-    // Use Prisma transaction for atomic operations
-    // This also prevents sequential awaits by executing both operations together
-    // Increase timeout to 15 seconds to handle large data inserts
     const application = await prisma.$transaction(
       async (tx: any) => {
-        // Create cover letter
-        const coverLetterId = `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const coverLetterRecord = await tx.cover_letters.create({
           data: {
-            id: coverLetterId,
+            id: `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId,
-            content: coverLetter.content,
-            htmlContent: coverLetter.htmlContent || null,
+            content: artifacts.coverLetterContent,
             tone,
             updatedAt: new Date(),
           },
         });
 
-        // Increment cumulative applications-used counter
-        await tx.users.update({
-          where: { id: userId },
-          data: { applicationsUsed: { increment: 1 } },
-        });
-
-        // Create application with cover letter ID
-        const applicationId = `app_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        return await tx.applications.create({
+        return tx.applications.create({
           data: {
-            id: applicationId,
+            id: `app_${Date.now()}_${Math.random().toString(36).substring(7)}`,
             userId,
             baseCVId,
             jobListingId,
-            customCV: customCV as never,
-            atsScore: customCV.atsOptimizations?.matchScore || null,
-            atsAnalysis: {
-              keywordsAdded: customCV.atsOptimizations?.keywordsAdded || [],
-              sectionsReordered:
-                customCV.atsOptimizations?.sectionsReordered || [],
-            } as never,
-            matchScore: customCV.atsOptimizations?.matchScore || null,
+            customCV: artifacts.customCV as never,
+            atsScore: artifacts.atsAnalysis?.score ?? null,
+            atsAnalysis: (artifacts.atsAnalysis as never) ?? null,
+            matchScore: artifacts.matchScore,
             status: 'DRAFT',
             coverLetterId: coverLetterRecord.id,
             updatedAt: new Date(),
@@ -183,7 +174,18 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (slotReserved && userId) {
+      await releaseApplicationSlot(userId);
+    }
+
     console.error('Error generating application:', error);
+
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
     if (error instanceof AIError) {
       return NextResponse.json(
         {
@@ -199,7 +201,6 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Error generating application',
-        details: error instanceof Error ? error.message : 'Unknown error',
         errorCode: 'AI_UNKNOWN',
         isRetryable: false,
       },
@@ -209,9 +210,8 @@ export async function POST(request: NextRequest) {
 }
 
 // GET - Get user applications
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Get authenticated user ID
     const userId = await requireAuthApi();
 
     const applications = await prisma.applications.findMany({

@@ -2,12 +2,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateCoverLetter } from '@/lib/ai/cover-letter-generator';
 import { prisma } from '@/lib/db/prisma';
 import { requireAuthApi } from '@/lib/auth/server-session';
+import { checkAIRateLimit } from '@/lib/auth/rate-limit';
+import {
+  resolveLanguage,
+  resolveTone,
+} from '@/lib/applications/generate-application';
 import type { CV, JobListing } from '@/types';
+
+const MAX_ADDITIONAL_INFO_CHARS = 2000;
 
 export async function POST(req: NextRequest) {
   try {
     const userId = await requireAuthApi();
-    const { applicationId, tone, additionalInfo } = await req.json();
+    const body = await req.json();
+    const { applicationId } = body;
+    const tone = resolveTone(body.tone);
+    const language = resolveLanguage(body.language);
+    const additionalInfo =
+      typeof body.additionalInfo === 'string'
+        ? body.additionalInfo.slice(0, MAX_ADDITIONAL_INFO_CHARS)
+        : undefined;
+
+    const rateLimit = await checkAIRateLimit(userId, 'ai-generate');
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many generation requests. Please try again later.',
+          errorCode: 'AI_RATE_LIMITED',
+          retryAfter: rateLimit.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
 
     if (!applicationId) {
       return NextResponse.json(
@@ -60,19 +87,20 @@ export async function POST(req: NextRequest) {
     const coverLetterResult = await generateCoverLetter(
       cvData,
       jobData,
-      tone || 'professional',
-      additionalInfo
+      tone,
+      additionalInfo,
+      language
     );
 
-    // Save cover letter
+    // Save cover letter (plain text only; the PDF template escapes it)
     const coverLetterId = `cl_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const coverLetter = await prisma.cover_letters.create({
       data: {
         id: coverLetterId,
         userId: application.userId,
         content: coverLetterResult.content,
-        htmlContent: coverLetterResult.htmlContent,
-        tone: tone || 'professional',
+        htmlContent: null,
+        tone,
         updatedAt: new Date(),
       },
     });

@@ -10,15 +10,22 @@ export type ApplicationStatus =
     | 'ACCEPTED'
     | 'WITHDRAWN';
 
+/**
+ * AI estimate produced by the ATS evaluator. Not a real ATS result.
+ * Sub-scores: formatScore 0-40, keywordScore 0-30, structureScore 0-20,
+ * lengthScore 0-10; score is their sum.
+ */
 export interface ATSAnalysis {
-    score: number; // 0-100
+    score: number; // 0-100, AI estimate
+    formatScore: number;
+    keywordScore: number;
+    structureScore: number;
+    lengthScore: number;
     strengths: string[];
     weaknesses: string[];
     suggestions: string[];
     keywordsMatched: number;
     keywordsTotal: number;
-    formatScore: number;
-    contentScore: number;
 }
 
 export interface Application {

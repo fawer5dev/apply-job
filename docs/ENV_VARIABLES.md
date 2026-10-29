@@ -26,14 +26,16 @@ SESSION_SECRET="your-random-32-byte-hex-string-here"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-### AI Providers (at least one required)
+### AI Provider (required)
+
+Google Gemini is the only AI provider. The model is set in `src/config/ai.ts`.
 
 ```env
-# Google Gemini (primary - recommended, cost-effective)
+# Google Gemini (required)
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
 
-# OpenAI GPT-4o (optional fallback/alternative)
-OPENAI_API_KEY="your-openai-api-key-here"
+# Optional: override the model without a code change (see src/config/ai.ts)
+# GOOGLE_AI_MODEL="gemini-3.8-flash"
 ```
 
 ### Email / SMTP Configuration
@@ -104,9 +106,9 @@ EMAIL_FROM="Apply Job <your-email@gmail.com>"
 # Application URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# AI Providers (at least one required)
+# AI Provider (required)
 GOOGLE_AI_API_KEY="your-google-ai-api-key-here"
-# OPENAI_API_KEY="your-openai-api-key-here"
+# GOOGLE_AI_MODEL="gemini-3.8-flash"
 
 # Optional: OAuth Providers (Future Enhancement)
 # GOOGLE_CLIENT_ID="your-google-client-id"
@@ -209,9 +211,9 @@ After setting up environment variables:
 
 ### AI API Errors
 
-- Verify `GOOGLE_AI_API_KEY` or `OPENAI_API_KEY` is set
-- The application can fall back from Google Gemini to OpenAI when both are configured
-- During high demand, Google Gemini may return 503 errors
+- Verify `GOOGLE_AI_API_KEY` is set
+- Check that `GOOGLE_AI_MODEL` (if set) is available to your key: `pnpm exec tsx scripts/list-models.ts`
+- During high demand, Google Gemini may return 503 errors; the app retries these automatically
 
 ---
 
